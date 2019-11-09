@@ -1,0 +1,41 @@
+﻿TODO: test mesh generation
+		- loads of different cases
+TODO: test model SubMeshTypes
+TODO: test bounds
+TODO: test vertexChannelFlags!
+
+TEST Infinite brushes
+TEST adding brush to model -> is brush still part of model brush list?
+TEST toggle infinite brush -> part of touching brushes of other brushes?
+TEST toggle infinite brush -> is touching brushes empty?
+TEST 2d polygon triangulations
+TEST changing operationType updates accordingly
+TEST creating trigger
+TEST vertexChannelFlags!
+
+TEST passthrough -> enabling/disabling it should correctly rebuild hierarchy
+TEST duplication + move -> doesn't remove geometry
+TEST large move -> removes geometry at old location
+TEST BrushMeshInstance.IsValid/UserID/CSGManager.BrushMeshCount/CSGManager.AllBrushMeshInstances
+
+TEST SetBrushFlags / SetBrushOperation -> both touch the same enum internally, so need to make sure they don't accidentally throw away bits
+
+TEST loading an old scene -> check if brushes, operations and models still load
+
+
+TODO: test wireframe generation
+TODO: test ray-casting
+model -> csg-tree + 'view' into tree? (list of brushes to create mesh(es) from)
+
+
+fix FitSurface
+fix naming
+clean up API
+	have good error messages
+documentation
+
+
+Q: cache meshtype in model, instead of storing it in model? (no need to 'retrieve' for model)
+	-> could cache 'meshtype' in brush
+		-> maybe auto link them somehow for easy finding
+	-> ClearCache()

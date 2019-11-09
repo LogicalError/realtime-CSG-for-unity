@@ -1,0 +1,1033 @@
+Version 1.558 - 2 Sept 2019
+- Workaround for Unity font bug in Unity 2019.3
+- Realtime CSG preferences are now in Project Settings menu in Unity 2018.4 and beyond, removes warnings about preferencewindow being deprecated
+- GameObjects under a model no longer have their layers set to default at build time
+- Added option to set default for Preserve Uvs from within preference/project setting window
+- Added option to set to receive GI from lightmaps or lightprobes on model in Unity 2019.2 and beyond
+- Added option to snap to a relative distance instead of the grid. (there are some places where this is not implemented yet, this will be fixed in the future)
+
+
+Version 1.557 - 12 Aug 2019
+- Workaround so Realtime CSG works in Unity 2019.2 because of Unity bug where Unity can't handle native dlls with periods in their name
+
+Version 1.556 - 15 jun 2019
+- Fixed UV generation being damaged by Unity's own MeshUtility.Optimize method (thanks @hippocoder for letting me know about UV issues)
+- Fixed not being able to select non-CSG mesh when a CSG object was behind it (thanks @GloomyGhoul)
+- Fixed button labeled "V" when it should've been labeled "UV" (thanks @Hunted)
+- Fixed generator properly finishing a commit when the toolmode is changed before enter is pressed, or the commit button is clicked (thanks @Hunted)
+- Fixed some pivot issues (thanks @Hunted)
+- Fixed that pressing the hotkey for center pivot only works when in Rotate/EditMode-Place mode because otherwise there wouldn't be visual feedback (thanks @Hunted)
+- Fixed loads of other small things (thanks @Hunted)
+- Removed 'created infinite brush' debug message that should've been removed before, apologies! (thanks @Hunted)
+- Creating a Model/Brush/Operation in the hierarchy using the context menu now places the gameobjects underneath the clicked item (thanks for the suggestion @GloomyGhoul)
+
+Version 1.555 - 04 jun 2019
+- Fixed issue where rotation tool would not be visible in Place mode when no CSG objects are selected (thanks @GloomyGhoul)
+
+Version 1.554 - 03 jun 2019
+- Fixed issue that in model inverted mode, it would add new (hidden) infinite brushes instead of reusing the previous one (thanks @Hunted)
+- Fixed issue where the last used model would still be used even when it's disabled (newly created brushes wouldn't be visible)
+- Fixed issue where rotation tool would not be visible in Place mode when no CSG objects are selected (thanks @GloomyGhoul)
+- Fixed issue with planes not being removed which was due to floating point inaccuracies while normalizing normals (thanks @Hunted)
+- Position Handles now highlight when hovering over the arrows, just like modern regular unity position handles (thanks @Hunted)
+
+Version 1.553 - 13 may 2019
+- Fixed edit modes correctly being initialized/deinitialized when turning realtime CSG on/off when you have a selection (thanks @Hunted / @Cough-E!)
+- Fixed surface texture translation would jump after creating a brush when "lock texture to object" is set to off by default. (thanks @Hunted!)
+- Fixed memory leak where EditModeManager scriptableobjects would get removed properly (thanks @Hunted!)
+
+Version 1.552 - 4 may 2019
+- Fixed cylinder not working due to texture copying issue
+
+Version 1.551 - 2 may 2019
+- Fixed texture copying working correctly when model is not centered at 0,0,0 / texture locking is turned off / scaling is negative along one axis
+- Fixed texture rotating working correctly when model is not centered at 0,0,0 / texture locking is turned off / scaling is negative along one axis
+
+Version 1.550 - 23 april 2019
+- Fixed UnassignedReferenceException during build process when trying to optimize removed helper mesh (a mesh not used at runtime)
+- Added option, in CSG options panel, to set the default for "Lock Texture To Object" on surfaces.
+
+Version 1.549 - 15 april 2019
+- Improved deciding on selecting an additive or subtractive operation when extruding in or out of another surface (issue #159)
+
+Version 1.548 - 10 april 2019
+- Exposed mesh collider cooking options (available in 2017.3 and beyond) to the model so that Unity can (optionally) optimize the generated meshes to be used for colliders
+
+Version 1.547 - 5 april 2019
+- Made it possible to change material when material is invalid
+- Removed warning in 2019.1 with sceneview event being renamed in unity
+- Fixed issue with invisible helper brush surfaces (the items in the bottom right menu) not rendering in scene
+- "Update lightmap UVs" button is now enabled even when no surface is selected in surface mode
+- "Update lightmap UVs" button no longer causes surface helper window to get cut off at bottom
+- "Stitch Seams" is now exposed in model and will automatically be set on MeshRenderers. Note that this option only works with the progressive lightmapper.
+
+Version 1.546 - 7 march 2019
+- Drag & dropping a mesh in the scene will no longer place it under a model
+- Fixed mac build being a debug build
+
+Version 1.545 - 6 march 2019
+- Fixed Changing ray snapping behavior would not be undoable / would not auto save in prefab mode (issue #289)
+- Fixed that if top gameObject didn't contain a CSGBrush/CSGModel or CSGOperation, but a child contained a CSGBrush, drag & drop would fail (issue #288)
+	keep in mind that in order for placement of brushes to work properly, it still needs a CSG component on the top most GameObject, but at least now it won't fail
+- Fixed that a child gameObject of a CSG element would be removed on play (issue #286)
+- Fixed that a generated MeshRenderer or MeshCollider could get left behind sometimes when rebuilding the model
+- Added support for two sided shadows (request #290)
+- Added an option in preference window called "Snap Non-CSG Objects to the grid" that, when enabled, allows you to snap non CSG objects to the grid when in Place mode (issue #202)
+
+Version 1.544 - 6 nov 2018
+- Improved line rendering 
+- Grid no longer shows gridlines smaller than the current grid size
+- Update lightmap UV button now also visible in surface mode
+- Surface edit mode window now has scrollbar when it's too small
+- Surface edit mode window now has button to select all the surfaces of all brushes that are currently selected
+- Edit mode window now has option to automatically commit an extruded shape after extruding it from a polygon
+- Max sphere splits / Max cylinder sides can now be set in options preference menu
+
+Version 1.543 - 27 nov 2018
+- Fixed compilation error in 2019.1a10
+
+Version 1.542 - 27 nov 2018
+- Fixed FBX exporting failing when a material is missing on exported model
+- Fixed FBX exporting in different locales causing malformed fbx files
+
+Version 1.541 - 26 nov 2018
+- Fixed FBX export generating an error after export
+
+Version 1.540 - 5 nov 2018
+- Fixed default physics material not being applied to mesh colliders
+
+Version 1.539 - 10 oct 2018
+- Fixed grouping objects causing NullReferenceException (oops)
+
+Version 1.538 - 8 oct 2018
+- Fixed mesh being destroyed on build
+
+Version 1.537 - 2 oct 2018
+- Fixed grouping objects causing NullReferenceException
+
+Version 1.536 - 26 sept 2018
+- Fixed upgrading model causing error in "UnityEditor.UnwrapParam:SetDefaults"
+
+Version 1.535 - 21 sept 2018
+- Fixed duplicate on prefab-instance sometimes not working + error messages
+- Fixed not selecting brush behind cursor when clicking on brush (issue #250)
+- Fixed "Selection interacts with models outside prefab mode, while inside prefab mode" (issue #275)
+- Fixed "Creating new brushes while inside prefab mode, creates brushes in scene instead" (issue #276)
+
+Version 1.534 - 17 sept 2018
+- Fixed prefab API warnings in 2018.3 (issue #271)
+- Fixed csg objects not showing anything in prefab isolation mode (issue #270)
+- Fixed models in prefabs causing all kinds of errors and problems because prefab behavior has changed & you can't delete a gameobject in 
+	the scene anymore, and realtimecsg removes and creates gameobjects w/ MeshRenderers & MeshColliders on changes (issue #272)
+- Some render pipelines (like the HDRP) don't play nice with the default-diffuse material, which was used for rendering shadow only meshes.
+	This has been changed to use the renderPipeline's default material when available (2017.2 and up), otherwise it'll use an Unlit material 
+	which seems to work on all renderpipelines. (issue #267)
+- Fixed errors in 2018.3 where it was complaining that shadow only meshrenderers do not have normals, which are required for "lightmapping"?
+	these shadow-only meshrenderers are now always set to never be lightmap/reflection-probe static
+- Fixed tooltips in inspector when hovering over surface of brush showing the wrong text
+- Renamed Object mode to Place mode
+- Renamed Mesh mode to Edit mode
+- Edit mode now has the ability to optionally select vertices/edges and surfaces using toggles (issue #252, suggestion by @PartyBoat)
+- Edit mode now has the ability to be able to select hidden surfaces (or not) with the rectangle selection, using a toggle (suggestion by @PartyBoat)
+
+Version 1.533 - 11 sept 2018
+- Deleting enough points from a brush so that it would no longer be a valid shape would delete the brush component, when it should have destroyed the GameObject (issue #253)
+- Fixed having surfaces with Receive and Cast toggled would not create a MeshRenderer that is ShadowOnly (issue #251)
+- Fixed having surfaces with Cast or Receive not toggled would not create a MeshRenderer that is Visible (issue #251)
+- Drag-duplicate would register two undos, one for creation, one for movement .. this is now collapsed into one undo operation
+- Drag-duplicating a prefab will actually clone a prefab instance, instead of creating a copy of the contents of the prefab (issue #265)
+
+Version 1.532 - 21 aug 2018
+- Fixed mac-osx version
+
+Version 1.531 - 09th aug 2018
+- Fixed stairs not updating properly
+- Fixed rect selection not working properly
+- Fixed inverted scaling of nodes
+
+Version 1.530 - 19th april 2018
+- Fixed rebuild always assuming that UVs need to be rebuild, even when auto-rebuild was turned off
+- Fixed texture coordinates not rotating correctly
+- Fixed materials not showing up correctly on models when the material wasn't saved yet (negative instanceID)
+- Fixed issue with texture coordinate generation not being correct due to axis in matrix being garbled
+
+Version 1.529 - 19th april 2018
+- Fixed triangulation issue that could end up with triangles orientated in the wrong direction
+- Fixed loading a scene for the first time since startup would 'forget' lightmap information
+
+Version 1.528 - 8th april 2018
+- Fixed drag & dropping material flashing purple
+- Added bounds to model AngleError/AreaError since a too low a value would crash Unity
+
+Version 1.527 - 7th april 2018
+- Fixed crash when toggling "inverse mode" on a model a couple of times
+
+Version 1.526 - 6th april 2018
+- Fixed dragging material over surface without dropping + undo changes material
+- Fixed model mesh not being rebuild when model has no brushes in it
+- Unwrapping settings are now exposed in model, making it possible to tweak UV generation
+- More UV charting controls are added to the model as well
+
+Version 1.525 - 6th april 2018
+- Fixed another inverted mode issue
+- Fixed another raycast problem caused by a single letter typo
+
+Version 1.524 - 30th march 2018
+- Fixed inverted mode causing an error
+- Fixed sometimes brushes not having their operation set correctly
+- Fixed raycasts not returning correct planes when planes needed to be inverted
+
+Version 1.523 - 24th march 2018
+- Fixed edges being hard to select
+- Fixed some situations where meshes would be rebuild when they shouldn't, causing lighting data to be lost
+- Fixed scale operator having giant cube in center, and cones, instead of cubes, on its axis scalars? 
+- Fixed drawing shape on moved model would not align correctly
+- Fixed surfaces not being selectable but cast shadows was turned off
+- Fixed gaps being created when triangles where merged that shouldn't be merged
+- Fixed crash bug due to uninitialized data
+- Improved vertex snapping, sometimes it wouldn't snap when the snap movement was too small
+
+Version 1.522 - 23th march 2018
+- Fixed issue where nodes, internally, sometimes weren't properly removed from the hierarchy, causing conflicts and invisible brushes
+
+Version 1.521 - 20th march 2018
+- Fixed build not outputting meshes
+- Fixed generating brushes on a model that's moved not working correctly
+- Fixed crash bug due to uninitialized data
+- Fixed brushes not showing up when created because hierarchy not being updated correctly 
+
+Version 1.520 - 16th march 2018
+- Fixed crash when selecting brush that has just been disabled
+- Fixed moving a brush that's contained by a 'pass through' Operation outside its containing operation/model would cause the hierarchy to (internally) forget the brush 
+- API changes:
+	Added BrushMeshUtility.CreateCube methods (WIP)
+
+Version 1.519 - 14th march 2018
+- Fixed tiny cylinders ending up with surfaces with scale 0
+
+Version 1.518 - 14th march 2018
+- API Change:
+	CSGTree.IsValid -> CSGTree.Valid
+	CSGTree.IsDirty -> CSGTree.Dirty	
+	CSGTreeBranch.IsValid -> CSGTreeBranch.Valid
+	CSGTreeBranch.IsDirty -> CSGTreeBranch.Dirty
+	CSGTreeBrush.IsValid -> CSGTreeBrush.Valid
+	CSGTreeBrush.IsDirty -> CSGTreeBrush.Dirty
+	CSGTreeNode.IsValid -> CSGTreeNode.Valid
+	CSGTreeNode.IsDirty -> CSGTreeNode.Dirty
+	BrushMeshInstance.IsValid -> BrushMeshInstance.Valid
+	CSGTreeNode.BrushToTreeSpace -> CSGTreeNode.LocalTransformation
+	Added CSGManager.BrushMeshCount
+	Added CSGManager.AllBrushMeshInstances
+	Added BrushMeshInstance.UserID
+	Creation of BrushMeshInstance now has optional userID
+- Fixed bug where CSGTreeNode.InsertRange accepted duplicate nodes
+- Fixed issue with errors getting generated when selecting lots of brushes and too many lines need to be rendered
+- Added option to set lightmap scale per model ("scale in lightmap")
+- Added option to turn off tooltips in Edit/Preferences/CSG Options ( https://github.com/LogicalError/realtime-CSG-for-unity/issues/243 )
+
+Version 1.517B - 8th march 2018
+- Fixed meta data issues that caused unity to not recognize older brushes/operations/models
+
+Version 1.517 - 1st march 2018
+- Fixed statistics in model component showing the number of triangles in the last mesh, instead of the total triangles in all meshes
+- Fixed gaps appearing in brushes when multiple sides where almost aligned with each other
+- Fixed random triangles appearing in brushes when they shouldn't
+- Fixed the csg hierarchy being built incorrectly, causing shapes to look incorrect until full rebuild
+- Fixed all the meshes of all models being recreated on any change to any model
+- Fixed dots being wrong size after moving camera in edit mode, until hovering over brush
+- Fixed UI in free-draw mode to choose between line modes being disabled
+- Fixed UV fit in surface window
+- Performance improvements for CSG
+- Performance improvements for raycasting
+
+Version 1.515 - 10 januari 2018
+- Reverted some broken code
+- Made warnings go away in 2018.1
+
+Version 1.514 - 10 januari 2018
+- Fixed a random crash bug
+- Fixed a bug where multi-selection was broken
+
+Version 1.513 - 6 januari 2018
+- Fixed icons in evaluation version
+- Fixed edge selection
+- Fixed grid/line rendering in retina (turns out a division is not the same as a multiply, who knew!)
+- Improved UI performance
+- Reduced pressure on garbage collector (with help from @dadude123, thanks!)
+
+Version 1.512 - 5 januari 2018
+- Fixed preventing infinite compile loop when VRTK is also installed
+- Fixed some invalid points being rendered in freedraw with curved edges
+
+Version 1.511 - 4 januari 2018
+- Fixed issue with raycasting broken on subtractive surfaces
+- Fixed issue with putting models inside models creating duplicate generated meshes + errors
+- Fixed exporting model will now also include child-models
+
+Version 1.510 - 1 januari 2018
+- Fixed distance to line calculations not always initialized, causing hovering over lines not always working, which caused problems with rotations (#226)
+- Fixed error on build with exported model in scene (#228)
+- Fixed extrusion in inverted world would not use the correct csg operation (thanks @hunterhunted for the fix!)
+- Fixed performance issue with ray-casting (used when moving mouse over surfaces)
+- FBX exporter now exports collider only models (requested by @hilariouscow)
+- FBX exporter now has option to determine how the generated fbx model is centered (#227)
+
+Version 1.509 - 7 december 2017
+- Fixed generated meshes not having their static flags set correctly from the model, causing issues with lightmap generation
+- Fixed issue with clip-mode not updating the current mouse position visually when moving over the same surface
+- Fixed tooltip on edit mode window going in the wrong direction sometimes
+- Fixed inverted tangents, causing bump maps to look like they've been inverted
+- Fixed drag & dropping prefabs into hierarchy sometimes moving prefab in the hierarchy
+- Improved line rendering so that it doesn't get large close to the camera
+- Improved line rendering performance
+- Rewrote some code that relied on Unity code which was, well, slow, and slowed editing down
+- Moving example scene into seperate package, this will be released a bit later
+
+Version 1.508 - 1 december 2017
+- Fixed holding alt while dragging mouse moving surface in mesh edit mode instead of orbiting camera, when selected surface is beneath mouse cursor
+
+Version 1.507 - 30 november 2017
+- Fixed clicking on surface changing texture coordinates
+
+Version 1.506 - 28 november 2017
+- Fixed brushes disappearing during editing
+
+Version 1.505 - 24 november 2017
+- Fixed issues related to editing in an orthographic camera
+- Improved performance of brush drag & drop operations
+- Improved performance of csg algorithm
+- Stairs generator now has ability to set bottom to be stepped instead of filled
+
+Version 1.504 - 21 november 2017
+- Fixed modifying mesh in mesh edit mode would cause all scenes to be marked dirty due to Unity weirdness.
+- Fixed sometimes not being able to move handles of generators
+- Fixed stairs not generating properly when model is rotated
+- Fixed stairs sometimes having steps beyond it's bounds
+- Fixed rotating surface texture stopping when mouse is outside of surface area
+- Fixed rotating surface texture not showing text properly in scene
+- Fixed objects sometimes being unmovable
+
+Version 1.503 - 19 november 2017
+- Previous version was not compiled properly, fixed.
+
+Version 1.502 - 17 november 2017
+- Fixed issue with infinite errors happening when putting model inside model
+- Fixed triggers not being properly generated
+
+- Surfaces now properly generate meshes with shadow "Cast" and "Receive" settings
+- Surface visualisation dropdown now shows different categories that now make more sense with the new surface flags
+
+Version 1.501 - 16 november 2017
+- Fixed tangent and normal issues
+- Fixed error in GetHandleSizes
+
+Version 1.500 (beta) - 12 november 2017
+- Fixed "invisible" surfaces rendered not just invisible surfaces; all other helper surfaces where rendered as well
+- Fixed performance issue when panning in surface mode
+- Fixed points showing wrong sizes when multiple scene windows where used at the same time
+- Fixed "Passthrough" operations sometimes not correctly handling ownership of child brushes, causing unpredictable behavior
+
+- Discard/Shadow-Only/Visible surfaces have been replaced with toggles for Visible/Collision surfaces and Receive and Cast for shadows
+- Tangents are now corrected when smearing a texture over a surface
+- Unecessary vertices are now optimized away
+
+- Known Issue: the tangents aren't quite right, this is the next thing that'll be worked on
+
+Version 1.413 - 25 july 2017
+- Fixed layout issue with "Update lightmap UVs" button when helper window is docked
+- Fixed alignment issue when extruding surface when not axis aligned in all 3 directions
+- Fixed issue with extruded surfaces being placed incorrectly
+- Fixed issue with not being able to extrude surfaces
+- Fixed issue with (accidentally) calling GameObjectUtility.SetStaticEditorFlags every frame would make it impossible to rename objects?
+
+- Known Issue: the experimental brush "Contents" part is temporarily removed from this version since it's currently broken, 
+				it'll be brought back (in some form or another) in a subsequent version.
+
+Version 1.412 - 22 july 2017
+- Rendering the visible parts of a model is now optional and can be changed in the bottom right corner of the scene view
+- All collider surfaces will now be shown when "Show Collider flags" is toggled in the bottom right corner of the scene view
+- Models with more than 64k vertices now generate multiple meshes instead of failing
+- Model will have one unified collision mesh
+- Some in scene GUI performance improvements (using layouts is slooooow)
+- Some CSG performance improvements on large scenes
+- Fixed issue with triangles dissappearing when intersecting multiple complicated brushes
+- Fixed issue with "[generated-meshes]" objects appearing in scene after play
+- Fixed being able to select brushes that are in an invisible layer
+- Fixed issue with scene immediately being marked as modified on load
+- Fixed issue with raycasting math breaking on infinitely thin triangles (selection should be more reliable now on large brushes)
+
+Version 1.411 - 30 june 2017
+- Added Linear Stairs Generator
+- Marquee selection in mesh edit mode now no longer selects hidden points/edges & polygons by default
+	- This can be changed into the old behaviour by setting the right settings in the new "CSG options" preference menu
+- Fixed issue where a model would always claim it needs it's UVs recalculated for lightmapping, even though they're already generated
+
+Version 1.410 - 14 june 2017
+- Fixed issue with drag & drop not adding drag & dropped brushes to model beneath cursor
+
+Version 1.409 - 6 june 2017
+- Brush 'contents' settings now work if non-'solid' (for example water) contents is placed before or after 'solid' brush in hierarchy (still experimental)
+- Exported meshes are now centered 
+- Fixed error that caused crash in Unity 2017.1 when using Unity's (experimental) .Net 4.6 support
+- Fixed drag & dropping a prefab in the scene being added to previous prefab instances
+- Fixed dangling "generated-meshes" to be left behind in scene when deleting prefab-instance that contains model
+- Fixed mirroring not working on some brushes
+
+Version 1.408 - 20 may 2017
+- Fixed texture editing not updating meshes correctly
+- Fixed surfaces disappearing, sometimes
+- Fixed pre-calculated lighting disappearing, sometimes
+
+Version 1.407 - 19 may 2017
+- Experimental feature: brush can set Contents to be Solid, Glass or Water, this avoids brushes with different contents from removing the geometry inside the other
+- Inspector now shows surfaces of selected brush
+- Modifying the default texture while creating a brush will now change the texture of the brush being created
+- Improved snapping when drag & dropping meshes
+- Fixed one side of sphere would always use wall material instead of (settable) default material
+- Fixed issues with invalid tangents being generated under some circumstances
+- Fixed default-CSG Model (the model that is uses when a brush is not inside a model) still being included in the build even when it has no meshes
+
+Version 1.406 - 7 may 2017
+- Mesh drag & drop now snaps to grid, onto csg models and onto in-scene meshes (issue #130 / #100 / #61)
+	note: dragging onto meshes in scene only works if mesh has colliders (unity limitation)
+- Fixed outlines not updating in wireframe mode, when deleting last model or undoing change that creates only model in scene.
+
+Version 1.405 - 5 may 2017
+- Fixed free-draw sometimes not updating it's shape even though it was valid 
+
+Version 1.404 - 4 may 2017
+- Grid is now rendered completely in a shader, smoother lines, faster rendering
+- Added "Enable" button to inspector and realtime-CSG window when realtime-CSG is disabled
+- Added ability to remove hidden csg model from exported model
+- Improved sphere texturing
+- Move gizmo is now always in center of selection when move tool is selected
+- Fixed model non-uniform scaling + brush rotation causing weird behaviour
+- Fixed helper surface texture was inverted
+- Fixed pressing enter after creating 2d shape, and before extruding, not using previous height
+- Fixed some minor GUI issues like labels being clipped and unnecessary scrollbars appearing 
+- Fixed hidden exported model becoming visible again after loading scene containing exported model
+- Fixed exporting model not working well with Undo
+- Fixed issue with some code updating too much
+
+Version 1.403 - 19 april 2017
+- Fixed warning in Unity 5.5 and beyond
+- Fixed tooltip text for scale snapping
+- Fixed chamfering always snapping even when snapping was turned off
+- Fixed chamfering removing smoothing when chamfering length is 0
+- Fixed removing model component would not destroy its meshes
+- Fixed accidentally selecting meshes when clicking when "show meshes" is turned on on model
+- Fixed drag & dropping brushes with placement set to "Align Surface Up" actually aligning properly on surfaces
+- Fixed being able to chamfer vertices and edges at the same time
+
+Version 1.402 - 17 april 2017
+- Added default material that will be used when creating, chamfering or cutting brushes (feature request #167)
+- Added ability to rotate or clone + rotate by user given euler angles
+- Added ability to move or clone + move by user given offset
+- "snap to grid" now works on selected edges and polygons as well as vertices
+
+- Fixed missing materials causing surfaces to not show up at all
+- Fixed "Use Default" button in keys settings menu not storing any changes
+- Fixed back key being registered as right key, changing either change both to the same key.
+- Fixed wireframe not rendered at right position when creating box and moving the bottom plane
+- Fixed moving object on local grid not snapping correctly
+
+Version 1.401 - 16 april 2017
+- Fixed drag & dropping materials onto brushes causing model to get confused over which brush has what material
+
+Version 1.400 - 16 april 2017
+- Improved extrusion now copying smoothing settings from surrounding surfaces
+- Added support for chamfering by shift-dragging an edge or vertex in mesh mode
+
+- Fixed issue with moving vertices/edges of extruded surface during extrusion would only move in XY plane
+- Fixed model not being correct when both rotated and scaled
+- Fixed scaling surfaces not merging vertices & removing 0 area polygons, causing CSG problems
+- Fixed scaling surfaces getting 'stuck' at 0% sometimes
+- Fixed issue with raycasting falsely giving back value indicating that surface is inverted (subtracted) 
+	due to 1 byte c++ booleans being interpreted as 4 byte booleans in c#
+- Fixed not showing selected brushes when in generate mode
+- Fixed occluded lines of selected brushes being too subtle too see
+- Fixed reversed surfaces (from subtractive brushes) not smoothing normals correctly under some circumstances
+- Fixed marquee selection not working with shift
+- Fixed marquee selection oscillating between selecting and not selecting when holding control
+- Fixed exporting FBX not creating prefab link to exported FBX file
+
+Known issue:
+- model is not correct when scaling is non-uniform
+
+Version 1.369B - 10 april 2017
+- Removed compiler warnings
+
+Version 1.369 - 9 april 2017
+- Can now extrude shape while hovering over plane w/ box and cylinders as well
+
+Version 1.368 - 9 april 2017
+- Improved selecting edges, vertices and polygons in mesh mode
+- Can now extrude shape while hovering over plane (freedraw only) 
+- Fixed extruding bottom plane would move incorrectly when not extruding in direction of surface normal
+- Fixed Colliders always being generated
+- Fixed RigidBody always visible
+- Fixed handles being the wrong size in Unity 5.6
+- Fixed issue with infinite values causing unity to hang
+
+Version 1.367 - 5 april 2017
+- Fixed issue with surfaces disappearing, until rebuild, when editing mesh
+
+Version 1.366 - 4 april 2017
+- Fixed warnings for Unity 5.6 due to API changes
+- Mesh edit scaling improvements
+	- Fixed scale snapping size in mesh mode
+	- Scaling vertices in mesh mode now properly scale when unity is in local mode
+	- Can now extrude surface in direction of axis in global mode
+	- Can now scale by dragging edges
+	- Added scale snapping value to bottom bar
+- Mesh edit movement improvements
+	- When dragging an edge when the movement tool is selected it'll now move on the plane that intersects that edge
+		(ie. an edge going in the Z direction will now default on moving on the XY plane)
+		of course you can always select the edge and then use the unity movement gizmo to move it in any direction you want.
+- Added ability to rotate vertices in edit mode
+- Helper lines that show the distance to the grid are now no longer shown when the grid is off
+- When disabling realtime-CSG (control-F3) all code is now really disabled, Fixes issue where realtime-CSG would eat all input when disabled
+
+Version 1.365 - 28 mar 2017
+- Fixed "Receive Shadows" flag behavior on models being reversed
+- Fixed "Shadow Only" sometimes not working
+- Fixed corrupt mac bundle 
+- Added "Preserve UV" flag to models, which sets the similar named flag in the lighting tab
+- Added ability to show the generated meshes by toggling the "Show Meshes" checkbox in the model
+- Extrusion of a surface now uses Shift instead of Alt (too much interference with Camera Orbit)
+
+Version 1.364 - 16 mar 2017
+- Mesh mode:
+	- now shows position handle in move mode which you can use to move selected vertices
+	- now shows scale handle in scale mode which you can use to scale selected vertices
+- Some performance improvements
+
+Version 1.363 - 15 mar 2017
+- Surfaces can be set to "ShadowOnly" individually
+- Some mesh generation optimizations
+- Fix where surfaces would become unselectable in surface mode
+
+Version 1.362 - 7 mar 2017
+- Fixed issue with lightmaps not being created properly
+- Fixed issue with lighting being recalculated when loading level
+
+Version 1.361 - 14 feb 2017
+- Fixed issue with lighting being rebuild on after play in editor
+- Fixed issue with no lighting at runtime
+- Fixed issues with helper surfaces (shadow-only, discard) 
+	- not using default scaling
+	- sometimes not being rendered when they should be
+	- lightmaps would be build for helper surfaces
+
+Version 1.360 - 9 feb 2017
+- Fixed ShadowsOnly models not blocking shadows because mesh wasn't generated.
+- Fixed ShadowsOnly models being clickable/surfaces being selected even though they're not shown
+- Fixed tool surfaces (discarded, triggers) rendered as solid when sceneview is in wireframe mode
+- Fixed tangents pointing in wrong direction, making lighting for normal maps point in wrong direction https://prenominal.nl/forum3/showthread.php?tid=50
+- Fixed issue with trigger events not working by moving the meshcolliders to the model at build/play time
+- Fixed issue where surface selection would keep brushes selected in hierarchy when none of it's surfaces are selected
+- Fixed issue with texture copying not working when clicking one src and then dst surface (smearing worked fine)
+- Fixed issue where you needed to undo texture smearing 2x before the operation was undone
+
+Version 1.359 - 3 feb 2017
+- Changed sphere generation key code to M since R collided with existing unity keycode
+- Fix for surfaces remaining visible when models are disabled (issue #169)
+- Ability to drag object over surface (just like when drag & dropping) by holding shift in object mode (issue #134)
+- Fixed issue where lighting was incorrect on subtracted surfaces due to tangents and binormals being inverted (https://prenominal.nl/forum3/showthread.php?tid=50)
+- Fixed issue where copying materials from one surface to another would not align properly in some situations
+
+Version 1.358 - 30 jan 2017
+- Height guides in Object mode now show a shadow outline
+- If you hold Z in Object mode all the move points are disabled to make it easier to move the selection up/down
+- No more MeshCollider errors in console when bounds are resized in such a way that it has a 0 width side
+- Created hotkey "I" to insert point in center of selected edges when creating free-draw shapes 
+- Fixed locking axis working when snapping is off
+- Fixed position handle always snapping, even when snapping was off
+- Position handle now shows disabled arrows
+- Ability to turn off texture locking, making the texture stay at the same position in the 
+	world when you move brushes around
+
+Version 1.357 - 24 jan 2017
+- Layers and tags are now copied to meshes at editor time, not just at runtime (used for raycasts in editor, fixes issue mentioned in forum)
+- X/Y/Z locking now has different tooltips for when locked or unlocked, shows colors of axis to lock/unlock
+- Rotation pivot now uses custom move gizmo that can show when axi are locked
+- Fixed losing selection when clicking on toolbar in sceneview that doesn't have focus
+- In object mode, while using Unity's move tool, you can now move your selection using unity's position gizmo
+- Extrude a surface by dragging from center point when holding ALT (before you needed to click and then drag it)
+- Added height guides to Object mode
+
+Version 1.356 - 22 jan 2017
+- Added hotkey to recenter pivot (control-R)
+- When scaling, moving etc. on grid, also snapping to starting position to make it easier to go back to original place
+- Fixed issue not rendering bounding boxes correctly in object mode when scale was not 1,1,1
+- Fixed issue with snapping to grid not updating outlines correctly
+- Added hotkey to tooltip of "snap to grid" button in mesh mode
+
+Version 1.355 - 21 jan 2017
+- Fixed colliders not being found by physics raycasts in editor by disabling it and enabling it after creation (unity bug)
+- Added tooltips to pivot placement items in object mode UI
+- Added units to pivot x/y/z fields in object mode UI
+- Changing the pivot now actually moves the mesh and the transform position, changing the actual pivot of the mesh.
+
+Version 1.354 - 20 jan 2017
+- Added ability to set rotational pivot in object mode and rotate around it
+
+Version 1.353 - 18 jan 2017
+- Fixed/Improved Rotation visuals
+	- Rotation delta angle, is always the same as other angle. Removed the non-delta angle.
+	- Moved rotation ticks on outside of rotation radius
+	- Show ticks on snap angles
+	- Made bounds less visisble when rotating in object mode (it's distracting)
+	- Fixed not being able to rotate in ortho!? 
+	- Now showing rotation axis name (X/Y/Z) in object mode
+- Fixed/Improved Move visuals
+	- Scale arrow cursors where turned incorrectly when in local mode
+	- Now showing grid when hovering over edge scale drag points
+- Fixed grid not rotating in local mode!?
+
+Version 1.352 - 12 jan 2017
+- Fixed surface select clicking no longer working
+- Fixed some compiler warnings on Unity >= 5.5
+- Fixed issue with dragging brush onto unity mesh
+- Selected surfaces are now slightly darker to make it easier to see which ones are selected. Color still needs tweaking
+- Drag & dropping a material on operation that has "handle as one object" while holding shift (which means 'apply material on all') 
+	will apply the material on all surfaces of all brushes inside the operation
+- Free draw
+	- Hotkey is now N since both X and V are used by Unity and interfere with realtime-CSG (sorry!)
+
+Version 1.351 - 11 jan 2017
+- Fixed panning camera by arrow keys not working in surface mode (issue #143)
+- Fixed drop down in bottom bar not responding (issue #158)
+- Fixed Unable to select brushes (issue #96)
+- Fixed Sometimes can't use the move tools / drag select anymore (issue #109)
+- Tangents of curved edges now snap to the grid, which makes it easier to be more precise with them
+- After creating a shape in generator mode it doesn't take you back to another edit mode anymore
+- Can now continue with extruding when moving mouse outside of view 
+
+Version 1.350 - 10 jan 2017
+- Fixed issue where extruding on an inverted surface would make brush subtractive when it should be additive and visa versa (issue #159)
+- Fixed issue where drawn grid would not reset properly after drag & dropping (issue #161)
+- Fixed issue where drag & dropping would not work if behind a canvas (issue #50)
+- When Realtime-CSG is disabled it will also disable wireframe mode in sceneviews (and re-enable it when Realtime-CSG is enabled again)
+- Fixed Pressing alt during the brush generation process zooms in (issue #82)
+- Implemented drag & dropping materials on surface material display (issue #16)
+- Implemented new settings dialog where you can edit the keys for realtime-CSG 
+- Modified free-draw hotkey to X to avoid conflict with V key that's used by unity (issue #77)
+- Modified arrows/pageup/pagedown hotkeys to control + arrows/pageup/pagedown to avoid conflict with unity keys
+
+Version 1.349 - 8 jan 2017
+- Fixed helper material textures not loading
+- Fixed curve handles being initialized incorrectly
+
+Version 1.348 - 8 jan 2017
+- Fixed issue with operations not being set up correctly in certain circumstances
+- Fixed issue with curve handles in free draw using wrong plane to move on
+- Fixed issue with free draw shape not updating the current operation type when the shape changed, under some circumstances
+
+Version 1.347 - 8 jan 2017
+- Added tooltips to operation/brush prefab behaviour fields in inspector
+
+Version 1.346 - 8 jan 2017
+- Fixed issue with drag & dropping a prefab into a new scene causing an error
+
+Version 1.345 - 8 jan 2017
+- Next/Prev CSG tool is now Control-PageDown/Control-PageUp (instead of just PageDown/PageUp)
+- You can now move your selection on the grid with the following keys
+   Left Arrow Key/ Right Arrow Key - Move Left (negative X) / Right (positive X) with grid sized steps
+   Up Arrow Key/ Down Arrow Key - Move Forward (positive Z) / Back (negative Z) with grid sized steps
+   PageUp/ PageDown - Move Up (negative Y) / Down (positive Y) with grid sized steps
+- You can also rotate your selection on the XZ plane using , and .
+
+Version 1.344 - 7 jan 2017
+- Fixed error when mesh editing and disabling multiple brushes
+- Improved performance when modifying curves in free drawn shapes
+- Added CSGModelModifiedEventAttribute callback (request #157) 
+	that allows you to create a static method that is called when the model has been changed like this:
+	[CSGModelModifiedEvent]
+	static void OnCSGModelModified(CSGModel model, GameObject[] modifiedMeshes)
+	{
+	}
+- Added public static class CSGModelManager that has these methods (request #157):
+	
+	// rebuilds all the meshes for all the models in the current scene(s)
+	public static void ForceRebuild();		
+	
+	// ensures that all models are up to date and rebuild if changed.
+	public static void EnsureBuildFinished(); 
+	
+	// returns all the GameObjects for a model that contain MeshRenderers and/or MeshColliders
+	public static GameObject[] GetModelMeshes(CSGModel model); 
+	
+	// returns all the current models in the current scene(s)
+	public static CSGModel[] GetAllModel();
+
+	Both of these methods will call generate CSGModelModifiedEvents (see above) if anything has changed 
+	
+Version 1.343 - 3 jan 2017
+- All generators now use units which can be toggled between cm/mm/m/inches & feet
+- Added hemisphere option to sphere generator, makes it possible to create hemispheres (related to request #17)
+
+Version 1.342 - 30 dec 2016
+- Fixed remaining known smoothing issues (issue #153)
+- Broken and continuous curve handles now have different colors to make it easier to see 
+- Free drawing shape now has it's material continuously applied over it's surface, 
+	instead of having random material parameters for every polygon
+
+Version 1.341 - 29 dec 2016
+- Fixed that some tooltips where behind the tool window
+- Fixed some cases where smoothing would fail (issue #153)
+	(still one known case remaining where >2 brushes intersect on same edge)
+- Added support for imperial units (feet/inches) (requested in forum by Sea_Fog)
+- Added CreateCube method to BrushFactory API class
+- Added sphere generation (WIP) (related to request #17, mentioned in asset store comment)
+
+Version 1.340 - 19 dec 2016
+- Fixed curve smoothing in curved shape using multiple smoothing groups, which caused normal smoothing to look broken (issue #153)
+- Fixed new tooltips showing black text on black background when unity is using non-pro skin
+- Added new tooltips
+- Known issue "some tooltips are hidden behind tool windows"
+
+Version 1.339 - 18 dec 2016
+- Fixed normal smoothing not always smoothing over touching surfaces (issue #153)
+- Added new tooltip system, not everything is using it yet though.
+
+Version 1.338 - 15 dec 2016
+- Fixed error when closing a scene (issue #118)
+- To scale a polygon, just select the unity scaling tool (top left corner) and scale the polygon center point (issue #113)
+- Fixed undo-ing a mesh modification resulting in an invalid brush
+- Fixed "Brush geometry not generated after building scene" (issue #154)
+
+Version 1.337 - 13 dec 2016
+- Fixed deleting vertices in free-draw mode produces an error when working with curved surfaces (issue #152)
+- Generated brushes are now added to model which is drawn upon (issue #151)
+- When multiple brushes are selected, if you move a vertex all vertices belonging to other selected brushes that are on the same spot are also moved.
+
+Version 1.336 - 11 dec 2016
+- Fixed non rendered meshes (such as triggers) not ending up in build (issue #149)
+
+Version 1.335 - 8 dec 2016
+- Fixed performance issue when having in-scene tool window and lots of assets in project
+
+Version 1.334 - 8 dec 2016
+- Operation option "select on child" is renamed to "Handle as one object"
+- Made outlines a bit easier to see in clipping mode
+- Fixed clipping not resetting properly when dragging a new clipping plane on brush
+- If you drag a plane on a brush and no brushes are selected, 
+	the brush underneath the mouse is now automatically selected
+- In clipping mode, when mouse is not over a brush, it'll show a different point shape
+- In clipping mode, you can cycle through the clipping modes using TAB
+- prefabs now have setting to set up which direction it was created in, 
+	so that it's properly aligned when drag & dropping it onto a surface
+- Experimental support for polygon scaling by holding control-alt + drag the center point (issue #113)
+
+Version 1.333 - 6 dec 2016
+- Added hotkeys for flipping selection brushes over X Y and Z axis
+	Control-Shift-X flip selection over X axis
+	Control-Shift-Y flip selection over Y axis
+	Control-Shift-Z flip selection over Z axis
+- Cylinder settings are now stored
+- Fixed Cylinder shape fitting, which was wrong
+
+Version 1.332 - 5 dec 2016
+- Fixed rendering special surfaces in unselected scenes in editor when multiple scenes are loaded (issue #53)
+- Fixed dragging model from one scene to another does not rebuild the mesh(es) in inactive scenes (issue #73)
+- Implemented hotkeys for all edit modes (issue #102)
+	Alt-F1 for Object edit mode
+	Alt-F2 for Generate edit mode
+	Alt-F3 for Mesh edit mode
+	Alt-F4 for Clip edit mode
+	Alt-F5 for Surface edit mode
+- Added ability to export (convert) model to mesh (issue #38)
+
+Version 1.331 - 1 dec 2016
+- Fixed "When Reenabling a CSG model the model does not update" (issue #142)
+- Created curved surface are now automatically normal-smoothed (issue #115)
+
+Version 1.330 - 30 nov 2016
+- Improved curved shape support,
+	- now is initialized properly
+	- allows you to set vertices to be 'broken' (each side of vertex is part of a different curve)
+	- allows you to toggle vertices and edges to be straight, curved or broken by clicking on it multiple times
+ 
+Version 1.329 - 29 nov 2016
+- Lightmaps are now reset when meshes are modified, this avoids garbage lighting to show up while editing.
+  this makes it clearer that the lightmaps need to be rebuild (issues #93)
+- Prevent meshes being set when they're unchanged (this would force the lighting to be rebuild)
+- Implemented "Organize all files under one root folder" (issue #138), 
+  all files in "Editor Default Resources" directory have been moved to "Plugins\RealtimeCSG\Editor\Resources"
+- Added ability to toggle visibility with the hotkey Shift-H (issue #101)
+
+Version 1.328 - 28 nov 2016
+- Fixed "Realtime GI breaks when entering play mode" (issue #116)
+- Fixed "Can't selecting brushes after play mode" (issue #60)
+- Fixed "When moving an entire model the CSG sometimes doesn't update" (issue #108)
+- Improved "Grid Lines can't see on Models" (issue #133) / Partially "Improve grid colors" (issue #83)
+	made grid lines less transparent + showing more transparent (secondary) lines inside the model
+
+Version 1.327 - 27 nov 2016
+- Implemented "Ability to turn off the lower toolbar" (issue #114) 
+  / Implemented "Way to disable Realtime CSG" (issue #129)
+   control-F3 now enables/disables realtime-CSG
+- Fixed "Turning 'Do Not Render' back on still has the object hidden" (issue #104)
+
+Version 1.326 - 26 nov 2016
+- Fixed "Dimension arrows/lines are skewed" (issue #132)
+- FBX Export now defaults in Asset folder instead of in Project folder
+- FBX Export now fixes materials on export (issue #88)
+- Fixed "Area-selecting brushes always uses global bounds" (issue #128)
+- Fixed "'can use xx Tool in yy mode' can get it the way" (issue #103)
+- Fixed "Deleting brushes leaves floating invisible surfaces behind" (issue #122 / #72)
+- Implemented request "Splitting multiple objects should retain selection of all selected objects" (issue #69)
+- Improved "surface selection in surface mode" (issue #135) 
+	if you click on a selected surface without control/shift/alt etc. then 	it'll change the selection to just that surface
+
+Version 1.325 - 24 nov 2016
+- Added handles when turning edges into curved edges when creating a shape (WIP)
+
+Version 1.324 - 24 nov 2016
+- Fixed special surface rendering not working on Unity 5.4 and up (issue #131)
+
+Version 1.323 - 23 nov 2016
+- Fix for "Change the way height handle manipulation works" (issue #126)
+- Fix for "Invisible and discarded surfaces block GI" (issue #125)
+
+Version 1.321 / 1.322 - 22 nov 2016
+- Drag copy now ignores center points
+- Drag copy now only copies when there's an offset to avoid leaving a duplicate at the exact same position
+- Fix for "clone dragged objects aren't selected" (issue #124)
+- Fix for "Rotation mode mouse position dashed line appears in wrong position" (issue #127)
+- Fix for "Error when closing a scene" (issue #118)
+- Partial fix for "Change the way height handle manipulation works" (issue #126) - only shape generation
+
+Version 1.320
+- Fixed "Receive Shadows" checkbox is off by default + has no effect (issue #123)
+- Fixed "'Shadow only' model doesn't show shadow-only texture in editor" (issue #119)
+- Fixed "Dragging on extrusion arrow jumps extrusion point" (issue #121)
+
+Version 1.319
+- Fixed MissingComponentException on rigidbody when it doesn't exist when building (issue #94)
+
+Version 1.318
+- Cube/Cylinder generation now shows nicer bound measurements
+- Fixed "Releasing V key should finish shape, but doesn't" (issue #89)
+- Fixed "Do not zoom in when pressing ALT Bug" (issue #82)
+
+Version 1.317
+- X/Y/Z axis locking button are now red when inactive
+- object edit mode now shows bounds sizes more clearly
+- object edit mode now shows locked axi more clearly
+
+Version 1.316
+- Fixed bug where mesh was continuously generated
+- Fixed bug where duplicates of invisible meshes where generated
+- Fixed bug where meshes used for discarded and invisible surfaces would get colliders attached to them
+- Fixed some debug message being left in release (oops)
+- Improved naming of generated FBX meshes, copied tags from CSG model to imported FBX model (issue #91)
+- Fixed bug where invisible surface meshes could accidentally be added to build (issue #68)
+
+Version 1.315
+- Fixed 'SceneUtility' class conflicting with new SceneUtility class in Unity 5.5.x (issue #78)
+- Fixed tangent space rotation (issue #47)
+- Made surface selection more visible (issue #56 / issue #59)
+
+Version 1.314
+- Fixed 'Mesh collider needs to be readable' error on play (issue #62)
+- Fixed flipping brushes leaving mesh in bad state (issue #55)
+- Fixed dragging material on non-brushes working again (issue #50)
+- Fixed non CSG child objects disappearing when exporting to FBX (issue #45)
+
+Version 1.313
+- Fixed mesh not properly rebuild when edges where merged (issue #64)
+- Fixed "Setting the parent of a transform which resides in a prefab is disabled to prevent data corruption" error when dragging (issue #43)
+- Partially fixed dragging material on non-brushes working again (issue #50)
+
+Version 1.312
+- Fixed clip mode not removing second (hidden) brush when going back and forth between split and non-split mode (issue #48)
+
+Version 1.311
+- Fixed surface smoothing no longer smoothing (issue #40)
+
+Version 1.310
+- Partially fixed dragging material on non-brushes working again (issue #50)
+
+Version 1.309
+- Fixed split not working in clipping mode (issue #48)
+- Fixed scaling multiple objects in object edit mode, while unity's pivot mode is set to local (issue #28)
+- Fixed surfaces disappearing when clicking them after creating first shape due to ordering of model & brush creation (issue #42)
+- Fixed surfaces moving right after creating shape
+- Partially fixed surface smoothing no longer smoothing (issue #40)
+- Added warning when model is set to trigger, but collider is not set to convex (issue #31)
+
+Version 1.308
+- Fixed extruded shape not immediately being shown right after creation (issue #24, #25)
+- Fixed changing scene resetting scene representation twice, once delayed & only on C# side (issue #24, #25)
+- Fixed surface selection not selecting correct surface after welding edges (issue #30)
+- Fixed raycasting on brushes and surfaces, causing surface mode to not work
+- Default shape height (press enter directly after creating 2D shape) is now set to height of last shape that was created (request #36)
+- Fixed clicking through tool window of surface edit mode (issue #32)
+
+Version 1.307
+- Fixed dragging gameobjects under other gameobjects no longer working when they contain brushes
+- Improved performance when doing Undo (issue #29)
+
+Version 1.306
+- Fixed errors when going to surface mode after removing a polygon from a brush (bug #30)
+- Fixed selecting surfaces in surface mode was broken (bug #25)
+- Fixed surfaces/brushes always being selectable even when not rendered (bug #22)
+
+Version 1.305
+- Fixed handles being too large when too close to the camera
+- Fixed center handle in mesh edit mode having a way too large area
+- Fixed being able to select thin brushes more easily
+
+Version 1.304
+- Fixed multi-scene editing putting all meshes of all scenes into one scene (you might need to rebuild CSG in every scene seperately)
+
+Version 1.303
+- Fixed shape generation not scaling properly when model is scaled
+- Fixed model exporting to FBX/reverting exported FBX to model not flagging scene as dirty (making it impossible to save the scene unless you change something else)
+- Fixed cancelling export the model leaving the transformation of the model meshes modified
+- It's now possible to drag & drop materials on brushes in the hierarchy
+
+Version 1.302
+- Fixed length of direction arrows not being correct when model is scaled 
+- Improved polygon triangulation
+
+Version 1.301
+- Made it possible to resize extruded shapes in two directions
+- Made choosing subtractive/additive brushes more reliable for box/cylinder
+- Fixed broken edge sides text in free-draw
+- Fixed crash in polygon convex decomposition code
+
+Version 1.300
+- Fixed crash bug when dragging same prefab back into scene after deleting it
+- Added 'close' button to in scene tool helper, that opens the dockable tool editor window
+- Added support to quickly draw boxes
+- Model inspector
+	- now shows statistics (vertex-count, triangle-count etc) in inspector about the meshes it generated
+	- now allows the user to turn off generation of specific vertex channels
+
+Version 1.213
+- Fixed original outlines was not shown in clip-mode
+- Fixed clip-mode not removing secondary brush part when switching between split and non-split clip mode
+- Cylinder and free-draw mode now
+	- render transparent polygon for 2d shape
+	- revert to 2D vertex edit mode when height = 0
+	- show polygons being valid or invalid while creating shape (shape mode only)
+	- now possible to keep modifying the 2D shape even after extruding
+	
+Version 1.212 
+- Fixed camera issues in surface mode
+- Fixed several mesh mode issues 
+- Optimized surface line rendering
+- Optimized wireframe mode line rendering
+
+Version 1.211
+- Fixed situation where operation containing pass-through operation would act as if it's a pass-through operation itself
+- Fixed situation where valid shapes where flagged as being invalid
+- Fixed situation where invalid shapes would get the camera stuck
+
+Version 1.210
+- Created start of editor API (just one method right now)
+- Lengths of side messages no longer overlap arrows in object-mode
+- Object mode now has edge points for resizing bounds
+
+Version 1.209
+- Fixed grid in ortho not showing all lines
+- Done some work improving line and dot rendering speed in mesh, object and clip mode
+
+Version 1.208 
+- Fixed bug where every frame it would render an extra time, each time you created a new scene (grid would become less transparent every time)
+- Fixed outlines not always updated in Mesh mode
+- Fixed situation where clicking on surface would make surface invisible
+- Fixed cylinder material being up-side down when created
+
+Version 1.207
+- Made editing the shape work with Undo/redo
+- Made shape and cylinder creation work better with camera orbit
+- Both shape and cylinder creation now show sizes better
+
+Version 1.206 
+- Added default physics material to model, which is now the physics material that the colliders will use
+- Cylinder now has radius and height text box to manually set radius and height
+- Free-draw now has height text box to manually set height
+- Fixed starting to drag a brush in object mode while pressing control (which toggles snapping) does not move the brush
+- Fixed grid not showing all lines
+
+Version 1.205
+- Snapping is now ON by default when installing realtime-CSG, this caused some confusion.
+- Fixed issues with Unity 5.5
+- Fixed cylinder generating mode interpreting right mouse button as if it was left mouse button
+- Fixed mesh mode sometimes getting 'stuck' while editing
+
+Version 1.204 
+- Fixed control meshes becoming uneditable in certain situations, until reselected
+
+Version 1.203
+- Fixed not being able to move your brush in some situations
+- Fixed work grid set to ground plane in mesh and object mode, causing large instead of small movements when brush is far away from ground plane
+- Fixed snapping in mesh mode was incorrect when moving multiple brushes at once
+- Fixed camera gettings stuck issues in Clip mode
+- In clip mode you can now first create a clipping plane through the surface you draw the line on, and then (optionally) place the third point by clicking on another edge or surface
+
+Version 1.202
+
+- Fixed camera getting stuck issues in Mesh mode
+- Fixed pressing delete when extruding shape doesn't cancel shape creation
+- Fixed remembering "wireframe mode" for each sceneview
+
+Version 1.201
+
+- Fixed camera getting stuck issues in Object mode
+- Bounds now mirroring when resizing into a negative size
+- Now showing x/y/z in bounds in Object mode
+
+Version 1.200
+
+- Fixed incompatibility with 5.5
+- added support for reversed world, unreal style
+
+
+Version 1.102
+
+- Fixed finishing extrusion shows default cube mesh in edit mode until clicked again
+- Fixed camera getting stuck after extruding and doing an camera orbit rotation (alt-left click)
+
+Version 1.101
+
+- Fixed clicking outside of brush in mesh mode didn't always select other brush
+- Fixed brushes not always rendered in mesh mode
+- More than doubling of performance of CSG algorithm
+- Fixed Mac build
+
+Version 1.100
+
+- Added ability to export model to FBX and turn model into model w/ ability to switch back
+- When work grid is aligned with ground plane it's not shown to avoid confusion
+
+Version 1.005
+
+- Fixed invisible surfaces becoming colliders on play
+
+Version 1.004 
+
+- Fixed issue where mesh-mode would become unresponsive
+
+Version 1.003
+
+- Fixed creating invalid shape + rebuild (or undo) could make it possible to make inverted/wrong shapes in mesh mode
+- Fixed distance to points/edges (potentially) being used from wrong sceneviews, causing weird behaviour
+- Fixed duplicate or copy/paste not always seeming to select the new copy
+- Trigger is no longer assumed to always be invisible
+
+Version 1.002
+
+- Fixed trigger/collider having mesh-renderers on play
+- Fixed vertex selection marquee in mesh mode not always showing up
+- Fixed vertices not showing while trying to select with marquee in mesh mode
+- Fixed object marquee selection failing on large objects
+
+Version 1.001
+
+- Fixed brush drawing convex shapes
