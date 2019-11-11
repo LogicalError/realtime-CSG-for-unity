@@ -1,4 +1,4 @@
-﻿//#define SHOW_GENERATED_MESHES
+//#define SHOW_GENERATED_MESHES
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
@@ -958,7 +958,7 @@ namespace InternalRealtimeCSG
 
 		static StaticEditorFlags FilterStaticEditorFlags(StaticEditorFlags modelStaticFlags, RenderSurfaceType renderSurfaceType)
 		{
-            if (NeedMeshRenderer(renderSurfaceType))
+            if (!NeedMeshRenderer(renderSurfaceType))
 				return (StaticEditorFlags)0;
 
 			var meshStaticFlags = modelStaticFlags;
