@@ -19,7 +19,6 @@ namespace RealtimeCSG.Components
 
 			if (model.Version == 1.0f)
 			{
-#if !EVALUATION
 #if !PACKAGE_GENERATOR_ACTIVE
 				UnityEditor.UnwrapParam uvGenerationSettings;
 				UnityEditor.UnwrapParam.SetDefaults(out uvGenerationSettings);
@@ -27,7 +26,6 @@ namespace RealtimeCSG.Components
 				model.areaError		= uvGenerationSettings.areaError;
 				model.hardAngle		= uvGenerationSettings.hardAngle;
 				model.packMargin	= uvGenerationSettings.packMargin;
-#endif
 #endif
 				model.Version = 1.1f;
 			}

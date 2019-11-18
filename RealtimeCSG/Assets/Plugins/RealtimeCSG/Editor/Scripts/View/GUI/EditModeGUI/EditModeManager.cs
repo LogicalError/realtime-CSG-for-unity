@@ -10,7 +10,6 @@ using RealtimeCSG.Foundation;
 
 namespace RealtimeCSG
 {
-	[System.Reflection.Obfuscation(Exclude = true)]
 	internal sealed class EditModeManager : ScriptableObject
 	{
 		static EditModeManager instance = null;

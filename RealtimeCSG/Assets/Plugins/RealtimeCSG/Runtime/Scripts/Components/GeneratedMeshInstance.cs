@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
@@ -9,7 +9,7 @@ using RealtimeCSG.Foundation;
 
 namespace InternalRealtimeCSG
 {
-#if UNITY_EDITOR || EVALUATION
+#if UNITY_EDITOR
 	public struct MeshInstanceKey : IEqualityComparer<MeshInstanceKey>, IEquatable<MeshInstanceKey> 
 	{
 		public static MeshInstanceKey GenerateKey(GeneratedMeshDescription meshDescription)
@@ -112,7 +112,6 @@ namespace InternalRealtimeCSG
 
 	[DisallowMultipleComponent]
 	[ExecuteInEditMode]
-	[System.Reflection.Obfuscation(Exclude = true)]
 	public sealed class GeneratedMeshInstance : MonoBehaviour
 	{
 		[HideInInspector] public float Version = 1.00f;

@@ -15,7 +15,6 @@ namespace InternalRealtimeCSG
 	[ExecuteInEditMode]
 	[DisallowMultipleComponent]
 	[SelectionBase]
-	[System.Reflection.Obfuscation(Exclude = true)]
 	public sealed class CSGModelExported : MonoBehaviour
 	{
 		[HideInInspector] public float Version = 1.00f;

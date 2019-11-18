@@ -10,7 +10,6 @@ namespace InternalRealtimeCSG
 {
 	internal sealed partial class MeshInstanceManager
 	{
-#if !EVALUATION
 		public static void Export(CSGModel model, ExportType exportType, bool exportColliders)
 		{
 			string typeName;
@@ -405,6 +404,5 @@ namespace InternalRealtimeCSG
 				UnityEditor.Undo.DestroyObjectImmediate(exported.containedExportedModel);
 			}
 		}
-#endif
 	}
 }

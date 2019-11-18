@@ -8,12 +8,7 @@ namespace RealtimeCSG.Foundation
 	/// <summary>
 	/// This class holds functionality to create and modify <see cref="RealtimeCSG.Foundation.BrushMesh"/>es
 	/// </summary>
-#if !EVALUATION
-	public
-#else
-	internal
-#endif
-	sealed class BrushMeshUtility
+	public sealed class BrushMeshUtility
 	{
 		/// <summary>
 		/// Creates a cube <see cref="RealtimeCSG.Foundation.BrushMesh"/> with <paramref name="size"/> and <paramref name="layers"/> and optional <paramref name="surfaceFlags"/>

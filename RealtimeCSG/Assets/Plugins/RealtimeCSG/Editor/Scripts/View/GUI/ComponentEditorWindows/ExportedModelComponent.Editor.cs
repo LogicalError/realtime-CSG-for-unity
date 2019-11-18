@@ -6,10 +6,8 @@ using UnityEngine.SceneManagement;
 
 namespace RealtimeCSG
 {
-#if !EVALUATION
 	[CustomEditor(typeof(CSGModelExported))]
 	[CanEditMultipleObjects]
-	[System.Reflection.Obfuscation(Exclude = true)]
 	internal sealed class ExportedModelComponentEditor : Editor
 	{
 		public override void OnInspectorGUI()
@@ -46,13 +44,13 @@ namespace RealtimeCSG
 								exportedModel.containedModel.transform.SetSiblingIndex(exportedModel.transform.GetSiblingIndex());
 								exportedModel.containedModel.gameObject.SetActive(true);
 								exportedModel.containedModel.gameObject.hideFlags = HideFlags.None;
-								EditorUtility.SetDirty(exportedModel.containedModel);
+                                EditorUtility.SetDirty(exportedModel.containedModel);
 								Undo.DestroyObjectImmediate(exportedModel);
 							} else
 							{
 								MeshInstanceManager.ReverseExport(exportedModel);
 								selection.Add(exportedModel.gameObject);
-								EditorUtility.SetDirty(exportedModel);
+                                EditorUtility.SetDirty(exportedModel);
 								Undo.DestroyObjectImmediate(exportedModel);
 							}
 						}
@@ -94,5 +92,4 @@ namespace RealtimeCSG
 			GUILayout.EndVertical();
 		}
 	}
-#endif
 }

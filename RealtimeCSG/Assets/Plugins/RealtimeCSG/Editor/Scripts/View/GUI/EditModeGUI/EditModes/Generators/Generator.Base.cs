@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -518,13 +518,6 @@ namespace RealtimeCSG
 
 				//DebugEditorWindow.PrintDebugInfo();
 
-#if EVALUATION
-				if (NativeMethodBindings.BrushesAvailable() < brushObjectCount)
-				{
-					Debug.Log("Evaluation brush limit hit ("+NativeMethodBindings.BrushesAvailable()+" available, "+brushObjectCount+" required), for the ability to create more brushes please purchase Realtime-CSG");
-					return false;
-				}
-#endif
 				if (lastUsedModelTransform == null)
 				{
 					parentGameObject = OperationsUtility.CreateGameObject(lastUsedModelTransform, "Model", true);

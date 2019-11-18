@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR || EVALUATION
+﻿#if UNITY_EDITOR
 using RealtimeCSG;
 using RealtimeCSG.Components;
 

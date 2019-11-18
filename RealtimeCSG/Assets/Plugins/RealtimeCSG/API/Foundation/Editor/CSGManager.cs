@@ -3,12 +3,7 @@
 namespace RealtimeCSG.Foundation
 {
 	/// <summary>This class is manager class for all <see cref="RealtimeCSG.Foundation.CSGTreeNode"/>s.</summary>	
-#if !EVALUATION
-	public 
-#else
-	internal
-#endif
-	sealed partial class CSGManager
+	public sealed partial class CSGManager
 	{
 		/// <summary>Destroys all <see cref="RealtimeCSG.Foundation.CSGTreeNode"/>s and all <see cref="RealtimeCSG.Foundation.BrushMesh"/>es.</summary>
 		public static void	Clear	()	{ ClearAllNodes(); }
@@ -58,13 +53,10 @@ namespace RealtimeCSG.Foundation
 			get
 			{
 				return
-#if EVALUATION
-					"EVALUATION " +
-#endif
 					string.Format("v {0}{1}{2}",
 						Versioning.PluginVersion.Replace('_','.'),
 						HasBeenCompiledInDebugMode() ? " (C++ DEBUG)" : string.Empty,
-#if EVALUATION && DEBUG
+#if DEBUG
 						" (C# DEBUG)"
 #else
 						string.Empty

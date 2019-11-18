@@ -14,7 +14,6 @@ namespace RealtimeCSG
 	{
 		const string RealTimeCSGDefine			= "RealtimeCSG";
 
-#if !EVALUATION
         static bool IsObsolete(Enum value)
         {
             var fi = value.GetType().GetField(value.ToString());
@@ -22,11 +21,9 @@ namespace RealtimeCSG
                 fi.GetCustomAttributes(typeof(ObsoleteAttribute), false);
             return (attributes != null && attributes.Length > 0);
         }
-#endif
 
         public static void UpdateUnityDefines()
 		{
-#if !EVALUATION
             var requiredDefines = new List<string>();
 
 			requiredDefines.Add(RealTimeCSGDefine);
@@ -118,7 +115,6 @@ namespace RealtimeCSG
 				if (newSymbolString != symbol_string)
 					PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, newSymbolString);
 			}
-#endif
 		}
 	}
 }

@@ -36,12 +36,7 @@ namespace RealtimeCSG.Foundation
 	/// <seealso cref="RealtimeCSG.Foundation.CSGTreeBranch"/>
 	/// <seealso cref="RealtimeCSG.Foundation.CSGTreeBrush"/>
 	[StructLayout(LayoutKind.Sequential, Pack = 4)]
-#if !EVALUATION
-	public 
-#else
-	internal
-#endif
-	partial struct CSGTreeNode 
+	public partial struct CSGTreeNode 
 	{
 		#region Node
 		/// <value>Returns if the current <see cref="RealtimeCSG.Foundation.CSGTreeNode"/> is valid or not.</value>

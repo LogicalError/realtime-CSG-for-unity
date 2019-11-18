@@ -626,11 +626,7 @@ namespace RealtimeCSG
 
 		static GUIContent IconContent(string name)
 		{
-#if EVALUATION
-			var path = "Assets/Plugins/RealtimeCSG-Evaluation/Editor/Resources/Icons/" + name + ".png";
-#else
 			var path = "Assets/Plugins/RealtimeCSG/Editor/Resources/Icons/" + name + ".png";
-#endif
 			var image = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
             Debug.Assert(image, "Could not find image at " + path);
 			return new GUIContent(image);

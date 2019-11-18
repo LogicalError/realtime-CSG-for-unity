@@ -47,9 +47,6 @@ namespace RealtimeCSG
 					GUILayout.EndHorizontal();
 					TooltipUtility.SetToolTip(HeightTooltip);
 				}
-#if EVALUATION
-				EditorGUI.BeginDisabledGroup(true);
-#endif
 				{
 					GUILayout.BeginHorizontal(CSG_GUIStyleUtility.ContentEmpty);
 					{
@@ -91,9 +88,6 @@ namespace RealtimeCSG
 					TooltipUtility.SetToolTip(EdgeTypeTooltip);
 				}
 				EditorGUILayout.Space();
-#if EVALUATION
-				EditorGUI.EndDisabledGroup();
-#endif
 
 				EditorGUI.BeginDisabledGroup(!generator.HaveSelectedEdges);
 				{

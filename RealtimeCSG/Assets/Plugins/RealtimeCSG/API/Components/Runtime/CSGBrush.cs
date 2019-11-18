@@ -16,7 +16,7 @@ namespace RealtimeCSG.Components
 	/// <summary>Holds a CSG tree brush</summary>
 #if UNITY_EDITOR
 	[AddComponentMenu("CSG/Brush")]
-	[ExecuteInEditMode, System.Reflection.Obfuscation(Exclude = true)]
+	[ExecuteInEditMode]
 #endif
 	public sealed partial class CSGBrush : CSGNode
 	{

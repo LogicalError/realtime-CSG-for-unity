@@ -1,4 +1,4 @@
-﻿using InternalRealtimeCSG;
+using InternalRealtimeCSG;
 using RealtimeCSG.Foundation;
 using System.Linq;
 using UnityEngine;
@@ -7,12 +7,7 @@ namespace RealtimeCSG.Legacy
 {
 	/// <summary>Specifies if a matrix, used to calculate uv coordinates with, is in plane or world space</summary>
 	/// <remarks><note>This code is legacy and will be removed eventually.</note></remarks>
-#if !EVALUATION
-	public 
-#else
-	internal
-#endif
-	enum TextureMatrixSpace
+	public enum TextureMatrixSpace
 	{
 		/// <summary>Texture matrix is in world space</summary>
 		WorldSpace,
@@ -50,7 +45,7 @@ namespace RealtimeCSG.Legacy
 		/// <returns>A new <see cref="RealtimeCSG.Foundation.SurfaceLayers"/></returns>
 		public static SurfaceLayers CreateSurfaceLayer(TexGen texGen, TexGenFlags texGenFlags)
 		{
-			SurfaceLayers layers;
+			SurfaceLayers layers; 
 
 			var renderable		= !((texGenFlags & TexGenFlags.NoRender        ) == TexGenFlags.NoRender        );
 			var receiveShadows	= !((texGenFlags & TexGenFlags.NoReceiveShadows) == TexGenFlags.NoReceiveShadows);

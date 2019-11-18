@@ -2,7 +2,6 @@
 using UnityEditor;
 using UnityEngine;
 
-[System.Reflection.Obfuscation(Exclude = true)]
 public class EditModeToolWindowSceneGUI : EditorWindow
 {
 	private const string WindowTitle = "Realtime-CSG";

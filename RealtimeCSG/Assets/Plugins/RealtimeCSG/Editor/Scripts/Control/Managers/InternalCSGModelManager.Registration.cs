@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
@@ -493,9 +493,6 @@ namespace RealtimeCSG
 
 			if (!External.GenerateBrush(brush.GetInstanceID(), out brush.brushNodeID))
 			{
-#if EVALUATION
-				if (NativeMethodBindings.BrushesAvailable() > 0)
-#endif
 				Debug.LogError("Failed to generate ID for brush", brush);
 				return;
 			}

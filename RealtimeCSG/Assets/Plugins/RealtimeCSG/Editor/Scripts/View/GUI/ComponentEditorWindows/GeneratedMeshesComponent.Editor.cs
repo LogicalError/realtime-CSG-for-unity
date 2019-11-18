@@ -6,7 +6,6 @@ using InternalRealtimeCSG;
 namespace RealtimeCSG
 {
 	[CustomEditor(typeof(GeneratedMeshes))]
-	[System.Reflection.Obfuscation(Exclude = true)]
 	internal sealed class GeneratedMeshesComponentEditor : Editor
 	{
 		public override void OnInspectorGUI()

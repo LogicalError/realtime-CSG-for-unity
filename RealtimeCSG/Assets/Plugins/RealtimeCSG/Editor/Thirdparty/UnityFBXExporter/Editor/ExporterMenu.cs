@@ -31,7 +31,6 @@ using UnityEditor;
 
 namespace UnityFBXExporter
 {
-	[System.Reflection.Obfuscation(Exclude = true)]
 	public sealed class ExporterMenu : Editor 
 	{
 

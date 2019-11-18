@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -265,14 +265,6 @@ namespace RealtimeCSG
 			if (polygons == null || polygons.Length == 0)
 				return false;
 
-#if EVALUATION
-			if (NativeMethodBindings.BrushesAvailable() < polygons.Length)
-			{
-				Debug.Log("Evaluation brush limit hit (" + NativeMethodBindings.BrushesAvailable() + " available, " + polygons.Length + " required), for the ability to create more brushes please purchase Realtime - CSG");
-				return false;
-			}
-#endif
-			
 			bool failures = false;
 			bool modifiedHierarchy = false;
 			if (HaveExtrusion)
@@ -338,11 +330,11 @@ namespace RealtimeCSG
 							}
 
 							brush.ControlMesh.SetDirty();
-							if (registerUndo)
-								EditorUtility.SetDirty(brush);
+                            if (registerUndo)
+                                EditorUtility.SetDirty(brush);
+                            }
 						}
 					}
-				}
 			} else
 			{
 				if (generatedGameObjects != null)
@@ -360,10 +352,10 @@ namespace RealtimeCSG
 							var brush = generatedBrushes[brushIndex];
 							brushIndex++;
 							brush.ControlMesh.SetDirty();
-							if (registerUndo)
-								EditorUtility.SetDirty(brush);
+                            if (registerUndo)
+                                EditorUtility.SetDirty(brush);
+                            }
 						}
-					}
 					HideGenerateBrushes();
 				}
 			}
@@ -371,8 +363,8 @@ namespace RealtimeCSG
 			try
 			{
 				InternalCSGModelManager.skipCheckForChanges = true;
-				if (registerUndo)
-					EditorUtility.SetDirty(this);
+                if (registerUndo)
+                    EditorUtility.SetDirty(this);
 				//CSGModelManager.External.SetDirty(parentModel.modelNodeID); 
 				InternalCSGModelManager.CheckForChanges(forceHierarchyUpdate: modifiedHierarchy);
 			}

@@ -23,7 +23,7 @@ namespace InternalRealtimeCSG
 	}
 
 #if UNITY_EDITOR
-	[Serializable, System.Reflection.Obfuscation(Exclude = true)]
+	[Serializable]
 	public sealed class HelperSurfaceDescription
 	{
 		public Mesh						SharedMesh;
@@ -54,7 +54,6 @@ namespace InternalRealtimeCSG
 	[DisallowMultipleComponent]
 	[ExecuteInEditMode]
 	[SelectionBase]
-	[System.Reflection.Obfuscation(Exclude = true)]
 	public sealed class GeneratedMeshes : MonoBehaviour
 #if UNITY_EDITOR
 		, ISerializationCallbackReceiver

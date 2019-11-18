@@ -7,12 +7,7 @@ using System.Linq;
 
 namespace RealtimeCSG.Legacy
 {
-#if !EVALUATION
-    public 
-#else
-    internal
-#endif
-    sealed partial class BrushFactory
+    public sealed partial class BrushFactory
     {
 #if UNITY_EDITOR
         #region CreateBrush (internal)
@@ -500,10 +495,7 @@ namespace RealtimeCSG.Legacy
                 return false;
 
             if (!ControlMeshUtility.Validate(controlMesh, shape))
-            {
-                //Debug.LogError("Generated mesh is not valid");
                 return false;
-            }
 
             if (textureMatrices != null)
             {

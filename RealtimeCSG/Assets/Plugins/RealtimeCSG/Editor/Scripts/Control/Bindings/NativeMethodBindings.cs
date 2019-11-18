@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 using System;
@@ -43,14 +43,6 @@ namespace RealtimeCSG
 
 			public CSGSurfaceIntersection intersection;
 		};
-
-#if EVALUATION
-		[DllImport(NativePluginName, CallingConvention = CallingConvention.Cdecl)]
-		internal static extern int GetBrushLimit();
-
-		[DllImport(NativePluginName, CallingConvention=CallingConvention.Cdecl)]
-		internal static extern int BrushesAvailable();
-#endif
 
 		#region Functionality to allow C# methods to be called from C++
 		public delegate float   GetFloatAction();

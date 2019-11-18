@@ -12,7 +12,7 @@ namespace RealtimeCSG.Components
 	/// <remarks>The CSG branch that defines a CSGOperation is defined by its child [UnityEngine.GameObject](https://docs.unity3d.com/ScriptReference/GameObject.html)s.</remarks>
 #if UNITY_EDITOR
 	[AddComponentMenu("CSG/Operation")]
-    [ExecuteInEditMode, DisallowMultipleComponent, System.Reflection.Obfuscation(Exclude = true)]
+    [ExecuteInEditMode, DisallowMultipleComponent]
 #endif
 	public sealed class CSGOperation : CSGNode
 	{

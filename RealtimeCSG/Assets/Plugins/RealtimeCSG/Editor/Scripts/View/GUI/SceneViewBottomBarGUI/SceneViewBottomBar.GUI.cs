@@ -188,7 +188,6 @@ namespace RealtimeCSG
                         if (GUI.changed)
                         {
                             snapMode = newValue ? SnapMode.GridSnapping : SnapMode.RelativeSnapping;
-                            //Debug.Log($"SnapMode.GridSnapping {snapMode}");
                         }
                         //(x:97.00, y:0.00, width:27.00, height:18.00)
                         TooltipUtility.SetToolTip(gridSnapModeTooltip, currentRect);
@@ -200,7 +199,6 @@ namespace RealtimeCSG
                         if (GUI.changed)
                         {
                             snapMode = newValue ? SnapMode.RelativeSnapping : SnapMode.None;
-                            //Debug.Log($"SnapMode.RelativeSnapping {snapMode}");
                         }
                         //(x:97.00, y:0.00, width:27.00, height:18.00)
                         TooltipUtility.SetToolTip(relativeSnapModeTooltip, currentRect);
@@ -213,7 +211,6 @@ namespace RealtimeCSG
                         if (GUI.changed)
                         {
                             snapMode = newValue ? SnapMode.GridSnapping : SnapMode.None;
-                            //Debug.Log($"SnapMode.None {snapMode}");
                         }
                         //(x:97.00, y:0.00, width:27.00, height:18.00)
                         TooltipUtility.SetToolTip(noSnappingModeTooltip, currentRect);

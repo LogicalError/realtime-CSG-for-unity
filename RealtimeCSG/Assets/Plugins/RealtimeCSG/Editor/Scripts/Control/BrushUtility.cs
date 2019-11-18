@@ -28,12 +28,7 @@ namespace InternalRealtimeCSG
 		public TangentCurve2D[] Tangents;
 	}
 
-#if !EVALUATION
-	public
-#else
-	internal
-#endif
-	static class BrushUtility
+	public static class BrushUtility
 	{
 		public static void SetPivotToLocalCenter(CSGBrush brush)
 		{

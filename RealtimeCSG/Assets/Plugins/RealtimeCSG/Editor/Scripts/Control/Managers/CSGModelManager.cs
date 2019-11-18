@@ -5,12 +5,7 @@ using RealtimeCSG.Components;
 
 namespace RealtimeCSG
 {
-#if !EVALUATION
-	public 
-#else
-	internal
-#endif
-	static class CSGModelManager
+	public static class CSGModelManager
 	{
 		public static void ForceRebuild()
 		{
@@ -26,7 +21,7 @@ namespace RealtimeCSG
 			InternalCSGModelManager.UpdateMeshes(forceUpdate: true);
 		}
 
-		public static void BuildLightmapUvs(bool force = false)
+        public static void BuildLightmapUvs(bool force = false)
 		{
 			for (int m = 0; m < InternalCSGModelManager.Models.Length; m++)
 			{

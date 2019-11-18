@@ -41,7 +41,7 @@ namespace RealtimeCSG.Components
 	/// <remarks>The CSG tree that defines a model is defined by its child [UnityEngine.GameObject](https://docs.unity3d.com/ScriptReference/GameObject.html)s.</remarks>
 #if UNITY_EDITOR
 	[AddComponentMenu("CSG/Model")]
-	[DisallowMultipleComponent, ExecuteInEditMode, System.Reflection.Obfuscation(Exclude = true)]
+	[DisallowMultipleComponent, ExecuteInEditMode]
 #endif
 	public sealed class CSGModel : CSGNode
 	{
@@ -108,8 +108,8 @@ namespace RealtimeCSG.Components
 		
 		#region Editor Settings
         #if UNITY_EDITOR
-
-		public bool             ShowGeneratedMeshes     = false;
+        
+        public bool             ShowGeneratedMeshes     = false;
 		public PhysicMaterial   DefaultPhysicsMaterial  = null;
 
         #region Export settings
@@ -168,7 +168,7 @@ namespace RealtimeCSG.Components
 		#endregion
 
 #if UNITY_EDITOR
-		public void EnsureInitialized()				{ CSGSceneManagerRedirector.Interface.EnsureInitialized(this); Debug.Log(DefaultSettings); }
+		public void EnsureInitialized()				{ CSGSceneManagerRedirector.Interface.EnsureInitialized(this); }
 #endif
 	}
 }

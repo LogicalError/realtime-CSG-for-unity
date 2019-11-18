@@ -3,7 +3,6 @@ using UnityEngine;
 
 [CustomEditor(typeof(RealtimeCSG.Components.CSGNode), true)]
 [CanEditMultipleObjects]
-[System.Reflection.Obfuscation(Exclude = true)]
 public class EditModeToolWindowEditor : Editor
 {
 	public bool HasFrameBounds()			{ return RealtimeCSG.BoundsUtilities.HasFrameBounds(RealtimeCSG.EditModeManager.FilteredSelection); }		

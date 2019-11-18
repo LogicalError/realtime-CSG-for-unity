@@ -193,12 +193,6 @@ namespace RealtimeCSG
 
 		public static GameObject CreateBrush(ControlMesh controlMesh, Shape shape, Transform parent, string name, bool worldPositionStays)
 		{
-#if EVALUATION
-			if (NativeMethodBindings.BrushesAvailable() <= 0)
-			{
-				return null;
-			}
-#endif
 			var gameObject = CreateGameObject(parent, name, worldPositionStays);
 			var brush = gameObject.AddComponent<CSGBrush>();
 			brush.ControlMesh = controlMesh;
@@ -212,12 +206,6 @@ namespace RealtimeCSG
 		[UnityEditor.MenuItem("GameObject/Realtime-CSG/Brush", false, 31)]
 		public static CSGBrush CreateBrushInstanceInScene(MenuCommand command)
         {
-#if EVALUATION
-			if (NativeMethodBindings.BrushesAvailable() <= 0)
-			{
-				return null;
-			}
-#endif
             var parent = GetTransformForMenu(command);
 
             var lastUsedModelTransform = !SelectionUtility.LastUsedModel ? null : SelectionUtility.LastUsedModel.transform;

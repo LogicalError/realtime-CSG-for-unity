@@ -430,11 +430,7 @@ namespace RealtimeCSG
                                 {
                                     if (EditModeCommonGUI.IndentableButton(ExportToButtonLabel) && ExportType.HasValue)
                                     {
-#if !EVALUATION
                                         MeshInstanceManager.Export(models[0], ExportType.Value, ExportColliders ?? true);
-#else
-                                        Debug.LogWarning("Export is disabled in evaluation version");
-#endif
                                     }
                                 }
                                 EditorGUI.EndDisabledGroup();

@@ -27,7 +27,7 @@ namespace RealtimeCSG.Components
 
 	/// <summary>Parent class of <see cref="CSGBrush"/>/<see cref="CSGOperation"/>/<see cref="CSGModel"/></summary>
 #if UNITY_EDITOR
-	[DisallowMultipleComponent, System.Reflection.Obfuscation(Exclude = true)]
+	[DisallowMultipleComponent]
 #endif
 	public abstract class CSGNode : MonoBehaviour
 	{

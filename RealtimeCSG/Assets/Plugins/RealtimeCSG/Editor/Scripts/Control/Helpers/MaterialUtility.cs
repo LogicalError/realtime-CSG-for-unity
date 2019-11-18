@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -93,12 +93,7 @@ namespace RealtimeCSG
 			};
 			if (textureName != null)
 			{
-				string filename;
-#if EVALUATION
-				filename = "Assets/Plugins/RealtimeCSG-Evaluation/Editor/Resources/Textures/" + textureName + ".png";
-#else
-				filename = "Assets/Plugins/RealtimeCSG/Editor/Resources/Textures/" + textureName + ".png";
-#endif
+				string filename = "Assets/Plugins/RealtimeCSG/Editor/Resources/Textures/" + textureName + ".png";
 				material.mainTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(filename);
 				if (!material.mainTexture)
 					Debug.LogWarning("Could not find internal texture: " + filename);
@@ -148,13 +143,8 @@ namespace RealtimeCSG
 		}
 
 		
-#if EVALUATION
-		const string DefaultMaterialPath = "Assets/Plugins/RealtimeCSG-EVALUATION/Runtime/Materials/";
-		const string DefaultTexturePath = "Assets/Plugins/RealtimeCSG-EVALUATION/Runtime/Textures/";
-#else
 		const string DefaultMaterialPath = "Assets/Plugins/RealtimeCSG/Runtime/Materials/";
 		const string DefaultTexturePath = "Assets/Plugins/RealtimeCSG/Runtime/Textures/";
-#endif
 		
 		internal static void CreateRenderPipelineVersionOfDefaultMaterial(Material defaultMaterial, string materialName)
 		{

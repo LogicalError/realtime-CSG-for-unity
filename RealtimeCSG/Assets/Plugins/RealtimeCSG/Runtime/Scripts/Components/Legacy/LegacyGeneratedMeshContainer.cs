@@ -7,7 +7,6 @@ namespace InternalRealtimeCSG
 {
 	[DisallowMultipleComponent]
 	[ExecuteInEditMode]
-	[System.Reflection.Obfuscation(Exclude = true)]
 	public sealed class LegacyGeneratedMeshContainer : MonoBehaviour
 	{
 		void Awake()

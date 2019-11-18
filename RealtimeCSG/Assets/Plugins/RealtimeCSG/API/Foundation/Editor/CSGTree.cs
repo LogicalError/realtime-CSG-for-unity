@@ -13,12 +13,7 @@ namespace RealtimeCSG.Foundation
 	/// <seealso cref="RealtimeCSG.Foundation.CSGTreeBranch"/>
 	/// <seealso cref="RealtimeCSG.Foundation.CSGTreeBrush"/>
 	[StructLayout(LayoutKind.Sequential, Pack = 4)]	
-#if !EVALUATION
-	public 
-#else
-	internal
-#endif
-	partial struct CSGTree
+	public partial struct CSGTree
 	{
 		#region Create
 		/// <summary>Generates a tree on the native side and returns a <see cref="RealtimeCSG.Foundation.CSGTree"/> struct that contains a reference to it.</summary>
