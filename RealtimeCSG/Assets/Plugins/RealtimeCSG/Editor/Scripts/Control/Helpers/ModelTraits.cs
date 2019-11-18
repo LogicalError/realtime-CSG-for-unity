@@ -5,11 +5,45 @@ using RealtimeCSG.Components;
 namespace RealtimeCSG
 {
 	internal static class ModelTraits
-	{
-		public static bool WillModelRender(CSGModel model)
-		{
+    {
+
+        public static bool IsModelEditable(CSGModel model)
+        {
+            if (!model)
+                return false;
+
+#if UNITY_2018_3_OR_NEWER && UNITY_EDITOR
+            var currentPrefabStage = UnityEditor.Experimental.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage();
+            if (currentPrefabStage != null)
+            {
+                var prefabRoot = currentPrefabStage.prefabContentsRoot;
+                if (prefabRoot.scene != model.gameObject.scene)
+                    return false;
+            }
+            var parent = CSGPrefabUtility.GetOutermostPrefabInstanceRoot(model.gameObject);
+            if (parent)
+                return false;
+#endif
+            return model.isActiveAndEnabled;
+        }
+
+        public static bool IsModelSelectable(CSGModel model)
+        {
+            if (!model || !model.isActiveAndEnabled)
+                return false;
+            if (((1 << model.gameObject.layer) & Tools.visibleLayers) == 0)
+                return false;
+            return true;
+        }
+
+        public static bool WillModelRender(CSGModel model)
+        {
+            // Is our model valid ...?
+            if (!IsModelEditable(model))
+                return false;
+
 #if UNITY_2018_3_OR_NEWER
-			var currentPrefabStage = UnityEditor.Experimental.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage();
+            var currentPrefabStage = UnityEditor.Experimental.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage();
 			if (currentPrefabStage != null)
 			{
 				var prefabRoot = currentPrefabStage.prefabContentsRoot;
@@ -17,10 +51,6 @@ namespace RealtimeCSG
 					return false;
 			}
 #endif
-			// Is our model valid ...?
-			if (!model || !model.isActiveAndEnabled)
-				return false;
-
 			// Does our model have a meshRenderer?
 			if (model.IsRenderable)
 			{
@@ -68,8 +98,11 @@ namespace RealtimeCSG
 		}
 
 		public static bool NeedsRigidBody(CSGModel model)
-		{
-			var collidable			= (model.Settings & ModelSettingsFlags.NoCollider) != ModelSettingsFlags.NoCollider;
+        {
+            if (!IsModelEditable(model))
+                return false;
+
+            var collidable			= (model.Settings & ModelSettingsFlags.NoCollider) != ModelSettingsFlags.NoCollider;
 			var isTrigger			= collidable && (model.Settings & ModelSettingsFlags.IsTrigger) == ModelSettingsFlags.IsTrigger;
 			var ownerStaticFlags	= GameObjectUtility.GetStaticEditorFlags(model.gameObject);
 			var batchingstatic		= (ownerStaticFlags & StaticEditorFlags.BatchingStatic) == StaticEditorFlags.BatchingStatic;
@@ -78,8 +111,11 @@ namespace RealtimeCSG
 		}
 
 		public static bool NeedsStaticRigidBody(CSGModel model)
-		{
-			var ownerStaticFlags = GameObjectUtility.GetStaticEditorFlags(model.gameObject);
+        {
+            if (!IsModelEditable(model))
+                return false;
+
+            var ownerStaticFlags = GameObjectUtility.GetStaticEditorFlags(model.gameObject);
 			var batchingstatic = (ownerStaticFlags & StaticEditorFlags.BatchingStatic) == StaticEditorFlags.BatchingStatic;
 			return batchingstatic;
 		}

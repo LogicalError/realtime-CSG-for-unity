@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -6,7 +6,7 @@ using InternalRealtimeCSG;
 
 namespace RealtimeCSG
 {
-	public static class MaterialUtility
+    public static class MaterialUtility
 	{
 		internal const string ShaderNameRoot						= "Hidden/CSG/internal/";
 		internal const string SpecialSurfaceShaderName				= "specialSurface";
@@ -272,9 +272,16 @@ namespace RealtimeCSG
 			
 			return AssetDatabase.LoadAssetAtPath<Material>(materialFilename);
 		}
-		
 
-		private static Material _defaultMaterial;
+
+        internal static PhysicMaterial GetRuntimePhysicMaterial(string materialName)
+        {
+            var defaultFilename = string.Format("{0}{1}.physicMaterial", DefaultMaterialPath, materialName);
+            return AssetDatabase.LoadAssetAtPath<PhysicMaterial>(defaultFilename);
+        }
+
+
+        private static Material _defaultMaterial;
 		public static Material DefaultMaterial
 		{
 			get
@@ -297,10 +304,24 @@ namespace RealtimeCSG
 				}
 				return _defaultMaterial;
 			}
-		}			
+		}
 
-
-		private static readonly Dictionary<Color,Material> ColorMaterials = new Dictionary<Color, Material>();
+        private static PhysicMaterial _defaultPhysicsMaterial;
+        public static PhysicMaterial DefaultPhysicsMaterial
+        {
+            get
+            {
+                if (!_defaultPhysicsMaterial)
+                {
+                    _defaultPhysicsMaterial = GetRuntimePhysicMaterial("Default");
+                    if (!_defaultPhysicsMaterial)
+                        Debug.LogError("Default physics material is missing");
+                }
+                return _defaultPhysicsMaterial;
+            }
+        }
+         
+        private static readonly Dictionary<Color,Material> ColorMaterials = new Dictionary<Color, Material>();
 		internal static Material GetColorMaterial(Color color)
 		{
 			Material material;

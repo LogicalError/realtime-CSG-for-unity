@@ -390,8 +390,7 @@ namespace RealtimeCSG
 						continue;
 
 					var childModel = brush.ChildData.Model;
-					if (childModel &&
-						childModel.isActiveAndEnabled)
+                    if (ModelTraits.IsModelEditable(childModel))
 						SelectionUtility.LastUsedModel = childModel;
 					break;
 				}
@@ -406,8 +405,7 @@ namespace RealtimeCSG
 					break;
 				}
 				var model = node as CSGModel;
-				if (model &&
-					model.isActiveAndEnabled)
+                if (ModelTraits.IsModelEditable(model))
 				{
 					SelectionUtility.LastUsedModel = model;
 					break;

@@ -55,21 +55,24 @@ namespace InternalRealtimeCSG
 			// can't use Undo variant here because it'll mark scenes as dirty on load ..
 		}
 
-		public static void Destroy(GameObject gameObject)
+        const string UnableToDelete = "<unable to delete>";
+
+        public static void Destroy(GameObject gameObject)
 		{
 			if (!gameObject)
 				return;
 
-			// Cannot destroy gameObjects when certain hideflags are set
-			if (!TryDestroy(gameObject))
-			{
+            // Cannot destroy gameObjects when certain hideflags are set
+            if (!TryDestroy(gameObject))
+			{ 
 				// Work-around for nested prefab instance issues ..
-				if (gameObject.activeSelf)
+				if (gameObject.activeSelf &&
+                    gameObject.name != UnableToDelete)
 				{
 					gameObject.hideFlags = HideFlags.DontSaveInBuild;
 					gameObject.SetActive(false);
 					SanitizeGameObject(gameObject);
-					gameObject.name = "<unable to delete>";
+					gameObject.name = UnableToDelete;
 				}
 			}
 		}
@@ -220,7 +223,7 @@ namespace InternalRealtimeCSG
 			for (var i = 0; i < models.Length; i++)
 			{
 				var model = models[i];
-				if (!model)
+                if (!ModelTraits.IsModelEditable(model))
 					continue;
 
 				var meshContainer = model.generatedMeshes;
@@ -389,9 +392,9 @@ namespace InternalRealtimeCSG
 		}
 
 		internal static bool ValidateModelNow(CSGModel model, bool checkChildren = false)
-		{
-			if (!model)
-				return false;
+        {
+            if (!ModelTraits.IsModelEditable(model))
+                return false;
 
 			if (EditorApplication.isPlayingOrWillChangePlaymode)
 				return true;
@@ -402,8 +405,7 @@ namespace InternalRealtimeCSG
 				return true;
 
 			EnsureOneValidGeneratedMeshesComponent(model);
-
-			model.forceUpdate = true;
+            //model.forceUpdate = true; // TODO: this causes issues where models are constantly force updated
 			return true;
 		}
 
@@ -467,26 +469,19 @@ namespace InternalRealtimeCSG
 			var camera			= sceneView.camera;			
 			var showWireframe	= RealtimeCSG.CSGSettings.IsWireframeShown(sceneView);
 				
-			var visibleLayers	= Tools.visibleLayers;
 			var models			= InternalCSGModelManager.Models;
 			for (var i = 0; i < models.Length; i++)
 			{
 				var model = models[i];
-				if (!model)
-					continue;
-
-				if (((1 << model.gameObject.layer) & visibleLayers) == 0)
-					continue;
-
-				if (!model.generatedMeshes)
+                if (!ModelTraits.IsModelEditable(model))
 					continue;
 
 				var container = model.generatedMeshes;
-				if (!container.owner ||
-					!container.owner.isActiveAndEnabled)
-				{
+                if (container.owner != model)
+                    continue;
+
+				if (!model.generatedMeshes)
 					continue;
-				}
 
 				var meshInstances	= container.meshInstanceLookup;
 				var helperSurfaces	= container.helperSurfaceLookup;
@@ -710,7 +705,7 @@ namespace InternalRealtimeCSG
 
 
 
-			var containerStaticFlags = GameObjectUtility.GetStaticEditorFlags(generatedMeshes.owner.gameObject);
+            var containerStaticFlags = GameObjectUtility.GetStaticEditorFlags(generatedMeshes.owner.gameObject);
 			GameObjectUtility.SetStaticEditorFlags(meshInstanceGameObject, containerStaticFlags);
 
 
@@ -723,10 +718,8 @@ namespace InternalRealtimeCSG
 				{
 					switch (meshDescription.meshQuery.LayerParameterIndex)
 					{
-						case LayerParameterIndex.LayerParameter1:
-						{ renderMaterial = obj as Material; break; }
-						case LayerParameterIndex.LayerParameter2:
-						{ physicsMaterial = obj as PhysicMaterial; break; }
+						case LayerParameterIndex.LayerParameter1: { renderMaterial  = obj as Material; break; }
+						case LayerParameterIndex.LayerParameter2: { physicsMaterial = obj as PhysicMaterial; break; }
 					}
 				}
 			}
@@ -795,8 +788,8 @@ namespace InternalRealtimeCSG
         }
 
         public static bool NeedToGenerateLightmapUVsForModel(CSGModel model)
-		{
-			if (!model)
+        {
+            if (!ModelTraits.IsModelEditable(model))
 				return false;
 
 			if (!model.generatedMeshes)
@@ -825,9 +818,9 @@ namespace InternalRealtimeCSG
 		}
 
 		public static void GenerateLightmapUVsForModel(CSGModel model)
-		{
-			if (!model)
-				return;
+        {
+            if (!ModelTraits.IsModelEditable(model))
+                return;
 
 			if (!model.generatedMeshes)
 				return;
@@ -858,8 +851,8 @@ namespace InternalRealtimeCSG
 		}
 
 		private static void GenerateLightmapUVsForInstance(GeneratedMeshInstance instance, CSGModel model, UnwrapParam param)
-		{
-			var meshRendererComponent = instance.CachedMeshRenderer;
+        {
+            var meshRendererComponent = instance.CachedMeshRenderer;
 			if (!meshRendererComponent)
 			{
 				var gameObject = instance.gameObject;
@@ -1012,8 +1005,8 @@ namespace InternalRealtimeCSG
 		}
 
 		public static void ClearUVs(GeneratedMeshInstance instance)
-		{
-			var meshRendererComponent	= instance.CachedMeshRenderer;
+        {
+            var meshRendererComponent	= instance.CachedMeshRenderer;
 			if (meshRendererComponent)
 			{
 				meshRendererComponent.realtimeLightmapIndex = -1;
@@ -1024,9 +1017,9 @@ namespace InternalRealtimeCSG
 		}
 
 		public static void Refresh(CSGModel model, bool postProcessScene = false, bool onlyFastRefreshes = true)
-		{
-			if (!model)
-				return;
+        {
+            if (!ModelTraits.IsModelEditable(model))
+                return;
 
 			var generatedMeshes = model.generatedMeshes;
 			if (!generatedMeshes || generatedMeshes.owner != model)
@@ -1044,8 +1037,8 @@ namespace InternalRealtimeCSG
 
 		//		internal static double updateMeshColliderMeshTime = 0.0;
 		public static void Refresh(GeneratedMeshInstance instance, CSGModel owner, bool postProcessScene = false, bool onlyFastRefreshes = true)
-		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
 				return;
 
 			if (!instance)
@@ -1139,8 +1132,8 @@ namespace InternalRealtimeCSG
 						meshFilterComponent = gameObject.AddComponent<MeshFilter>();
 						instance.CachedMeshRendererSO = null;
 						instance.Dirty = true;
-					}
-				}
+                    }
+                }
 
 //				var ownerReceiveShadows = owner.ReceiveShadows;
 //				var shadowCastingMode	= owner.ShadowCastingModeFlags;
@@ -1198,24 +1191,29 @@ namespace InternalRealtimeCSG
 					meshRendererComponent.gameObject.name = RenderMeshInstanceName;
 					instance.CachedMeshRendererSO = null;
 					instance.Dirty = true;
-				}
+                    // we don't actually want the unity style of rendering a wireframe 
+                    // for our meshes, so we turn it off
+                    //*
+                    EditorUtility.SetSelectedRenderState(meshRendererComponent, EditorSelectedRenderState.Hidden);
+                    //*/
+                }
 
-				if ((meshFilterComponent.hideFlags & HideFlags.HideInHierarchy) == 0)
-				{
-					meshFilterComponent.hideFlags |= HideFlags.HideInHierarchy;
+                if ((meshFilterComponent.hideFlags & HideFlags.HideInHierarchy) == 0)
+                {
+                    meshFilterComponent.hideFlags |= HideFlags.HideInHierarchy;
 				}
 
 				if ((meshRendererComponent.hideFlags & HideFlags.HideInHierarchy) == 0)
-				{
-					meshRendererComponent.hideFlags |= HideFlags.HideInHierarchy;
+                {
+                    meshRendererComponent.hideFlags |= HideFlags.HideInHierarchy;
 				}
-				
-				if (instance.RenderSurfaceType != RenderSurfaceType.ShadowOnly)
+
+                if (instance.RenderSurfaceType != RenderSurfaceType.ShadowOnly)
 				{ 
 					if (instance.HasUV2 && 
 						(instance.LightingHashValue != instance.MeshDescription.geometryHashValue) && meshRendererComponent)
-					{
-						instance.ResetUVTime = Time.realtimeSinceStartup;
+                    {
+                        instance.ResetUVTime = Time.realtimeSinceStartup;
 						if (instance.HasUV2)
 							ClearUVs(instance);
 					}
@@ -1230,21 +1228,21 @@ namespace InternalRealtimeCSG
 					}
 				}
 
-				if (!postProcessScene &&
-					meshFilterComponent.sharedMesh != instance.SharedMesh)
-					meshFilterComponent.sharedMesh = instance.SharedMesh;
+                if (!postProcessScene &&
+                    meshFilterComponent.sharedMesh != instance.SharedMesh)
+                    meshFilterComponent.sharedMesh = instance.SharedMesh;
 
 				if (meshRendererComponent &&
 					meshRendererComponent.shadowCastingMode != shadowCastingMode)
-				{
-					meshRendererComponent.shadowCastingMode = shadowCastingMode;
+                {
+                    meshRendererComponent.shadowCastingMode = shadowCastingMode;
 					instance.Dirty = true;
 				}
 
 				if (meshRendererComponent &&
 					meshRendererComponent.receiveShadows != ownerReceiveShadows)
-				{
-					meshRendererComponent.receiveShadows = ownerReceiveShadows;
+                {
+                    meshRendererComponent.receiveShadows = ownerReceiveShadows;
 					instance.Dirty = true;
 				}
 
@@ -1269,13 +1267,13 @@ namespace InternalRealtimeCSG
 					if (meshRendererComponentSO != null)
 					{
 						bool SOModified = false;
-						meshRendererComponentSO.Update(); 
+                        meshRendererComponentSO.Update(); 
 						var scaleInLightmapProperty = meshRendererComponentSO.FindProperty("m_ScaleInLightmap");
 						var scaleInLightmap			= owner.scaleInLightmap;
 						if (scaleInLightmapProperty != null &&
 							scaleInLightmapProperty.floatValue != scaleInLightmap)
-						{
-							scaleInLightmapProperty.floatValue = scaleInLightmap;
+                        {
+                            scaleInLightmapProperty.floatValue = scaleInLightmap;
 							SOModified = true;
 						}
 
@@ -1283,8 +1281,8 @@ namespace InternalRealtimeCSG
 						var autoUVMaxDistance				= owner.autoUVMaxDistance;
 						if (autoUVMaxDistanceProperty != null &&
 							autoUVMaxDistanceProperty.floatValue != autoUVMaxDistance)
-						{
-							autoUVMaxDistanceProperty.floatValue = autoUVMaxDistance;
+                        {
+                            autoUVMaxDistanceProperty.floatValue = autoUVMaxDistance;
 							SOModified = true;
 						}
 
@@ -1292,8 +1290,8 @@ namespace InternalRealtimeCSG
 						var autoUVMaxAngle					= owner.autoUVMaxAngle;
 						if (autoUVMaxAngleProperty != null &&
 							autoUVMaxAngleProperty.floatValue != autoUVMaxAngle)
-						{
-							autoUVMaxAngleProperty.floatValue = autoUVMaxAngle;
+                        {
+                            autoUVMaxAngleProperty.floatValue = autoUVMaxAngle;
 							SOModified = true;
 						}
 
@@ -1301,8 +1299,8 @@ namespace InternalRealtimeCSG
 						var ignoreNormals					= owner.IgnoreNormals;
 						if (ignoreNormalsProperty != null &&
 							ignoreNormalsProperty.boolValue != ignoreNormals)
-						{
-							ignoreNormalsProperty.boolValue = ignoreNormals;
+                        {
+                            ignoreNormalsProperty.boolValue = ignoreNormals;
 							SOModified = true;
 						}
 					
@@ -1310,8 +1308,8 @@ namespace InternalRealtimeCSG
 						var minimumChartSize				= owner.minimumChartSize;
 						if (minimumChartSizeProperty != null &&
 							minimumChartSizeProperty.intValue != minimumChartSize)
-						{
-							minimumChartSizeProperty.intValue = minimumChartSize;
+                        {
+                            minimumChartSizeProperty.intValue = minimumChartSize;
 							SOModified = true;
 						}
 
@@ -1319,8 +1317,8 @@ namespace InternalRealtimeCSG
 						var preserveUVs				= owner.PreserveUVs;
 						if (preserveUVsProperty != null &&
 							preserveUVsProperty.boolValue != preserveUVs)
-						{
-							preserveUVsProperty.boolValue = preserveUVs;
+                        {
+                            preserveUVsProperty.boolValue = preserveUVs;
 							SOModified = true;
 						}
 
@@ -1329,16 +1327,16 @@ namespace InternalRealtimeCSG
 						var stitchLightmapSeams			= owner.StitchLightmapSeams;
 						if (stitchLightmapSeamsProperty != null && // Note that some alpha/beta versions of 2017.2 had a different name
 							stitchLightmapSeamsProperty.boolValue != stitchLightmapSeams)
-						{
-							stitchLightmapSeamsProperty.boolValue = stitchLightmapSeams;
+                        {
+                            stitchLightmapSeamsProperty.boolValue = stitchLightmapSeams;
 							SOModified = true;
 						}
 #endif
 
-						if (SOModified)
-							meshRendererComponentSO.ApplyModifiedProperties();
+                        if (SOModified)
+                            meshRendererComponentSO.ApplyModifiedProperties();
+                        }
 					}
-				}
                 //*/
 
 #if UNITY_2019_2_OR_NEWER
@@ -1353,20 +1351,21 @@ namespace InternalRealtimeCSG
 
                 if (meshRendererComponent &&
 					meshRendererComponent.sharedMaterial != requiredMaterial)
-				{
-					meshRendererComponent.sharedMaterial = requiredMaterial;
+                {
+                    meshRendererComponent.sharedMaterial = requiredMaterial;
 					instance.Dirty = true;
 				}
 
-				// we don't actually want the unity style of rendering a wireframe 
-				// for our meshes, so we turn it off
-				//*
-				EditorUtility.SetSelectedRenderState(meshRendererComponent, EditorSelectedRenderState.Hidden);
-				//*/
 			} else
 			{
-				if (meshFilterComponent)	{ meshFilterComponent.hideFlags = HideFlags.None; UnityEngine.Object.DestroyImmediate(meshFilterComponent); instance.Dirty = true; }
-				if (meshRendererComponent)	{ meshRendererComponent.hideFlags = HideFlags.None; UnityEngine.Object.DestroyImmediate(meshRendererComponent); instance.Dirty = true; }
+				if (meshFilterComponent)
+                {
+                    meshFilterComponent.hideFlags = HideFlags.None; UnityEngine.Object.DestroyImmediate(meshFilterComponent); instance.Dirty = true;
+                }
+				if (meshRendererComponent)
+                {
+                    meshRendererComponent.hideFlags = HideFlags.None; UnityEngine.Object.DestroyImmediate(meshRendererComponent); instance.Dirty = true;
+                }
 				instance.LightingHashValue = instance.MeshDescription.geometryHashValue;
 				meshFilterComponent = null;
 				meshRendererComponent = null;
@@ -1394,31 +1393,31 @@ namespace InternalRealtimeCSG
 					instance.Dirty = true;
 				}
 
-				// stops it from rendering wireframe in scene
-				if ((meshColliderComponent.hideFlags & HideFlags.HideInHierarchy) == 0)
-				{
-					meshColliderComponent.hideFlags |= HideFlags.HideInHierarchy;
-				}
+                // stops it from rendering wireframe in scene
+                if ((meshColliderComponent.hideFlags & HideFlags.HideInHierarchy) == 0)
+                {
+                    meshColliderComponent.hideFlags |= HideFlags.HideInHierarchy;
+                }
 
-				var currentPhyicsMaterial = instance.PhysicsMaterial ?? owner.DefaultPhysicsMaterial;
+                var currentPhyicsMaterial = instance.PhysicsMaterial ?? owner.DefaultPhysicsMaterial;
 				if (meshColliderComponent.sharedMaterial != currentPhyicsMaterial)
-				{
-					meshColliderComponent.sharedMaterial = currentPhyicsMaterial;
+                {
+                    meshColliderComponent.sharedMaterial = currentPhyicsMaterial;
 					instance.Dirty = true;
 				}
 
 				var setToConvex = owner.SetColliderConvex;
 				if (meshColliderComponent.convex != setToConvex)
-				{
-					meshColliderComponent.convex = setToConvex;
+                {
+                    meshColliderComponent.convex = setToConvex;
 					instance.Dirty = true;
 				}
 
 #if UNITY_2017_3_OR_NEWER
 				var cookingOptions = owner.MeshColliderCookingOptions;
 				if (meshColliderComponent.cookingOptions != cookingOptions)
-				{
-					meshColliderComponent.cookingOptions = cookingOptions;
+                {
+                    meshColliderComponent.cookingOptions = cookingOptions;
 					instance.Dirty = true;
 				}
 #endif
@@ -1519,14 +1518,14 @@ namespace InternalRealtimeCSG
 		{
 			if (EditorApplication.isPlayingOrWillChangePlaymode)
 				return;
-			
-//			updateMeshColliderMeshTime = 0.0;
-			var models = InternalCSGModelManager.Models;
+            
+            //			updateMeshColliderMeshTime = 0.0;
+            var models = InternalCSGModelManager.Models;
 			var currentRefreshModelCount = 0;
 			for (var i = 0; i < models.Length; i++)
 			{
 				var model = models[i];
-				if (!model)
+                if (!ModelTraits.IsModelEditable(model))
 					continue;
 				
 				var generatedMeshes = model.generatedMeshes;
@@ -1562,7 +1561,7 @@ namespace InternalRealtimeCSG
 		{
 			if (!gameObject)
 				return;
-			var layer = gameObject.layer;
+            var layer = gameObject.layer;
             foreach (var transform in gameObject.GetComponentsInChildren<Transform>(true))
             {
                 if (transform.GetComponent<CSGNode>())
@@ -1579,12 +1578,12 @@ namespace InternalRealtimeCSG
 		}
 
 		public static void UpdateGeneratedMeshesVisibility(GeneratedMeshes container, bool visible)
-		{
-			if (!container.owner.isActiveAndEnabled ||
+        {
+            if (!ModelTraits.IsModelEditable(container.owner) ||
 				(container.owner.hideFlags & (HideFlags.HideInInspector | HideFlags.HideInHierarchy)) == (HideFlags.HideInInspector | HideFlags.HideInHierarchy))
 				return;
-			
-			var containerGameObject = container.gameObject; 
+            
+            var containerGameObject = container.gameObject; 
 			
 			HideFlags gameObjectFlags;
 			HideFlags transformFlags;
@@ -1615,7 +1614,7 @@ namespace InternalRealtimeCSG
 
 		static void AutoUpdateRigidBody(GeneratedMeshes container)
 		{
-			var model		= container.owner;
+            var model		= container.owner;
 			var gameObject	= model.gameObject;
 			if (ModelTraits.NeedsRigidBody(model))
 			{
@@ -1683,10 +1682,10 @@ namespace InternalRealtimeCSG
 			if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
 				return;
 
-			if (!generatedMeshes)
+            if (!generatedMeshes)
 				return;
 
-			if (generatedMeshes.owner)
+			if (generatedMeshes.owner && generatedMeshes.gameObject)
 			{
 				if (!skipSiblingCheck)
 				{
@@ -1700,7 +1699,7 @@ namespace InternalRealtimeCSG
 				return;
 			}
 
-			var generatedMeshesGameObject = generatedMeshes.gameObject;
+            var generatedMeshesGameObject = generatedMeshes.gameObject;
 			var generatedMeshesTransform = generatedMeshesGameObject.transform;
 
 			generatedMeshes.meshInstanceLookup.Clear();
@@ -1710,7 +1709,8 @@ namespace InternalRealtimeCSG
 				var meshInstance			= meshInstanceTransform.GetComponent<GeneratedMeshInstance>();
 				if (!meshInstance)
 				{
-					Destroy(meshInstanceTransform.gameObject);
+                    if (meshInstanceTransform.gameObject)
+					    Destroy(meshInstanceTransform.gameObject);
 					continue;
 				}
 				var key = meshInstance.GenerateKey();
@@ -1799,14 +1799,14 @@ namespace InternalRealtimeCSG
 			return CreateHelperSurfaceDescription(container, meshDescription, modelSettings, renderSurfaceType);
 		}
 
-#region UpdateTransform
+        #region UpdateTransform
 		public static void UpdateTransforms()
 		{
 			var models = InternalCSGModelManager.Models;
 			for (var i = 0; i < models.Length; i++)
 			{
 				var model = models[i];
-				if (!model)
+            if (!ModelTraits.IsModelEditable(model))
 					continue;
 			
 				UpdateTransform(model.generatedMeshes);
@@ -1836,9 +1836,9 @@ namespace InternalRealtimeCSG
 				SceneToolRenderer.SetOutlineDirty();
 			}
 		}
-#endregion
+        #endregion
 
-#region UpdateContainerComponents
+        #region UpdateContainerComponents
 		static readonly List<GeneratedMeshInstance> __notfoundInstances		= new List<GeneratedMeshInstance>();
 		static MeshInstanceKey[]					__removeMeshInstances	= new MeshInstanceKey[0];
 		public static void UpdateContainerComponents(GeneratedMeshes container, 
@@ -1883,8 +1883,10 @@ namespace InternalRealtimeCSG
 			{
 				var meshInstance = __notfoundInstances[i];
 				if (meshInstance && meshInstance.gameObject)
-				{
-					Destroy(meshInstance.gameObject);
+                {
+                    var key = meshInstance.GenerateKey();
+                    var keyObj = EditorUtility.InstanceIDToObject(key.SurfaceParameter);
+                    Destroy(meshInstance.gameObject);
 				}
 
 				if (__removeMeshInstances.Length < container.meshInstanceLookup.Count)
@@ -1922,14 +1924,14 @@ namespace InternalRealtimeCSG
 
 			UpdateTransform(container);
 		}
-#endregion
+        #endregion
 		
-#region UpdateContainerFlags
+        #region UpdateContainerFlags
 		private static void UpdateContainerFlags(GeneratedMeshes container)
 		{
 			if (!container)
 				return;
-			if (container.owner)
+            if (container.owner)
 			{
 				var ownerTransform = container.owner.transform;
 				if (container.transform.parent != ownerTransform) 
@@ -1986,6 +1988,6 @@ namespace InternalRealtimeCSG
 			if (container.owner.NeedAutoUpdateRigidBody)
 				AutoUpdateRigidBody(container);
 		}
-#endregion
+        #endregion
 	}
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using InternalRealtimeCSG;
 using UnityEngine;
 using RealtimeCSG.Components;
@@ -306,13 +306,13 @@ namespace RealtimeCSG.Legacy
             return CreateCubeBrush(null, "Brush", size);
         }
         #endregion
-        
-        
+
+
         /// <summary>Converts a <see cref="RealtimeCSG.Legacy.ControlMesh"/>/<see cref="RealtimeCSG.Legacy.Shape"/> pair into a <see cref="RealtimeCSG.Foundation.BrushMesh"/>.</summary>
         /// <param name="controlMesh">A legacy <see cref="RealtimeCSG.Legacy.ControlMesh"/> that describes the shape of the <see cref="RealtimeCSG.Foundation.BrushMesh"/>.</param>
         /// <param name="shape">A legacy <see cref="RealtimeCSG.Legacy.Shape"/> that describes the surfaces in the <see cref="RealtimeCSG.Foundation.BrushMesh"/>.</param>
         /// <returns>A new <see cref="RealtimeCSG.Foundation.BrushMesh"/></returns>
-        public static BrushMesh GenerateFromControlMesh(ControlMesh controlMesh, Shape shape)
+        public static BrushMesh GenerateFromControlMesh(ControlMesh controlMesh, Shape shape, PhysicMaterial defaultPhysicsMaterial = null)
         {
             if (controlMesh == null ||
                 shape == null)
@@ -357,6 +357,9 @@ namespace RealtimeCSG.Legacy
                 var texGenIndex		= surface.TexGenIndex;
                 var texGen			= texgens[texGenIndex];
                 var flags			= texgenFlags[texGenIndex];
+
+                if (!texGen.PhysicsMaterial)
+                    texGen.PhysicsMaterial = defaultPhysicsMaterial;
 
                 brushMesh.polygons[i].polygonID = polygonIndex;
                 brushMesh.polygons[i].surface = CreateSurfaceDescription(surface, texGen, flags);
@@ -408,7 +411,7 @@ namespace RealtimeCSG.Legacy
             }			
             return brushMesh;
         }
-        
+
         /// <summary>Generate a <see cref="RealtimeCSG.Legacy.ControlMesh"/>/<see cref="RealtimeCSG.Legacy.Shape"/> pair from the given planes (and optional other values)</summary>
         /// <remarks><note>Keep in mind that the planes encapsulate the geometry we're generating, so it can only be <i>convex</i>.</note></remarks>
         /// <param name="controlMesh">The generated <see cref="RealtimeCSG.Legacy.ControlMesh"/></param>

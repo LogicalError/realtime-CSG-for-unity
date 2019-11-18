@@ -9,6 +9,7 @@ namespace RealtimeCSG
 	[Serializable]
 	public class HierarchyItem
 	{
+        public bool             TransformInitialized = false;
 		public Transform        Transform;
 		public int              TransformID;
 		public HierarchyItem    Parent;

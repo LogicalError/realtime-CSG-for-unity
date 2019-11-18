@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -194,9 +194,8 @@ namespace RealtimeCSG
 			if (newPlane.normal.sqrMagnitude != 0)
 				buildPlane = newPlane;
 
-			if (geometryModel &&
-				geometryModel.isActiveAndEnabled)
-				SelectionUtility.LastUsedModel = geometryModel;
+            if (ModelTraits.IsModelEditable(geometryModel))
+                SelectionUtility.LastUsedModel = geometryModel;
 
 			UpdateBaseShape();
 
@@ -428,8 +427,10 @@ namespace RealtimeCSG
 			Undo.IncrementCurrentGroup();
 			undoGroupIndex = Undo.GetCurrentGroup();
 
-			var lastUsedModel			= SelectionUtility.LastUsedModel;
-			var lastUsedModelTransform	= !lastUsedModel ? null : lastUsedModel.transform;
+            var lastUsedModel			= SelectionUtility.LastUsedModel;
+            if (!ModelTraits.IsModelEditable(lastUsedModel))
+                lastUsedModel = null;
+            var lastUsedModelTransform	= !lastUsedModel ? null : lastUsedModel.transform;
 
 			if (!lastUsedModelTransform ||
 				!lastUsedModel.isActiveAndEnabled)
@@ -619,8 +620,8 @@ namespace RealtimeCSG
 				var brush = generatedBrushes[i];
 				if (!brush)
 					continue;
-				
-				EditorUtility.SetDirty(brush);
+
+                EditorUtility.SetDirty(brush);
 			}
 		}
 

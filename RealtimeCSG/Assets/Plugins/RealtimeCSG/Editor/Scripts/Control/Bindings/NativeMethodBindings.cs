@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 using System;
@@ -222,7 +222,7 @@ namespace RealtimeCSG
 												  CSGBrush[]				ignoreBrushes = null)
 		{
 			var visibleLayers = Tools.visibleLayers;
-			if (!model || ((1 << model.gameObject.layer) & visibleLayers) == 0)
+            if (!ModelTraits.IsModelSelectable(model))
 			{
 				intersections = null;
 				return false;
@@ -561,7 +561,7 @@ namespace RealtimeCSG
 											  HashSet<GameObject>	gameObjects)
 		{
 			var visibleLayers = Tools.visibleLayers;
-			if (!model || ((1 << model.gameObject.layer) & visibleLayers) == 0)
+            if (!ModelTraits.IsModelSelectable(model))
 			{
 				return false;
 			}
@@ -837,9 +837,9 @@ namespace RealtimeCSG
 			
 			if (meshDescriptionCount != meshDescriptions.Length)
 				meshDescriptions = new Foundation.GeneratedMeshDescription[meshDescriptionCount];
-			
-			if (meshDescriptionCount == 0)
-				return true;
+
+            if (meshDescriptionCount == 0)
+                return true;
 
 			var meshDescriptionsHandle	= GCHandle.Alloc(meshDescriptions, GCHandleType.Pinned);
 			var meshDescriptionsPtr		= meshDescriptionsHandle.AddrOfPinnedObject();

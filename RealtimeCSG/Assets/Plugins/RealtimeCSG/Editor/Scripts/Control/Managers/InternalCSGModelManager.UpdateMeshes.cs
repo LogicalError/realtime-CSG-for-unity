@@ -125,7 +125,7 @@ namespace RealtimeCSG
 			for (var i = 0; i < Models.Length; i++)
 			{
 				var model = Models[i];
-				if (!model || !model.isActiveAndEnabled)
+                if (!ModelTraits.IsModelEditable(model))
 					continue;
 				var modelModified = false;
 				var invertedWorld = model.InvertedWorld;
@@ -226,8 +226,8 @@ namespace RealtimeCSG
 		static bool forcedUpdateRequired = false;
 
 		public static void DoForcedMeshUpdate()
-		{
-			forcedUpdateRequired = true;
+        {
+            forcedUpdateRequired = true;
 		}
 		#endregion
 
@@ -246,8 +246,8 @@ namespace RealtimeCSG
 									   ref bool						outputHasGeneratedNormals,
 									   ref Mesh						sharedMesh)
 		{
-			// create our arrays on the C# side with the correct size
-			GeneratedMeshContents generatedMesh;
+            // create our arrays on the C# side with the correct size
+            GeneratedMeshContents generatedMesh;
 			var startGetModelMeshesTime = EditorApplication.timeSinceStartup;
 			{
 				generatedMesh = External.GetModelMesh(model.modelNodeID, meshDescription);
@@ -283,8 +283,8 @@ namespace RealtimeCSG
 									  RenderSurfaceType			renderSurfaceType,
 									  ref bool					outputHasGeneratedNormals,
 									  ref Mesh					sharedMesh)
-		{
-			var startUpdateMeshTime = EditorApplication.timeSinceStartup;
+        {
+            var startUpdateMeshTime = EditorApplication.timeSinceStartup;
 			{
 				MeshInstanceManager.ClearMesh(ref outputHasGeneratedNormals, ref sharedMesh);
 
@@ -323,8 +323,8 @@ namespace RealtimeCSG
 		}
 
 		private static GeneratedMeshInstance GenerateMeshInstance(GeneratedMeshes meshContainer, CSGModel model, ModelSettingsFlags modelSettings, GeneratedMeshDescription meshDescription, RenderSurfaceType renderSurfaceType)
-		{
-			GeneratedMeshInstance meshInstance;
+        {
+            GeneratedMeshInstance meshInstance;
 
 			var startGetMeshInstanceTime = EditorApplication.timeSinceStartup;
 			{
@@ -350,8 +350,8 @@ namespace RealtimeCSG
 		}
 
 		private static HelperSurfaceDescription GenerateHelperSurfaceDescription(GeneratedMeshes meshContainer, CSGModel model, ModelSettingsFlags modelSettings, GeneratedMeshDescription meshDescription, RenderSurfaceType renderSurfaceType)
-		{
-			HelperSurfaceDescription helperSurfaceDescription;
+        {
+            HelperSurfaceDescription helperSurfaceDescription;
 
 			var startGetMeshInstanceTime = EditorApplication.timeSinceStartup;
 			{
@@ -362,8 +362,8 @@ namespace RealtimeCSG
 				helperSurfaceDescription.IsValid())
 				return helperSurfaceDescription;
 
-			helperSurfaceDescription.MeshDescription = meshDescription;
-			if (!UpdateMesh(model, 
+            helperSurfaceDescription.MeshDescription = meshDescription;
+            if (!UpdateMesh(model, 
 							helperSurfaceDescription.MeshDescription,
 							helperSurfaceDescription.RenderSurfaceType,
 							ref helperSurfaceDescription.GeneratedMeshContents,
@@ -377,8 +377,8 @@ namespace RealtimeCSG
 
 		#region RemoveForcedUpdates
 		public static void RemoveForcedUpdates()
-		{
-			var modelCount = Models.Length;
+        {
+            var modelCount = Models.Length;
 			if (modelCount == 0)
 				return;
 
@@ -440,13 +440,14 @@ namespace RealtimeCSG
 				for (var i = 0; i < modelCount; i++)
 				{
 					var model = Models[i];
-					if (!model.isActive)
-						continue;
 					
 					if (!forceUpdate &&
 						!model.forceUpdate)
 						continue;
-					
+
+                    if (!ModelTraits.IsModelEditable(model))
+                        continue;
+
 					External.SetDirty(model.modelNodeID);
 					model.forceUpdate = false;
 				}
@@ -454,22 +455,21 @@ namespace RealtimeCSG
 				// update the model meshes
 				if (!External.UpdateAllModelMeshes())
 					return false; // nothing to do
-
-				MeshGeneration++;
+                
+                MeshGeneration++;
 				bool haveUpdates = forceUpdate;
 				for (var i = 0; i < modelCount; i++)
 				{
 					var model = Models[i];
-					
-					if (!(new CSGTreeNode { nodeID = model.modelNodeID }.Dirty))
-						continue;
-					
-					if (!model.isActive)
-						continue;
-					
-					var meshContainer = model.generatedMeshes;
-					if (!meshContainer)
-						return false;
+
+                    if (!(new CSGTreeNode { nodeID = model.modelNodeID }.Dirty))
+                    {
+                        continue;
+                    }
+
+                    var meshContainer = model.generatedMeshes;
+                    if (!meshContainer)
+                        return false;
 					
 					EnsureInitialized(model);
 					
@@ -480,27 +480,38 @@ namespace RealtimeCSG
 					}
 					getMeshDescriptionTime += EditorApplication.timeSinceStartup - startGetMeshDescriptionTime;
 
-					if (!needToUpdateMeshes)
+
+                    if (!ModelTraits.IsModelEditable(model))
+                        continue;
+
+                    if (!needToUpdateMeshes)
 						continue;
-					__foundHelperSurfaces.Clear();
+
+                    __foundHelperSurfaces.Clear();
 					__foundGeneratedMeshInstance.Clear();
 					var startUnityMeshUpdates = EditorApplication.timeSinceStartup;
 					{
 						for (int meshIndex = 0; meshIndex < __meshDescriptions.Length; meshIndex++)
 						{
-							if (!ValidateMesh(__meshDescriptions[meshIndex]))
-								continue;
+                            if (!ValidateMesh(__meshDescriptions[meshIndex]))
+                                continue;
 
 							haveUpdates = true;
 							var renderSurfaceType = MeshInstanceManager.GetSurfaceType(__meshDescriptions[meshIndex], model.Settings);
 							if (renderSurfaceType == RenderSurfaceType.Normal ||
-								renderSurfaceType == RenderSurfaceType.ShadowOnly ||
-								renderSurfaceType == RenderSurfaceType.Collider ||
-								renderSurfaceType == RenderSurfaceType.Trigger)
+								renderSurfaceType == RenderSurfaceType.ShadowOnly)
 							{ 
 								var meshInstance	= GenerateMeshInstance(meshContainer, model, model.Settings, __meshDescriptions[meshIndex], renderSurfaceType);
 								if (meshInstance != null) __foundGeneratedMeshInstance.Add(meshInstance);
-							} else
+							} else 
+                            if (renderSurfaceType == RenderSurfaceType.Collider ||
+								renderSurfaceType == RenderSurfaceType.Trigger)
+                            {
+                                var meshInstance = GenerateMeshInstance(meshContainer, model, model.Settings, __meshDescriptions[meshIndex], renderSurfaceType);
+                                if (meshInstance != null) __foundGeneratedMeshInstance.Add(meshInstance);
+                                var helperSurface = GenerateHelperSurfaceDescription(meshContainer, model, model.Settings, __meshDescriptions[meshIndex], renderSurfaceType);
+                                __foundHelperSurfaces.Add(helperSurface);
+                            } else
 							{
 								var helperSurface	= GenerateHelperSurfaceDescription(meshContainer, model, model.Settings, __meshDescriptions[meshIndex], renderSurfaceType);
 								__foundHelperSurfaces.Add(helperSurface);

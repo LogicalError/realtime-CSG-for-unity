@@ -54,8 +54,8 @@ namespace RealtimeCSG
 			}
 			set
 			{
-				if (!value)
-					return;
+                if (!value)
+                    return;
 
 				var flags = value.gameObject.hideFlags;
 				if ((flags & (HideFlags.HideInHierarchy | HideFlags.NotEditable | HideFlags.DontSaveInBuild)) != 0 &&
@@ -330,7 +330,7 @@ namespace RealtimeCSG
 			for (var i = 0; i < models.Length; i++)
 			{
 				var model = models[i];
-				if (!model)
+                if (!ModelTraits.IsModelSelectable(model))
 					continue;
 
 				if (!model.generatedMeshes)
@@ -443,8 +443,7 @@ namespace RealtimeCSG
 				{
 					var brush = item as CSGBrush;
 					if (brush.ChildData == null ||
-						!brush.ChildData.Model ||
-						!brush.ChildData.Model.isActiveAndEnabled)
+                        !ModelTraits.IsModelEditable(brush.ChildData.Model))
 						continue;
 					SelectionUtility.LastUsedModel = brush.ChildData.Model;
 					break;
@@ -457,8 +456,7 @@ namespace RealtimeCSG
 				if (brush != null)
 				{
 					if (brush.ChildData == null ||
-						!brush.ChildData.Model ||
-						!brush.ChildData.Model.isActiveAndEnabled)
+                        !ModelTraits.IsModelEditable(brush.ChildData.Model))
 						return;
 					SelectionUtility.LastUsedModel = brush.ChildData.Model;
 				}

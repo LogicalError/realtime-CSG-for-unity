@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
@@ -225,11 +225,13 @@ namespace RealtimeCSG
 
 			if (statement4)
 			{
-				dirty = true;
+				dirty = component.hierarchyItem.TransformInitialized || dirty;
 				component.hierarchyItem.Transform	= component.transform;
 				component.hierarchyItem.TransformID	= component.transform.GetInstanceID();
 				component.hierarchyItem.NodeID		= component.brushNodeID;
-			}
+                component.hierarchyItem.TransformInitialized = true;
+
+            }
 
 			// make sure that the surface array is not empty, 
 			//  otherwise nothing can get rendered
@@ -249,8 +251,10 @@ namespace RealtimeCSG
 
 			dirty = ShapeUtility.EnsureInitialized(component.Shape) || dirty;
 
-			if (dirty)
-				UnityEditor.EditorUtility.SetDirty(component);
+            if (dirty)
+            {
+                UnityEditor.EditorUtility.SetDirty(component);
+            }
 		}
 		public static void Reset(CSGBrush component)
 		{
@@ -428,8 +432,8 @@ namespace RealtimeCSG
 					OnDestroyed(component);
 				return;
 			}
-			
-			if (component.parentData.TransformID == 0 &&
+
+            if (component.parentData.TransformID == 0 &&
 				component.modelNodeID != CSGNode.InvalidNodeID)
 			{
 				component.parentData.Transform		= component.transform;
@@ -492,7 +496,7 @@ namespace RealtimeCSG
 #if EVALUATION
 				if (NativeMethodBindings.BrushesAvailable() > 0)
 #endif
-					Debug.LogError("Failed to generate ID for brush", brush);
+				Debug.LogError("Failed to generate ID for brush", brush);
 				return;
 			}
 
@@ -647,7 +651,10 @@ namespace RealtimeCSG
 				Debug.LogWarning("Model named " + model.name + " marked as registered, but wasn't actually registered", model);
 			}
 
-			if (!External.GenerateModel(model.GetInstanceID(), out model.modelNodeID))
+            if (!model.DefaultPhysicsMaterial)
+                model.DefaultPhysicsMaterial = MaterialUtility.DefaultPhysicsMaterial;
+
+            if (!External.GenerateModel(model.GetInstanceID(), out model.modelNodeID))
 			{
 				Debug.LogError("Failed to generate ID for model named " + model.name);
 				return;
@@ -655,7 +662,7 @@ namespace RealtimeCSG
 			
 			EnsureInitialized(model);
 			
-			model.isActive = model && model.isActiveAndEnabled;
+			model.isActive = ModelTraits.IsModelEditable(model);
 
 
 			//External.SetModelMeshTypes(model.modelNodeID, GetMeshTypesForModel(model));
@@ -681,7 +688,7 @@ namespace RealtimeCSG
 
 			var shape		= brush.Shape;
 			var controlMesh	= brush.ControlMesh;
-			var brushMesh	= Legacy.BrushFactory.GenerateFromControlMesh(controlMesh, shape);
+			var brushMesh	= Legacy.BrushFactory.GenerateFromControlMesh(controlMesh, shape, brush.ChildData.Model.DefaultPhysicsMaterial);
 			if (brushMesh == null)
 			{
 				return false;
@@ -823,8 +830,8 @@ namespace RealtimeCSG
 				Debug.LogWarning("model marked as unregistered, but was registered");
 			}
 
-			// did we remove component, or entire game-object?
-			if (model &&
+            // did we remove component, or entire game-object?
+            if (model &&
 				model.gameObject)
 			{
 				var transform = model.transform;
@@ -867,7 +874,7 @@ namespace RealtimeCSG
 				return;
 			}
 
-			var enabled = model && model.isActiveAndEnabled;
+			var enabled = ModelTraits.IsModelEditable(model); 
 
 			if (enabled == model.isActive)
 				return;
@@ -1301,7 +1308,7 @@ namespace RealtimeCSG
 					if (!component)
 						continue;
 					InternalCSGModelManager.RegisterModel(component);
-					if (component.isActiveAndEnabled)
+                    if (ModelTraits.IsModelEditable(component))
 						SelectionUtility.LastUsedModel = component;
 				}
 				for (var i = 0; i < enableModelsList.Length; i++)

@@ -751,8 +751,8 @@ namespace InternalRealtimeCSG
 			for (var g = 0; g < InternalCSGModelManager.Models.Length; g++)
 			{
 				var model = InternalCSGModelManager.Models[g];
-				if (!model || !model.isActiveAndEnabled ||
-					((1 << model.gameObject.layer) & visibleLayers) == 0)
+                
+                if (!ModelTraits.IsModelSelectable(model))
 					continue;
 
 				if (ignoreUnrenderables && !ModelTraits.WillModelRender(model) &&
@@ -815,13 +815,7 @@ namespace InternalRealtimeCSG
 			for (var g = 0; g < InternalCSGModelManager.Models.Length; g++)
 			{
 				var model = InternalCSGModelManager.Models[g];
-				if (!model ||
-					!model.isActiveAndEnabled)
-				{
-					continue;
-				}
-
-				if (((1 << model.gameObject.layer) & visibleLayers) == 0)
+                if (!ModelTraits.IsModelSelectable(model))
 					continue;
 					
 				if (ignoreUnrenderables && !ModelTraits.WillModelRender(model) &&

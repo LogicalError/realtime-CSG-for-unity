@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
@@ -127,6 +127,7 @@ namespace InternalRealtimeCSG
 
 		[HideInInspector] public bool   HasGeneratedNormals = false;
 		[HideInInspector] public bool	HasUV2				= false;
+        [NonSerialized]
 		[HideInInspector] public float	ResetUVTime			= float.PositiveInfinity;
 		[HideInInspector] public Int64	LightingHashValue;
 
@@ -147,13 +148,13 @@ namespace InternalRealtimeCSG
 			if ((!PhysicsMaterial || PhysicsMaterial.GetInstanceID() != 0) &&
 				(!RenderMaterial  || RenderMaterial .GetInstanceID() != 0))
 			{
-				if (SharedMesh)
-				{
-					if (SharedMesh.vertexCount < 0)
-						return false;
-				} else
-				if (SharedMesh.GetInstanceID() != 0)
-					return false;
+                if (SharedMesh)
+                {
+                    if (SharedMesh.vertexCount < 0)
+                        return false;
+                } else
+                if (SharedMesh.GetInstanceID() != 0)
+                    return false;
 				return true;
 			}
 			return false;
@@ -175,8 +176,15 @@ namespace InternalRealtimeCSG
 			// InstanceIDs are not properly remembered across domain reloads,
 			//	this causes issues on, for instance, first startup of Unity. 
 			//	So we need to refresh the instanceIDs
-			if      (!ReferenceEquals(RenderMaterial,  null)) { if (RenderMaterial)  MeshDescription.surfaceParameter = RenderMaterial .GetInstanceID(); }
-			else if (!ReferenceEquals(PhysicsMaterial, null)) { if (PhysicsMaterial) MeshDescription.surfaceParameter = PhysicsMaterial.GetInstanceID(); }
+            if (RenderSurfaceType == RenderSurfaceType.Collider ||
+                RenderSurfaceType == RenderSurfaceType.Trigger)
+            {
+                if (!ReferenceEquals(PhysicsMaterial, null)) { if (PhysicsMaterial) MeshDescription.surfaceParameter = PhysicsMaterial.GetInstanceID(); }
+            } else
+            { 
+			    if      (!ReferenceEquals(RenderMaterial,  null)) { if (RenderMaterial)  MeshDescription.surfaceParameter = RenderMaterial .GetInstanceID(); }
+			    else if (!ReferenceEquals(PhysicsMaterial, null)) { if (PhysicsMaterial) MeshDescription.surfaceParameter = PhysicsMaterial.GetInstanceID(); }
+            }
 		}
 
 		internal void OnEnable()
