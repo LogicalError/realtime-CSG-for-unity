@@ -402,7 +402,7 @@ namespace RealtimeCSG
 				float.IsInfinity(center.y) || float.IsNaN(center.y) ||
 				float.IsInfinity(center.z) || float.IsNaN(center.z))
 				return;
-			var scene = SceneView.lastActiveSceneView;
+			var scene = SceneView.currentDrawingSceneView;
 			if (scene)
 				scene.LookAt(center, scene.rotation, Mathf.Max(size, (scene.camera.transform.position - center).magnitude));
 		}

@@ -44,7 +44,7 @@ namespace RealtimeCSG
 
 		static void HandleSceneGUI(int id)
 		{
-			var sceneView = SceneView.lastActiveSceneView;
+			var sceneView = SceneView.currentDrawingSceneView;
 			TooltipUtility.InitToolTip(sceneView);
 			var originalSkin = GUI.skin;
 			{
