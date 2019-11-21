@@ -313,13 +313,15 @@ namespace RealtimeCSG
 				var bounds = new Bounds();
 				bool found = false;
 				var meshFilter = activeTransform.GetComponent<MeshFilter>();
-				if (meshFilter != null)
+				if (meshFilter != null &&
+                    meshFilter.sharedMesh)
 				{
 					bounds = meshFilter.sharedMesh.bounds;
 					found = true;
 				}
 				var meshCollider = activeTransform.GetComponent<MeshCollider>();
-				if (meshCollider != null)
+				if (meshCollider != null &&
+                    meshCollider.sharedMesh)
 				{
 					bounds = meshCollider.sharedMesh.bounds;
 					found = true;

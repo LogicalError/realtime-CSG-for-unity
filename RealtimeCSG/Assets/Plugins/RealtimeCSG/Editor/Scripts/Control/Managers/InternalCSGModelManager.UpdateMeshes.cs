@@ -242,7 +242,6 @@ namespace RealtimeCSG
 		private static bool UpdateMesh(CSGModel						model, 
 									   GeneratedMeshDescription		meshDescription, 
 									   RenderSurfaceType			renderSurfaceType,
-									   ref GeneratedMeshContents	outputGeneratedMeshContents,
 									   ref bool						outputHasGeneratedNormals,
 									   ref Mesh						sharedMesh)
 		{
@@ -261,20 +260,6 @@ namespace RealtimeCSG
 					   renderSurfaceType,
 					   ref outputHasGeneratedNormals,
 					   ref sharedMesh);
-			/*
-#if UNITY_2018_3_OR_NEWER
-			var modelGameObject = model.gameObject;
-			var prefabStage = UnityEditor.Experimental.SceneManagement.PrefabStageUtility.GetPrefabStage(modelGameObject);
-			if (prefabStage != null && string.IsNullOrEmpty(AssetDatabase.GetAssetPath(sharedMesh)))
-			{
-				var prefabAssetPath = prefabStage.prefabAssetPath;
-				if (!string.IsNullOrEmpty(prefabAssetPath))
-					AssetDatabase.AddObjectToAsset(sharedMesh, prefabAssetPath);
-				UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(modelGameObject.scene);
-			}
-#endif
-			*/
-			outputGeneratedMeshContents = generatedMesh;
 			return true;
 		}
 
@@ -326,22 +311,23 @@ namespace RealtimeCSG
         {
             GeneratedMeshInstance meshInstance;
 
-			var startGetMeshInstanceTime = EditorApplication.timeSinceStartup;
+            var startGetMeshInstanceTime = EditorApplication.timeSinceStartup;
 			{
 				meshInstance = MeshInstanceManager.GetMeshInstance(meshContainer, meshDescription, modelSettings, renderSurfaceType);
 				if (!meshInstance)
 					return null;
-			}
-			getMeshInstanceTime += EditorApplication.timeSinceStartup - startGetMeshInstanceTime;
-			if (meshDescription == meshInstance.MeshDescription && 
-				meshInstance.IsValid())
+            }
+
+            getMeshInstanceTime += EditorApplication.timeSinceStartup - startGetMeshInstanceTime;
+			if (meshDescription == meshInstance.MeshDescription &&
+                meshInstance.SharedMesh &&
+                meshInstance.IsValid())
 				return meshInstance;
 
-			meshInstance.MeshDescription = meshDescription;
+            meshInstance.MeshDescription = meshDescription;
 			if (!UpdateMesh(model, 
 						    meshInstance.MeshDescription,
 							meshInstance.RenderSurfaceType,
-							ref meshInstance.GeneratedMeshContents,
 							ref meshInstance.HasGeneratedNormals,
 							ref meshInstance.SharedMesh))
 				return null;
@@ -358,15 +344,15 @@ namespace RealtimeCSG
 				helperSurfaceDescription = MeshInstanceManager.GetHelperSurfaceDescription(meshContainer, modelSettings, meshDescription, renderSurfaceType);
 			}
 			getMeshInstanceTime += EditorApplication.timeSinceStartup - startGetMeshInstanceTime;
-			if (meshDescription == helperSurfaceDescription.MeshDescription && 
-				helperSurfaceDescription.IsValid())
+			if (meshDescription == helperSurfaceDescription.MeshDescription &&
+                helperSurfaceDescription.SharedMesh &&
+                helperSurfaceDescription.IsValid())
 				return helperSurfaceDescription;
 
             helperSurfaceDescription.MeshDescription = meshDescription;
             if (!UpdateMesh(model, 
 							helperSurfaceDescription.MeshDescription,
 							helperSurfaceDescription.RenderSurfaceType,
-							ref helperSurfaceDescription.GeneratedMeshContents,
 							ref helperSurfaceDescription.HasGeneratedNormals,
 							ref helperSurfaceDescription.SharedMesh))
 				return null;
@@ -434,10 +420,10 @@ namespace RealtimeCSG
 				}
 
 				var modelCount = Models.Length;
-				if (modelCount == 0)
+                if (modelCount == 0)
 					return false;
 
-				for (var i = 0; i < modelCount; i++)
+                for (var i = 0; i < modelCount; i++)
 				{
 					var model = Models[i];
 					
@@ -448,7 +434,7 @@ namespace RealtimeCSG
                     if (!ModelTraits.IsModelEditable(model))
                         continue;
 
-					External.SetDirty(model.modelNodeID);
+                    External.SetDirty(model.modelNodeID);
 					model.forceUpdate = false;
 				}
 
@@ -469,7 +455,7 @@ namespace RealtimeCSG
 
                     var meshContainer = model.generatedMeshes;
                     if (!meshContainer)
-                        return false;
+                        continue;
 					
 					EnsureInitialized(model);
 					
@@ -498,7 +484,7 @@ namespace RealtimeCSG
 
 							haveUpdates = true;
 							var renderSurfaceType = MeshInstanceManager.GetSurfaceType(__meshDescriptions[meshIndex], model.Settings);
-							if (renderSurfaceType == RenderSurfaceType.Normal ||
+                            if (renderSurfaceType == RenderSurfaceType.Normal ||
 								renderSurfaceType == RenderSurfaceType.ShadowOnly)
 							{ 
 								var meshInstance	= GenerateMeshInstance(meshContainer, model, model.Settings, __meshDescriptions[meshIndex], renderSurfaceType);
@@ -520,9 +506,10 @@ namespace RealtimeCSG
 					}
 					unityMeshUpdates += (EditorApplication.timeSinceStartup - startUnityMeshUpdates);
 
-					MeshInstanceManager.UpdateContainerComponents(meshContainer, __foundGeneratedMeshInstance, __foundHelperSurfaces);
+                    MeshInstanceManager.UpdateContainerComponents(meshContainer, __foundGeneratedMeshInstance, __foundHelperSurfaces);
 				}
-				if (haveUpdates)
+
+                if (haveUpdates)
 					MeshInstanceManager.UpdateHelperSurfaceVisibility(force: true);
 
 				

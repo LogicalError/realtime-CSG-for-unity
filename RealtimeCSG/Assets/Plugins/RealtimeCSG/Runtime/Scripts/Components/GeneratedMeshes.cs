@@ -28,7 +28,6 @@ namespace InternalRealtimeCSG
 	{
 		public Mesh						SharedMesh;
 		public RenderSurfaceType		RenderSurfaceType = (RenderSurfaceType)999;
-		public GeneratedMeshContents	GeneratedMeshContents;
 		public bool						HasGeneratedNormals;
 		public GeneratedMeshDescription MeshDescription;
 
@@ -76,7 +75,7 @@ namespace InternalRealtimeCSG
 			helperSurfaceLookup.Clear();
 			if (descriptions != null)
 			{
-				foreach (var helperSurface in descriptions)
+                foreach (var helperSurface in descriptions)
 				{
 					var key = helperSurface.GenerateKey();
 					helperSurfaceLookup[key] = helperSurface;
@@ -89,8 +88,8 @@ namespace InternalRealtimeCSG
 		{
 			meshInstanceLookup.Clear();
 			if (instances != null)
-			{
-				foreach (var instance in instances)
+            {
+                foreach (var instance in instances)
 				{
 					if (!instance)
 						continue;

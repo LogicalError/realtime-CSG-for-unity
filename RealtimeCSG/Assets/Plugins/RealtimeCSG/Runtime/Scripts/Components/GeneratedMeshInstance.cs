@@ -122,7 +122,6 @@ namespace InternalRealtimeCSG
 		public RenderSurfaceType	RenderSurfaceType = (RenderSurfaceType)999;
 
 		public GeneratedMeshDescription MeshDescription;
-		public GeneratedMeshContents	GeneratedMeshContents;
 
 		[HideInInspector] public bool   HasGeneratedNormals = false;
 		[HideInInspector] public bool	HasUV2				= false;

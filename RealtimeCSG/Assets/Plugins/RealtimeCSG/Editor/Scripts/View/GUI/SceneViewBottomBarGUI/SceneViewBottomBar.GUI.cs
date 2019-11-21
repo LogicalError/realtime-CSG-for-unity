@@ -619,9 +619,6 @@ namespace RealtimeCSG
 				foreach(var model in InternalCSGModelManager.Models)
 					scenes.Add(model.gameObject.scene);
 
-				foreach (var scene in scenes)
-					UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(scene);
-				
 				text.AppendFormat(CultureInfo.InvariantCulture, "{0} brushes. ", Foundation.CSGManager.TreeBrushCount);
 				
 				Debug.Log(text.ToString());

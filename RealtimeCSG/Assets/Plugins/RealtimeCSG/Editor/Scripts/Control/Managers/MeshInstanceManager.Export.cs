@@ -63,98 +63,103 @@ namespace InternalRealtimeCSG
 			bounds.Reset();
 			var foundMeshFilters = new List<MeshFilter>();
 			var foundMeshColliders = new List<MeshCollider>();
-			foreach (var meshContainer in foundMeshContainers)
-			{
-				var owner = meshContainer.owner;
-				if (!owner || !ArrayUtility.Contains(foundModels, owner))
-					continue;
+            AssetDatabase.StartAssetEditing(); // We might be modifying a prefab, in which case we need to store a mesh inside it
+            try
+            {
+                foreach (var meshContainer in foundMeshContainers)
+                {
+                    var owner = meshContainer.owner;
+                    if (!owner || !ArrayUtility.Contains(foundModels, owner))
+                        continue;
 
-				if (!meshContainer || meshContainer.meshInstanceLookup == null)
-					continue;
+                    if (!meshContainer || meshContainer.meshInstanceLookup == null)
+                        continue;
 
-				var instances = meshContainer.meshInstanceLookup.Values;
-				foreach (var instance in instances)
-				{
-					if (!instance)
-						continue;
+                    var instances = meshContainer.meshInstanceLookup.Values;
+                    foreach (var instance in instances)
+                    {
+                        if (!instance)
+                            continue;
 
-					Refresh(instance, model, postProcessScene: true);
-					
-					var surfaceType = GetSurfaceType(instance.MeshDescription, owner.Settings);
-					if (surfaceType != RenderSurfaceType.Normal &&
-						surfaceType != RenderSurfaceType.ShadowOnly &&
-						surfaceType != RenderSurfaceType.Collider)
-						continue;
+                        Refresh(instance, model, postProcessScene: true, skipAssetDatabaseUpdate: true);
 
-					int counter = 0;
-					if (instance.RenderMaterial)
-					{
-						if (!materialMeshCounters.TryGetValue(instance.RenderMaterial, out counter))
-						{
-							counter = 1;
-						} else
-							counter++;
-					}
-					
-					var mesh = instance.SharedMesh;
-					if (!mesh.isReadable)
-					{
-						//bounds.Extend(mesh.bounds.min);
-						//bounds.Extend(mesh.bounds.max);
-					} else
-					{
-						var vertices = mesh.vertices;
-						for (int v = 0; v < vertices.Length; v++)
-							bounds.Extend(vertices[v]);
-					}
+                        var surfaceType = GetSurfaceType(instance.MeshDescription, owner.Settings);
+                        if (surfaceType != RenderSurfaceType.Normal &&
+                            surfaceType != RenderSurfaceType.ShadowOnly &&
+                            surfaceType != RenderSurfaceType.Collider)
+                            continue;
 
-					
-					var subObj = UnityEngine.Object.Instantiate(instance.gameObject, MathConstants.zeroVector3, MathConstants.identityQuaternion) as GameObject;
-					subObj.hideFlags = HideFlags.None;
-					subObj.transform.position	= owner.transform.position;
-					subObj.transform.rotation	= owner.transform.rotation;
-					subObj.transform.localScale = owner.transform.localScale;
-					subObj.transform.SetParent(tempExportObject.transform, false);
+                        int counter = 0;
+                        if (instance.RenderMaterial)
+                        {
+                            if (!materialMeshCounters.TryGetValue(instance.RenderMaterial, out counter))
+                            {
+                                counter = 1;
+                            } else
+                                counter++;
+                        }
 
-					var genMeshInstance = subObj.GetComponent<GeneratedMeshInstance>();
+                        var mesh = instance.SharedMesh;
+                        if (!mesh.isReadable)
+                        {
+                            //bounds.Extend(mesh.bounds.min);
+                            //bounds.Extend(mesh.bounds.max);
+                        } else
+                        {
+                            var vertices = mesh.vertices;
+                            for (int v = 0; v < vertices.Length; v++)
+                                bounds.Extend(vertices[v]);
+                        }
 
-					UnityEngine.Object.DestroyImmediate(genMeshInstance);
-						 
-					if (surfaceType == RenderSurfaceType.Collider)
-					{
-						subObj.name = "no-material Mesh (" + colliderCounter + ") COLLIDER"; colliderCounter++;
-					} else
-					{ 
-						if (surfaceType == RenderSurfaceType.ShadowOnly)
-						{
-							subObj.name = "shadow-only Mesh (" + shadowOnlyCounter + ")"; shadowOnlyCounter++;
-							var meshRenderer = subObj.GetComponent<MeshRenderer>();
-							if (meshRenderer)
-								meshRenderer.sharedMaterial = MaterialUtility.DefaultMaterial;
-						} else
-						{
-							Material renderMaterial = instance.RenderMaterial;
-							if (!renderMaterial)
-							{
-								renderMaterial = MaterialUtility.DefaultMaterial;
-								subObj.name = "missing-material Mesh (" + counter + ")"; counter++;
-							} else
-								subObj.name = renderMaterial.name + " Mesh (" + counter + ")"; counter++;
-							materialMeshCounters[instance.RenderMaterial] = counter;
-						}
 
-						var meshFilter = subObj.GetComponent<MeshFilter>();
-						if (meshFilter)
-							foundMeshFilters.Add(meshFilter);
-					}
-					
-					var meshCollider = subObj.GetComponent<MeshCollider>();
-					if (meshCollider)
-						foundMeshColliders.Add(meshCollider);
-				}
-			}
-			
-			Undo.IncrementCurrentGroup();
+                        var subObj = UnityEngine.Object.Instantiate(instance.gameObject, MathConstants.zeroVector3, MathConstants.identityQuaternion) as GameObject;
+                        subObj.hideFlags = HideFlags.None;
+                        subObj.transform.position = owner.transform.position;
+                        subObj.transform.rotation = owner.transform.rotation;
+                        subObj.transform.localScale = owner.transform.localScale;
+                        subObj.transform.SetParent(tempExportObject.transform, false);
+
+                        var genMeshInstance = subObj.GetComponent<GeneratedMeshInstance>();
+
+                        UnityEngine.Object.DestroyImmediate(genMeshInstance);
+
+                        if (surfaceType == RenderSurfaceType.Collider)
+                        {
+                            subObj.name = "no-material Mesh (" + colliderCounter + ") COLLIDER"; colliderCounter++;
+                        } else
+                        {
+                            if (surfaceType == RenderSurfaceType.ShadowOnly)
+                            {
+                                subObj.name = "shadow-only Mesh (" + shadowOnlyCounter + ")"; shadowOnlyCounter++;
+                                var meshRenderer = subObj.GetComponent<MeshRenderer>();
+                                if (meshRenderer)
+                                    meshRenderer.sharedMaterial = MaterialUtility.DefaultMaterial;
+                            } else
+                            {
+                                Material renderMaterial = instance.RenderMaterial;
+                                if (!renderMaterial)
+                                {
+                                    renderMaterial = MaterialUtility.DefaultMaterial;
+                                    subObj.name = "missing-material Mesh (" + counter + ")"; counter++;
+                                } else
+                                    subObj.name = renderMaterial.name + " Mesh (" + counter + ")"; counter++;
+                                materialMeshCounters[instance.RenderMaterial] = counter;
+                            }
+
+                            var meshFilter = subObj.GetComponent<MeshFilter>();
+                            if (meshFilter)
+                                foundMeshFilters.Add(meshFilter);
+                        }
+
+                        var meshCollider = subObj.GetComponent<MeshCollider>();
+                        if (meshCollider)
+                            foundMeshColliders.Add(meshCollider);
+                    }
+                }
+            }
+            finally { AssetDatabase.StopAssetEditing(); }
+
+            Undo.IncrementCurrentGroup();
 			var groupIndex = Undo.GetCurrentGroup();
 			Undo.SetCurrentGroupName("Exported model");
 			try

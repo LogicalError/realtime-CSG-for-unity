@@ -53,14 +53,9 @@ namespace RealtimeCSG.Foundation
 			get
 			{
 				return
-					string.Format("v {0}{1}{2}",
+					string.Format("v {0}{1}",
 						Versioning.PluginVersion.Replace('_','.'),
-						HasBeenCompiledInDebugMode() ? " (C++ DEBUG)" : string.Empty,
-#if DEBUG
-						" (C# DEBUG)"
-#else
-						string.Empty
-#endif
+						HasBeenCompiledInDebugMode() ? " (C++ DEBUG)" : string.Empty
 						);
 			}
 		}

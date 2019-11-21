@@ -7,6 +7,7 @@ using System.Collections;
 using System.Reflection;
 using System.Linq;
 using UnityEngine.SceneManagement;
+using RealtimeCSG.Components;
 
 namespace RealtimeCSG
 {
@@ -56,20 +57,30 @@ namespace RealtimeCSG
 
 #if UNITY_2018_1_OR_NEWER
 			EditorApplication.hierarchyChanged	-= OnHierarchyWindowChanged;
-			EditorApplication.hierarchyChanged	+= OnHierarchyWindowChanged;
+            EditorApplication.hierarchyChanged += OnHierarchyWindowChanged;
+            PrefabUtility.prefabInstanceUpdated += OnPrefabInstanceUpdated;
+
 #else
 			EditorApplication.hierarchyWindowChanged	-= OnHierarchyWindowChanged;
 			EditorApplication.hierarchyWindowChanged	+= OnHierarchyWindowChanged;
 #endif
 
-			EditorApplication.hierarchyWindowItemOnGUI	-= HierarchyWindowItemGUI.OnHierarchyWindowItemOnGUI;
+            EditorApplication.hierarchyWindowItemOnGUI	-= HierarchyWindowItemGUI.OnHierarchyWindowItemOnGUI;
 			EditorApplication.hierarchyWindowItemOnGUI	+= HierarchyWindowItemGUI.OnHierarchyWindowItemOnGUI;
 			
 			UnityCompilerDefineManager.UpdateUnityDefines();
 		}
-		
 
-		void Shutdown(bool finalizing = false)
+        void OnPrefabInstanceUpdated(GameObject instance)
+        {
+            var models = instance.GetComponentsInChildren<CSGModel>();
+            if (models == null ||
+                models.Length == 0)
+                return;
+            ModelTraits.OnPrefabInstanceUpdated(models);
+        }
+
+        void Shutdown(bool finalizing = false)
 		{
 			if (editor != this)
 				return;

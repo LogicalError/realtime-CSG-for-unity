@@ -85,7 +85,10 @@ namespace RealtimeCSG
 			}
 
 			var allNodes = new List<CSGNode>();
-			for (var sceneIndex = 0; sceneIndex < SceneManager.sceneCount; sceneIndex++)
+
+            if (CSGPrefabUtility.AreInPrefabMode())
+                allNodes.AddRange(CSGPrefabUtility.GetNodesInPrefabMode());
+            for (var sceneIndex = 0; sceneIndex < SceneManager.sceneCount; sceneIndex++)
 			{
 				var scene = SceneManager.GetSceneAt(sceneIndex);
 				if (!scene.isLoaded)

@@ -143,7 +143,7 @@ namespace RealtimeCSG
 			gridColor.a *= alpha;
 			gridMaterial.SetColor(gridColorID, gridColor);
 
-			SceneView.lastActiveSceneView.camera.depthTextureMode = DepthTextureMode.Depth;
+			SceneView.currentDrawingSceneView.camera.depthTextureMode = DepthTextureMode.Depth;
 			
 			gridMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
 			gridMaterial.SetInt("_ZWrite", 0);

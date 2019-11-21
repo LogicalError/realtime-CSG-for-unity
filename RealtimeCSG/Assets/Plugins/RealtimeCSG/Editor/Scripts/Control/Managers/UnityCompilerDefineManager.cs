@@ -28,11 +28,7 @@ namespace RealtimeCSG
 
 			requiredDefines.Add(RealTimeCSGDefine);
 
-#if TEST_ENABLED
-			string	v						= RealtimeCSG.Foundation.Versioning.PrevPluginVersion;
-#else
 			string	v						= RealtimeCSG.Foundation.Versioning.PluginVersion;
-#endif
 			int		index					= v.IndexOfAny(new char[] { '_', '.' });
 			string	release_version_part	= v.Remove(index);
 			string	lower_part				= v.Substring(index + 1);

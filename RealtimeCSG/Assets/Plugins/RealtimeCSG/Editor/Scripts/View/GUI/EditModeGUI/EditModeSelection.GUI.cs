@@ -120,7 +120,7 @@ namespace RealtimeCSG
 
 				float topBarSize = 20;
 #if UNITY_2018_3_OR_NEWER
-				if (UnityEditor.Experimental.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage() != null)
+                if (CSGPrefabUtility.AreInPrefabMode())
 					topBarSize += 25;
 #endif
 
