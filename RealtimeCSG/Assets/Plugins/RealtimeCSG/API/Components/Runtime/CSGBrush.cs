@@ -50,7 +50,6 @@ namespace RealtimeCSG.Components
 
 		#region Cached values
 #if UNITY_EDITOR
-		//#if !TEST_ENABLED
 		[HideInInspector][NonSerialized] public Int32		brushNodeID  = CSGNode.InvalidNodeID;
 		[HideInInspector][NonSerialized] public Color?		outlineColor;
         [HideInInspector][NonSerialized] public readonly ChildNodeData			ChildData				= new ChildNodeData();
