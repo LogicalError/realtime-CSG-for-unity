@@ -82,9 +82,14 @@ namespace RealtimeCSG.Components
 					}
 				}
 
-			}
+            }
+            if (brush.Version == 2.0f)
+            {
+                if (brush.tag == "EditorOnly")
+                    brush.tag = "Untagged";
+            }
 
-			brush.Version = CSGBrush.CurrentVersion;
+            brush.Version = CSGBrush.CurrentVersion;
 		}
 
 		public static void UpgradeWhenNecessary(CSGOperation operation)
@@ -94,6 +99,12 @@ namespace RealtimeCSG.Components
 
 			if (operation.Version < 1.0f)
 				operation.Version = 1.0f;
+
+            if (operation.Version == 1.0f)
+            {
+                if (operation.tag == "EditorOnly")
+                    operation.tag = "Untagged";
+            }
 
 			operation.Version = CSGOperation.CurrentVersion;
 		}

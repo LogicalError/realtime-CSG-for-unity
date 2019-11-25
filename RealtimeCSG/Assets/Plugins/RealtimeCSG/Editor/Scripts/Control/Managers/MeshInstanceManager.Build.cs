@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEditor;
@@ -154,13 +154,14 @@ namespace InternalRealtimeCSG
                     )
                 {
                     UnityEngine.Object.DestroyImmediate(gameObject);
+                    continue;
                 } else
                 if (model)
                 {
                     gameObject.tag = "Untagged";
                     AssignLayerToChildren(gameObject);
                 } else
-                if (gameObject.tag == "EditorOnly")
+                if (gameObject.tag == "Untagged")
                     removableGameObjects.Add(gameObject);
                 if (csgnode)
                     UnityEngine.Object.DestroyImmediate(csgnode);
@@ -182,12 +183,18 @@ namespace InternalRealtimeCSG
             for (int i = 0; i < transform.childCount; i++)
             {
                 var childTransform = transform.GetChild(i);
-                if (childTransform.tag != "EditorOnly")
-                    return false;
+                //if (childTransform.tag != CSGContstants.kRemoveNodeTag)
+                //    return false;
                 if (childTransform.GetComponent<CSGNode>() == null)
+                {
+                    transform.gameObject.tag = "Untagged";
                     return false;
+                }
                 if (!RemoveWithChildrenIfPossible(childTransform, removableTransforms))
+                {
+                    transform.gameObject.tag = "Untagged";
                     return false;
+                }
             }
             UnityEngine.Object.DestroyImmediate(transform.gameObject);
             return true;
