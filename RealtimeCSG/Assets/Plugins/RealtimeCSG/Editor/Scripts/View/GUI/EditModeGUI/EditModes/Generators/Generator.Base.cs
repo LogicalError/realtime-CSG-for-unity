@@ -737,18 +737,19 @@ namespace RealtimeCSG
 		
 		
 		public void EndCommit()
-		{
-			if (generatedBrushes == null)
+        {
+            if (generatedBrushes == null)
 				return;
 			var bounds = BoundsUtilities.GetBounds(generatedBrushes);
 			if (!bounds.IsEmpty())
-			{
-				var center = bounds.Center - operationGameObject.transform.position;
+            {/*
+                var center = bounds.Center - operationGameObject.transform.position;
 				GeometryUtility.MoveControlMeshVertices(generatedBrushes, -center);
 				SurfaceUtility.TranslateSurfacesInWorldSpace(generatedBrushes, -center);
+                operationGameObject.transform.position += center;*/
 				ControlMeshUtility.RebuildShapes(generatedBrushes);
-
-                operationGameObject.transform.position += center;
+                var model = operationGameObject.GetComponentInParent<CSGModel>();
+                model.forceUpdate = true;
 
                 InternalCSGModelManager.CheckForChanges(forceHierarchyUpdate: true);
 				Undo.CollapseUndoOperations(undoGroupIndex);
