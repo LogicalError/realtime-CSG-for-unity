@@ -58,11 +58,15 @@ namespace RealtimeCSG
 #if UNITY_2018_1_OR_NEWER
 			EditorApplication.hierarchyChanged	-= OnHierarchyWindowChanged;
             EditorApplication.hierarchyChanged += OnHierarchyWindowChanged;
-            PrefabUtility.prefabInstanceUpdated += OnPrefabInstanceUpdated;
 
 #else
 			EditorApplication.hierarchyWindowChanged	-= OnHierarchyWindowChanged;
 			EditorApplication.hierarchyWindowChanged	+= OnHierarchyWindowChanged;
+#endif
+
+#if UNITY_2018_3_OR_NEWER
+            UnityEditor.Experimental.SceneManagement.PrefabStage.prefabSaving += OnPrefabSaving;
+
 #endif
 
             EditorApplication.hierarchyWindowItemOnGUI	-= HierarchyWindowItemGUI.OnHierarchyWindowItemOnGUI;
@@ -71,14 +75,13 @@ namespace RealtimeCSG
 			UnityCompilerDefineManager.UpdateUnityDefines();
 		}
 
-        void OnPrefabInstanceUpdated(GameObject instance)
+#if UNITY_2018_3_OR_NEWER
+        private void OnPrefabSaving(GameObject obj)
         {
-            var models = instance.GetComponentsInChildren<CSGModel>();
-            if (models == null ||
-                models.Length == 0)
-                return;
-            ModelTraits.OnPrefabInstanceUpdated(models);
+            ModelTraits.OnPrefabSaving(obj);
         }
+#endif
+
 
         void Shutdown(bool finalizing = false)
 		{

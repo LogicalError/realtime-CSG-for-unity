@@ -57,8 +57,13 @@ namespace RealtimeCSG.Foundation
 		/// <seealso cref="RealtimeCSG.Foundation.CSGTree.GetMeshDescriptions" />
 		public VertexChannelFlags	UsedVertexChannels	{ get { return (VertexChannelFlags )(((uint)maskAndChannels & BitMask) >> BitShift); } set { maskAndChannels = ((uint)maskAndChannels & ~BitMask) | ((uint)value << BitShift); } }
 
-		#region Comparison
-		[EditorBrowsable(EditorBrowsableState.Never)]
+        public override string ToString()
+        {
+            return string.Format("({0}, {1})", layers, maskAndChannels);
+        }
+
+        #region Comparison
+        [EditorBrowsable(EditorBrowsableState.Never)]
 		public static bool operator == (MeshQuery left, MeshQuery right) { return left.layers == right.layers && left.maskAndChannels == right.maskAndChannels; }
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static bool operator != (MeshQuery left, MeshQuery right) { return left.layers != right.layers || left.maskAndChannels != right.maskAndChannels; }

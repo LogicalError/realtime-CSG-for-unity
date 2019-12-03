@@ -1,3 +1,4 @@
+using System;
 using RealtimeCSG.Components;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -189,5 +190,10 @@ namespace RealtimeCSG
 			    return PrefabUtility.InstantiatePrefab(GetCorrespondingObjectFromSource(originalGameObject)) as GameObject;
     #endif
 	    }
+
+        internal static bool IsPartOfAsset(Mesh sharedMesh)
+        {
+            return !string.IsNullOrEmpty(AssetDatabase.GetAssetPath(sharedMesh));
+        }
     }
 }

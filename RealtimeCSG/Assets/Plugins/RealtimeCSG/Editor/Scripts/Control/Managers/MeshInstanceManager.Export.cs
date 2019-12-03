@@ -72,11 +72,10 @@ namespace InternalRealtimeCSG
                     if (!owner || !ArrayUtility.Contains(foundModels, owner))
                         continue;
 
-                    if (!meshContainer || meshContainer.meshInstanceLookup == null)
+                    if (!meshContainer || !meshContainer.HasMeshInstances)
                         continue;
 
-                    var instances = meshContainer.meshInstanceLookup.Values;
-                    foreach (var instance in instances)
+                    foreach (var instance in meshContainer.MeshInstances)
                     {
                         if (!instance)
                             continue;

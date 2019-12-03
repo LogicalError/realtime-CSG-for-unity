@@ -28,8 +28,13 @@ namespace InternalRealtimeCSG
 		public int			 SurfaceParameter;
 		public readonly MeshQuery MeshType;
 
-		#region Comparison
-		public override int GetHashCode()
+        public override string ToString()
+        {
+            return string.Format("({0} {1} {2})", SubMeshIndex, SurfaceParameter, MeshType);
+        }
+
+        #region Comparison
+        public override int GetHashCode()
 		{
 			var hash1 = SubMeshIndex     .GetHashCode();
 			var hash2 = SurfaceParameter .GetHashCode();
@@ -135,6 +140,24 @@ namespace InternalRealtimeCSG
 		[NonSerialized] [HideInInspector] public MeshRenderer	CachedMeshRenderer;
 		[NonSerialized] [HideInInspector] public System.Object	CachedMeshRendererSO;
 
+        public void Reset()
+        {
+		    RenderMaterial          = null;
+		    PhysicsMaterial         = null;
+		    RenderSurfaceType       = (RenderSurfaceType)999;
+        
+		    HasGeneratedNormals     = false;
+		    HasUV2				    = false;
+            ResetUVTime			    = float.PositiveInfinity;
+		    LightingHashValue       = 0;
+
+		    Dirty	                = true;
+
+		    CachedMeshCollider      = null;
+		    CachedMeshFilter        = null;
+		    CachedMeshRenderer      = null;
+		    CachedMeshRendererSO    = null;
+        }
 
 		public MeshInstanceKey GenerateKey()
 		{
@@ -151,12 +174,15 @@ namespace InternalRealtimeCSG
                     if (SharedMesh.vertexCount < 0)
                         return false;
                 } else
-                if (SharedMesh.GetInstanceID() != 0)
+                if (!ReferenceEquals(SharedMesh, null) &&
+                    SharedMesh.GetInstanceID() != 0)
                     return false;
 				return true;
 			}
 			return false;
 		}
+
+        static readonly List<Vector2> sUVList = new List<Vector2>();
 
 		internal void Awake()
 		{
@@ -220,9 +246,28 @@ namespace InternalRealtimeCSG
 					}
 				}
 			}
+
+            if (SharedMesh)
+            {
+                SharedMesh.GetUVs(1, sUVList);
+                HasUV2 = sUVList != null && sUVList.Count == SharedMesh.vertexCount;
+            } else
+                HasUV2 = false;
 		}
+        
+        public void FindMissingSharedMesh()
+        {
+            if (TryGetComponent(out MeshCollider meshCollider))
+            {
+                SharedMesh = meshCollider.sharedMesh;
+            } else
+            if (TryGetComponent(out MeshFilter meshFilter))
+            {
+                SharedMesh = meshFilter.sharedMesh;
+            }
+        }
 #else
-		void Awake() 
+        void Awake() 
 		{
 			this.hideFlags = HideFlags.DontSaveInBuild;
 		}

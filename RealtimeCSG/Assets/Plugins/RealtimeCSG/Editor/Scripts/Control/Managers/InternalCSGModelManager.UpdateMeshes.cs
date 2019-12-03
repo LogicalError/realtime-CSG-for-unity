@@ -239,11 +239,13 @@ namespace RealtimeCSG
 		internal static double updateMeshTime		= 0.0;
 		
 		const int MaxVertexCount = 65000;
-		private static bool UpdateMesh(CSGModel						model, 
-									   GeneratedMeshDescription		meshDescription, 
-									   RenderSurfaceType			renderSurfaceType,
-									   ref bool						outputHasGeneratedNormals,
-									   ref Mesh						sharedMesh)
+		private static bool UpdateMesh(CSGModel					model, 
+									   string                   baseName,
+                                       GeneratedMeshDescription meshDescription, 
+									   RenderSurfaceType	    renderSurfaceType,
+									   ref bool				    outputHasGeneratedNormals,
+									   ref Mesh				    sharedMesh,
+                                       bool                     editorOnly = false)
 		{
             // create our arrays on the C# side with the correct size
             GeneratedMeshContents generatedMesh;
@@ -255,23 +257,27 @@ namespace RealtimeCSG
 			}
 			getModelMeshesTime += EditorApplication.timeSinceStartup - startGetModelMeshesTime;
 
-			UpdateMesh(generatedMesh,
+			UpdateMesh(baseName,
+                       generatedMesh,
 					   meshDescription,
 					   renderSurfaceType,
 					   ref outputHasGeneratedNormals,
-					   ref sharedMesh);
+					   ref sharedMesh,
+                       editorOnly);
 			return true;
 		}
 
-		public static bool UpdateMesh(GeneratedMeshContents		generatedMesh, 
+		public static bool UpdateMesh(string                    baseName,
+                                      GeneratedMeshContents		generatedMesh, 
 									  GeneratedMeshDescription	inputMeshDescription,
 									  RenderSurfaceType			renderSurfaceType,
 									  ref bool					outputHasGeneratedNormals,
-									  ref Mesh					sharedMesh)
+									  ref Mesh					sharedMesh,
+                                      bool                      editorOnly)
         {
             var startUpdateMeshTime = EditorApplication.timeSinceStartup;
 			{
-				MeshInstanceManager.ClearMesh(ref outputHasGeneratedNormals, ref sharedMesh);
+				MeshInstanceManager.ClearOrCreateMesh(baseName, editorOnly, ref outputHasGeneratedNormals, ref sharedMesh);
 
 				// finally, we start filling our (sub)meshes using the C# arrays
 				sharedMesh.vertices = generatedMesh.positions;
@@ -305,28 +311,38 @@ namespace RealtimeCSG
 				return false;
 			}
 			return true;
-		}
+        }
 
-		private static GeneratedMeshInstance GenerateMeshInstance(GeneratedMeshes meshContainer, CSGModel model, ModelSettingsFlags modelSettings, GeneratedMeshDescription meshDescription, RenderSurfaceType renderSurfaceType)
+        private static bool TryGetMeshInstance(GeneratedMeshes meshContainer, CSGModel model, ModelSettingsFlags modelSettings, GeneratedMeshDescription meshDescription, RenderSurfaceType renderSurfaceType, out GeneratedMeshInstance meshInstance)
         {
-            GeneratedMeshInstance meshInstance;
-
             var startGetMeshInstanceTime = EditorApplication.timeSinceStartup;
-			{
-				meshInstance = MeshInstanceManager.GetMeshInstance(meshContainer, meshDescription, modelSettings, renderSurfaceType);
-				if (!meshInstance)
-					return null;
-            }
-
+            meshInstance = MeshInstanceManager.GetMeshInstance(meshContainer, meshDescription, modelSettings, renderSurfaceType);
             getMeshInstanceTime += EditorApplication.timeSinceStartup - startGetMeshInstanceTime;
-			if (meshDescription == meshInstance.MeshDescription &&
+            if (meshInstance &&
+                meshDescription == meshInstance.MeshDescription &&
                 meshInstance.SharedMesh &&
                 meshInstance.IsValid())
-				return meshInstance;
+                return true;
+
+            meshInstance = null;
+            return true;
+        }
+
+        private static GeneratedMeshInstance GenerateMeshInstance(GeneratedMeshes meshContainer, CSGModel model, ModelSettingsFlags modelSettings, GeneratedMeshDescription meshDescription, RenderSurfaceType renderSurfaceType, List<GameObject> unusedInstances)
+        {
+            GeneratedMeshInstance meshInstance = MeshInstanceManager.CreateMeshInstance(meshContainer, meshDescription, modelSettings, renderSurfaceType, unusedInstances);
+
+            string baseName;
+            switch(renderSurfaceType)
+            {
+                case RenderSurfaceType.Collider:    baseName = "Collider"; break;
+                case RenderSurfaceType.Normal:      baseName = "Renderable"; break;
+                default:                            baseName = "Unknown"; break;
+            }
 
             meshInstance.MeshDescription = meshDescription;
-			if (!UpdateMesh(model, 
-						    meshInstance.MeshDescription,
+			if (!UpdateMesh(model, baseName,
+                            meshInstance.MeshDescription,
 							meshInstance.RenderSurfaceType,
 							ref meshInstance.HasGeneratedNormals,
 							ref meshInstance.SharedMesh))
@@ -335,29 +351,47 @@ namespace RealtimeCSG
 			return meshInstance;
 		}
 
-		private static HelperSurfaceDescription GenerateHelperSurfaceDescription(GeneratedMeshes meshContainer, CSGModel model, ModelSettingsFlags modelSettings, GeneratedMeshDescription meshDescription, RenderSurfaceType renderSurfaceType)
+        static string[] renderSurfaceMeshNames = new string[]
         {
-            HelperSurfaceDescription helperSurfaceDescription;
+            "Renderable helper surface",
 
-			var startGetMeshInstanceTime = EditorApplication.timeSinceStartup;
-			{
-				helperSurfaceDescription = MeshInstanceManager.GetHelperSurfaceDescription(meshContainer, modelSettings, meshDescription, renderSurfaceType);
-			}
-			getMeshInstanceTime += EditorApplication.timeSinceStartup - startGetMeshInstanceTime;
-			if (meshDescription == helperSurfaceDescription.MeshDescription &&
+            "Hidden helper surface",
+            "Culled helper surface",
+            "ShadowOnly helper surface",
+            "Collider helper surface",
+            "Trigger helper surface",
+
+            "CastShadows helper surface",
+            "ReceiveShadows helper surface"
+        };
+
+        private static bool TryGetHelperSurfaceDescription(GeneratedMeshes meshContainer, CSGModel model, ModelSettingsFlags modelSettings, GeneratedMeshDescription meshDescription, RenderSurfaceType renderSurfaceType, out HelperSurfaceDescription helperSurfaceDescription)
+        {
+            var startGetMeshInstanceTime = EditorApplication.timeSinceStartup;
+            helperSurfaceDescription = MeshInstanceManager.GetHelperSurfaceDescription(meshContainer, modelSettings, meshDescription, renderSurfaceType);
+            getMeshInstanceTime += EditorApplication.timeSinceStartup - startGetMeshInstanceTime;
+            if (helperSurfaceDescription != null &&
+                meshDescription == helperSurfaceDescription.MeshDescription &&
                 helperSurfaceDescription.SharedMesh &&
                 helperSurfaceDescription.IsValid())
-				return helperSurfaceDescription;
+                return true;
+            helperSurfaceDescription = null;
+            return true;
+        }
+
+        private static HelperSurfaceDescription GenerateHelperSurfaceDescription(GeneratedMeshes meshContainer, CSGModel model, ModelSettingsFlags modelSettings, GeneratedMeshDescription meshDescription, RenderSurfaceType renderSurfaceType)
+        {
+            HelperSurfaceDescription helperSurfaceDescription = MeshInstanceManager.CreateHelperSurfaceDescription(meshContainer, modelSettings, meshDescription, renderSurfaceType);
 
             helperSurfaceDescription.MeshDescription = meshDescription;
-            if (!UpdateMesh(model, 
-							helperSurfaceDescription.MeshDescription,
+            if (!UpdateMesh(model, renderSurfaceMeshNames[(int)renderSurfaceType],
+                            helperSurfaceDescription.MeshDescription,
 							helperSurfaceDescription.RenderSurfaceType,
 							ref helperSurfaceDescription.HasGeneratedNormals,
-							ref helperSurfaceDescription.SharedMesh))
+							ref helperSurfaceDescription.SharedMesh,
+                            editorOnly: true))
 				return null;
-
-			return helperSurfaceDescription;
+            return helperSurfaceDescription;
 		}
 		#endregion
 
@@ -385,6 +419,7 @@ namespace RealtimeCSG
 
 		static readonly HashSet<HelperSurfaceDescription>	__foundHelperSurfaces		 = new HashSet<HelperSurfaceDescription>();
 		static readonly HashSet<GeneratedMeshInstance>		__foundGeneratedMeshInstance = new HashSet<GeneratedMeshInstance>();
+		static readonly HashSet<int>		                __unfoundMeshInstances       = new HashSet<int>();
 		static GeneratedMeshDescription[]					__meshDescriptions			 = new GeneratedMeshDescription[0];
 
 
@@ -475,38 +510,69 @@ namespace RealtimeCSG
 
                     __foundHelperSurfaces.Clear();
 					__foundGeneratedMeshInstance.Clear();
-					var startUnityMeshUpdates = EditorApplication.timeSinceStartup;
-					{
-						for (int meshIndex = 0; meshIndex < __meshDescriptions.Length; meshIndex++)
-						{
+                    __unfoundMeshInstances.Clear();
+                    AssetDatabase.StartAssetEditing(); // We might be modifying a prefab, in which case we need to store a mesh inside it
+                    try
+                    {
+                        var startUnityMeshUpdates = EditorApplication.timeSinceStartup;
+                        for (int meshIndex = 0; meshIndex < __meshDescriptions.Length; meshIndex++)
+                        {
                             if (!ValidateMesh(__meshDescriptions[meshIndex]))
                                 continue;
 
-							haveUpdates = true;
-							var renderSurfaceType = MeshInstanceManager.GetSurfaceType(__meshDescriptions[meshIndex], model.Settings);
+                            haveUpdates = true;
+                            var renderSurfaceType = MeshInstanceManager.GetSurfaceType(__meshDescriptions[meshIndex], model.Settings);
                             if (renderSurfaceType == RenderSurfaceType.Normal ||
-								renderSurfaceType == RenderSurfaceType.ShadowOnly)
-							{ 
-								var meshInstance	= GenerateMeshInstance(meshContainer, model, model.Settings, __meshDescriptions[meshIndex], renderSurfaceType);
-								if (meshInstance != null) __foundGeneratedMeshInstance.Add(meshInstance);
-							} else 
-                            if (renderSurfaceType == RenderSurfaceType.Collider ||
-								renderSurfaceType == RenderSurfaceType.Trigger)
+                                renderSurfaceType == RenderSurfaceType.ShadowOnly ||
+                                renderSurfaceType == RenderSurfaceType.Collider ||
+                                renderSurfaceType == RenderSurfaceType.Trigger)
                             {
-                                var meshInstance = GenerateMeshInstance(meshContainer, model, model.Settings, __meshDescriptions[meshIndex], renderSurfaceType);
+                                if (TryGetMeshInstance(meshContainer, model, model.Settings, __meshDescriptions[meshIndex], renderSurfaceType, out GeneratedMeshInstance meshInstance))
+                                {
+                                    if (meshInstance != null)
+                                        __foundGeneratedMeshInstance.Add(meshInstance);
+                                    else
+                                        __unfoundMeshInstances.Add(meshIndex);
+                                }
+                            }
+                            if (renderSurfaceType != RenderSurfaceType.Normal)
+                            {
+                                if (TryGetHelperSurfaceDescription(meshContainer, model, model.Settings, __meshDescriptions[meshIndex], renderSurfaceType, out HelperSurfaceDescription helperSurface))
+                                {
+                                    if (helperSurface != null)
+                                        __foundHelperSurfaces.Add(helperSurface);
+                                    else
+                                        __unfoundMeshInstances.Add(meshIndex);
+                                }
+                            }
+                        }
+
+                        var unusedInstances = MeshInstanceManager.FindUnusedMeshInstances(meshContainer, __foundGeneratedMeshInstance, __foundHelperSurfaces);
+
+                        foreach (int meshIndex in __unfoundMeshInstances)
+                        {
+                            haveUpdates = true;
+                            var renderSurfaceType = MeshInstanceManager.GetSurfaceType(__meshDescriptions[meshIndex], model.Settings);
+                            if (renderSurfaceType == RenderSurfaceType.Normal ||
+                                renderSurfaceType == RenderSurfaceType.ShadowOnly ||
+                                renderSurfaceType == RenderSurfaceType.Collider ||
+                                renderSurfaceType == RenderSurfaceType.Trigger)
+                            {
+                                var meshInstance = GenerateMeshInstance(meshContainer, model, model.Settings, __meshDescriptions[meshIndex], renderSurfaceType, unusedInstances);
                                 if (meshInstance != null) __foundGeneratedMeshInstance.Add(meshInstance);
+                            }
+                            if (renderSurfaceType != RenderSurfaceType.Normal)
+                            {
                                 var helperSurface = GenerateHelperSurfaceDescription(meshContainer, model, model.Settings, __meshDescriptions[meshIndex], renderSurfaceType);
                                 __foundHelperSurfaces.Add(helperSurface);
-                            } else
-							{
-								var helperSurface	= GenerateHelperSurfaceDescription(meshContainer, model, model.Settings, __meshDescriptions[meshIndex], renderSurfaceType);
-								__foundHelperSurfaces.Add(helperSurface);
-							}
-						}
-					}
-					unityMeshUpdates += (EditorApplication.timeSinceStartup - startUnityMeshUpdates);
+                            }
+                        }
 
-                    MeshInstanceManager.UpdateContainerComponents(meshContainer, __foundGeneratedMeshInstance, __foundHelperSurfaces);
+                        MeshInstanceManager.UpdateContainerComponents(meshContainer, __foundGeneratedMeshInstance, __foundHelperSurfaces);
+                        unityMeshUpdates += (EditorApplication.timeSinceStartup - startUnityMeshUpdates);
+                    }
+                    finally { AssetDatabase.StopAssetEditing(); }
+
 				}
 
                 if (haveUpdates)

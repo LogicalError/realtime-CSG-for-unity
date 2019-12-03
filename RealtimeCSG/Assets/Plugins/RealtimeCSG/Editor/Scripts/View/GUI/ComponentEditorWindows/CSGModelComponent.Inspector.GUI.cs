@@ -1265,7 +1265,7 @@ namespace RealtimeCSG
                         
 
                             var materialMeshes = new Dictionary<Material, List<MeshData>>();
-                            foreach (var instance in meshContainer.meshInstanceLookup.Values)
+                            foreach (var instance in meshContainer.MeshInstances)
                             {
                                 var mesh				= instance.SharedMesh;
                                 if (!mesh || !MeshInstanceManager.HasVisibleMeshRenderer(instance))
