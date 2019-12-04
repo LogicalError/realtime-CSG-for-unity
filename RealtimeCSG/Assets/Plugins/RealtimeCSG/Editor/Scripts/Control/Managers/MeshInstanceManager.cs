@@ -49,82 +49,10 @@ namespace InternalRealtimeCSG
 				generatedMeshes.owner.generatedMeshes = null;
 
 			generatedMeshes.owner = null;
-			Destroy(generatedMeshes.gameObject);
+            GameObjectExtensions.Destroy(generatedMeshes.gameObject);
 
 			// Undo.DestroyObjectImmediate // NOTE: why was this used before?
 			// can't use Undo variant here because it'll mark scenes as dirty on load ..
-		}
-
-        const string kUnableToDelete = "<unable to delete>";
-
-        public static void Destroy(GameObject gameObject)
-		{
-			if (!gameObject)
-				return;
-
-            // Cannot destroy gameObjects when certain hideflags are set
-            if (!TryDestroy(gameObject))
-			{ 
-				// Work-around for nested prefab instance issues ..
-				if (gameObject.activeSelf &&
-                    gameObject.name != kUnableToDelete)
-				{
-					gameObject.hideFlags = HideFlags.DontSaveInBuild;
-					gameObject.SetActive(false);
-					SanitizeGameObject(gameObject);
-					gameObject.name = kUnableToDelete;
-				}
-			}
-		}
-
-		// Sometimes we're not allowed to destroy objects, so we try to destroy it and return false if we failed
-		static bool TryDestroy(GameObject gameObject)
-		{
-			if (!gameObject)
-				return false;
-
-			var prevHideFlags = gameObject.hideFlags;
-
-			// Cannot destroy gameObjects when certain hideflags are set
-			gameObject.hideFlags = HideFlags.None;
-			try
-			{
-				UnityEngine.Object.DestroyImmediate(gameObject);
-				return true;
-			}
-			catch
-			{
-				gameObject.hideFlags = prevHideFlags;
-				return false;
-			}
-		}
-
-		static void SanitizeGameObject(GameObject gameObject)
-		{
-			{
-				var childComponents = gameObject.GetComponentsInChildren<MonoBehaviour>();
-				foreach (var component in childComponents)
-				{
-					try { UnityEngine.Object.DestroyImmediate(component); } catch { }
-				}
-			}
-			{
-				var childComponents = gameObject.GetComponentsInChildren<Component>();
-				foreach (var component in childComponents)
-				{
-					if (!(component is Transform))
-					{
-						try { UnityEngine.Object.DestroyImmediate(component); } catch { }
-					}
-				}
-			}
-			{
-				var transform = gameObject.transform;
-				foreach (Transform childTransform in transform)
-				{
-					Destroy(childTransform.gameObject);
-				}
-			}
 		}
 
 		public static void OnCreated(GeneratedMeshes container)
@@ -152,7 +80,7 @@ namespace InternalRealtimeCSG
 				container = parent.GetComponent<GeneratedMeshes>();
 			if (!container)
 			{
-				Destroy(meshInstance.gameObject);
+                GameObjectExtensions.Destroy(meshInstance.gameObject);
 				return;
 			}
 
@@ -165,7 +93,7 @@ namespace InternalRealtimeCSG
 			{
 				if (meshInstance && meshInstance.gameObject)
 				{
-					Destroy(meshInstance.gameObject);
+                    GameObjectExtensions.Destroy(meshInstance.gameObject);
 				}
 			}
 		}
@@ -320,7 +248,7 @@ namespace InternalRealtimeCSG
 						if (newGeneratedMeshes)
 						{
 							var newGeneratedMeshesGameObject = newGeneratedMeshes.gameObject;
-							if (TryDestroy(newGeneratedMeshesGameObject))
+							if (GameObjectExtensions.TryDestroy(newGeneratedMeshesGameObject))
 							{
 								newGeneratedMeshes = generatedMeshesComponent;
 								continue;
@@ -334,14 +262,14 @@ namespace InternalRealtimeCSG
 					}
 
 					// Try to destroy the GeneratedMeshes gameObject
-					if (!TryDestroy(generatedMeshesGameObject))
+					if (!GameObjectExtensions.TryDestroy(generatedMeshesGameObject))
 					{
 						// If the we already found a GeneratedMesh, and it's valid, try to see if we can destroy that instead
 						var newGeneratedMeshesGameObject = newGeneratedMeshes.gameObject;
-						if (!TryDestroy(newGeneratedMeshesGameObject))
+						if (!GameObjectExtensions.TryDestroy(newGeneratedMeshesGameObject))
 						{
-							// Fall back to disabling the component instead
-							Destroy(newGeneratedMeshesGameObject);
+                            // Fall back to disabling the component instead
+                            GameObjectExtensions.Destroy(newGeneratedMeshesGameObject);
 						} 
 						prevGeneratedMeshes = null;
 						newGeneratedMeshes = generatedMeshesComponent;
@@ -492,7 +420,7 @@ namespace InternalRealtimeCSG
 				{
 					if (!meshInstance)
 					{
-						TryDestroy(meshInstance.gameObject);
+                        GameObjectExtensions.TryDestroy(meshInstance.gameObject);
 						return;
 					}
 				}
@@ -582,8 +510,8 @@ namespace InternalRealtimeCSG
 				{
 					meshInstances[m].hideFlags = HideFlags.None;
 					var gameObject = meshInstances[m].gameObject;
-					SanitizeGameObject(gameObject);
-					TryDestroy(gameObject);
+                    GameObjectExtensions.SanitizeGameObject(gameObject);
+                    GameObjectExtensions.TryDestroy(gameObject);
 				}
 			}
 		}
@@ -1675,7 +1603,7 @@ namespace InternalRealtimeCSG
 
 				return;
 			}
-			Destroy(gameObject);
+            GameObjectExtensions.Destroy(gameObject);
 		}
 
         static readonly List<GeneratedMeshInstance> s_foundMeshInstances = new List<GeneratedMeshInstance>();
@@ -1699,7 +1627,7 @@ namespace InternalRealtimeCSG
 				}
 			} else
 			{
-				Destroy(generatedMeshes.gameObject);
+                GameObjectExtensions.Destroy(generatedMeshes.gameObject);
 				return;
 			}
 
@@ -1714,26 +1642,26 @@ namespace InternalRealtimeCSG
 				if (!meshInstance)
 				{
                     if (meshInstanceTransform.gameObject)
-					    Destroy(meshInstanceTransform.gameObject);
+                        GameObjectExtensions.Destroy(meshInstanceTransform.gameObject);
 					continue;
 				}
 				var key = meshInstance.GenerateKey();
 				if (!generatedMeshes.HasMeshInstance(key))
 				{
-					Destroy(meshInstanceTransform.gameObject);
+                    GameObjectExtensions.Destroy(meshInstanceTransform.gameObject);
 					continue;
 				}
 
-				/*
+                /*
 				if (meshInstance.RenderSurfaceType == RenderSurfaceType.Normal && !meshInstance.RenderMaterial)
 				{
-					Destroy(meshInstanceTransform.gameObject);
+					GameObjectExtensions.Destroy(meshInstanceTransform.gameObject);
 					continue; 
 				}
 				*/
-				if (!ValidMeshInstance(meshInstance))
+                if (!ValidMeshInstance(meshInstance))
 				{
-					Destroy(meshInstanceTransform.gameObject);
+                    GameObjectExtensions.Destroy(meshInstanceTransform.gameObject);
 					continue;
 				}
 
@@ -1954,7 +1882,7 @@ namespace InternalRealtimeCSG
                 {
                     //var key = meshInstance.GenerateKey();
                     //var keyObj = EditorUtility.InstanceIDToObject(key.SurfaceParameter);
-                    Destroy(meshInstance.gameObject);
+                    GameObjectExtensions.Destroy(meshInstance.gameObject);
 				}
 
 				if (__removeMeshInstances.Length < container.MeshInstances.Length)

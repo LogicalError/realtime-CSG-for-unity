@@ -226,7 +226,7 @@ namespace InternalRealtimeCSG
                         var childTransforms = generateMeshesTransform;
                         foreach (Transform childTransform in childTransforms)
                         {
-                            Destroy(childTransform.gameObject);
+                            GameObjectExtensions.Destroy(childTransform.gameObject);
                         }
                     }
                 }

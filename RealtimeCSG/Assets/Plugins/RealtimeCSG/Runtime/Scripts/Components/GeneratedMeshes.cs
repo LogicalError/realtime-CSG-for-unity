@@ -300,11 +300,12 @@ namespace InternalRealtimeCSG
 		{
 			this.gameObject.hideFlags = HideFlags.None;
 			this.hideFlags = HideFlags.None;
+
 			// we need to kill a dangling "generated-meshes" when deleting prefab instance in scene
 			if (owner)
 				return;
-			
-			UnityEngine.Object.DestroyImmediate(this.gameObject);
+
+            GameObjectExtensions.Destroy(this.gameObject);
 		}
 #else
         void Awake()
