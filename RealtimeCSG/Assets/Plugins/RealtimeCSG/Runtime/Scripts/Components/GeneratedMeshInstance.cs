@@ -257,11 +257,14 @@ namespace InternalRealtimeCSG
         
         public void FindMissingSharedMesh()
         {
-            if (TryGetComponent(out MeshCollider meshCollider))
+            MeshCollider meshCollider;
+            if (this.TryGetComponent(out meshCollider))
             {
                 SharedMesh = meshCollider.sharedMesh;
-            } else
-            if (TryGetComponent(out MeshFilter meshFilter))
+                return;
+            }
+            MeshFilter meshFilter;
+            if (this.TryGetComponent(out meshFilter))
             {
                 SharedMesh = meshFilter.sharedMesh;
             }

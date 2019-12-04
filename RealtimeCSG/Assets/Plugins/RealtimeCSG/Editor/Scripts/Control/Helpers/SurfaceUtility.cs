@@ -210,7 +210,6 @@ namespace RealtimeCSG
 
             Vector2 newTextureCoord = ConvertModelToTextureSpace(brush, surfaceIndex, Vector3.zero);
 
-            var oldTranslation = brush.Shape.TexGens[texGenIndex].Translation;
             brush.Shape.TexGens[texGenIndex].Translation -= (newTextureCoord - oldTextureCoord);
         }
 

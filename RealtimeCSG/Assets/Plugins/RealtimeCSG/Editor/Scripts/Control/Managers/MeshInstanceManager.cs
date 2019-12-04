@@ -1943,7 +1943,6 @@ namespace InternalRealtimeCSG
 						continue;
 					}
 
-					var key = instance.GenerateKey();
 					container.AddMeshInstance(instance);
 				}
 			}
@@ -1953,8 +1952,8 @@ namespace InternalRealtimeCSG
 				var meshInstance = __notfoundInstances[i];
 				if (meshInstance && meshInstance.gameObject)
                 {
-                    var key = meshInstance.GenerateKey();
-                    var keyObj = EditorUtility.InstanceIDToObject(key.SurfaceParameter);
+                    //var key = meshInstance.GenerateKey();
+                    //var keyObj = EditorUtility.InstanceIDToObject(key.SurfaceParameter);
                     Destroy(meshInstance.gameObject);
 				}
 

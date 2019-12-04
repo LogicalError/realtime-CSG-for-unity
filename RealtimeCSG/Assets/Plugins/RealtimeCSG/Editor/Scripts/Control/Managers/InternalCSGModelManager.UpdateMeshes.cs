@@ -527,7 +527,8 @@ namespace RealtimeCSG
                                 renderSurfaceType == RenderSurfaceType.Collider ||
                                 renderSurfaceType == RenderSurfaceType.Trigger)
                             {
-                                if (TryGetMeshInstance(meshContainer, model, model.Settings, __meshDescriptions[meshIndex], renderSurfaceType, out GeneratedMeshInstance meshInstance))
+                                GeneratedMeshInstance meshInstance;
+                                if (TryGetMeshInstance(meshContainer, model, model.Settings, __meshDescriptions[meshIndex], renderSurfaceType, out meshInstance))
                                 {
                                     if (meshInstance != null)
                                         __foundGeneratedMeshInstance.Add(meshInstance);
@@ -537,7 +538,8 @@ namespace RealtimeCSG
                             }
                             if (renderSurfaceType != RenderSurfaceType.Normal)
                             {
-                                if (TryGetHelperSurfaceDescription(meshContainer, model, model.Settings, __meshDescriptions[meshIndex], renderSurfaceType, out HelperSurfaceDescription helperSurface))
+                                HelperSurfaceDescription helperSurface;
+                                if (TryGetHelperSurfaceDescription(meshContainer, model, model.Settings, __meshDescriptions[meshIndex], renderSurfaceType, out helperSurface))
                                 {
                                     if (helperSurface != null)
                                         __foundHelperSurfaces.Add(helperSurface);
