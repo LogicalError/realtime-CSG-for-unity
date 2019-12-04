@@ -257,6 +257,18 @@ namespace InternalRealtimeCSG
         
         public void FindMissingSharedMesh()
         {
+#if !UNITY_2019_2_OR_NEWER
+            MeshCollider meshCollider;
+            MeshFilter meshFilter;
+            if (gameObject.TryGetComponent(out meshCollider))
+            {
+                SharedMesh = meshCollider.sharedMesh;
+            } else
+            if (gameObject.TryGetComponent(out meshFilter))
+            {
+                SharedMesh = meshFilter.sharedMesh;
+            }
+#else
             if (TryGetComponent(out MeshCollider meshCollider))
             {
                 SharedMesh = meshCollider.sharedMesh;
@@ -265,6 +277,7 @@ namespace InternalRealtimeCSG
             {
                 SharedMesh = meshFilter.sharedMesh;
             }
+#endif
         }
 #else
         void Awake() 
