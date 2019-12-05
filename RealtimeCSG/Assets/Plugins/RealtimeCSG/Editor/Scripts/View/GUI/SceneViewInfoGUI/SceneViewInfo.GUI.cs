@@ -8,17 +8,26 @@ Description:
 Handles drawing information in the scene view, such as brush and model count.
 * * * * * * * * * * * * * * * * * * * * * */
 
+using System.Text;
 using UnityEditor;
 using UnityEngine;
+
+using System.Diagnostics;
 
 namespace RealtimeCSG
 {
     internal sealed partial class SceneViewInfoGUI
     {
+        private static StringBuilder sb = new StringBuilder( 64 );
+        private static float delta = 0;
+        private static float lastTimeSinceStartup = 0;
+
         public static void DrawInfoGUI( SceneView sceneView )
         {
             InitStyles( sceneView );
             CSG_GUIStyleUtility.InitStyles();
+
+            CalcDelta(); // for fps display
 
             try
             {
@@ -27,29 +36,44 @@ namespace RealtimeCSG
                 if( !CSGSettings.ShowSceneInfo )
                     return;
 
-                GUILayout.BeginArea( infoGUIRect /*, infoGUIBGStyle*/ );
+                // -Nuke: internally there is a root model that all other models are grouped under, so we'll subtract 1 to keep an accurate count of user created brushes.
+                int modelCount = Mathf.Clamp( InternalCSGModelManager.Models.Length - 1, 0, int.MaxValue );
+                int brushCount = InternalCSGModelManager.Brushes.Count;
+
+                sb = new StringBuilder( 64 );
+                sb.Append( "Models:\t" )
+                  .Append( modelCount )
+                  .Append( "\nBrushes:\t" )
+                  .Append( brushCount )
+                  .Append( "\nFPS:\t" )
+                  .Append( (int)Mathf.Clamp((1f / delta) * 0.1f, 0, 144));
+
+                GUILayout.BeginArea( infoGUIRect );
                 {
                     GUILayout.FlexibleSpace();
 
-                    // -Nuke: internally there is a root model that all other models are grouped under, so we'll subtract 1 to keep an accurate count of user created brushes.
                     GUILayout.Label
                     (
-                        ((InternalCSGModelManager.Models.Length - 1 <= 0) ? 0 : InternalCSGModelManager.Models.Length - 1).ToString( "Models:\t###0" ),
-                        infoGUIStyle,
-                        GUILayout.Height( infoGUILabelHeight )
-                    );
-
-                    GUILayout.Label
-                    (
-                        (InternalCSGModelManager.Brushes.Count /* + 10000*/).ToString( "Brushes:\t###0" ),
+                        sb.ToString(),
                         infoGUIStyle,
                         GUILayout.Height( infoGUILabelHeight )
                     );
                 }
-
                 GUILayout.EndArea();
             }
             finally { Handles.EndGUI(); }
+        }
+
+        // calcs the delta time of the scene view
+        private static void CalcDelta()
+        {
+            if(lastTimeSinceStartup == 0)
+            {
+                lastTimeSinceStartup = (float)EditorApplication.timeSinceStartup;
+            }
+
+            delta = (float)EditorApplication.timeSinceStartup - lastTimeSinceStartup;
+            lastTimeSinceStartup = (float)EditorApplication.timeSinceStartup;
         }
     }
 }
