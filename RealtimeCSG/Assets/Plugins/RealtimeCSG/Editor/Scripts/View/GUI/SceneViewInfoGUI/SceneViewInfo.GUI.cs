@@ -19,15 +19,11 @@ namespace RealtimeCSG
     internal sealed partial class SceneViewInfoGUI
     {
         private static StringBuilder sb = new StringBuilder( 64 );
-        private static float delta = 0;
-        private static float lastTimeSinceStartup = 0;
 
         public static void DrawInfoGUI( SceneView sceneView )
         {
             InitStyles( sceneView );
             CSG_GUIStyleUtility.InitStyles();
-
-            CalcDelta(); // for fps display
 
             try
             {
@@ -44,9 +40,7 @@ namespace RealtimeCSG
                 sb.Append( "Models:\t" )
                   .Append( modelCount )
                   .Append( "\nBrushes:\t" )
-                  .Append( brushCount )
-                  .Append( "\nFPS:\t" )
-                  .Append( (int)Mathf.Clamp((1f / delta) * 0.1f, 0, 144));
+                  .Append( brushCount );
 
                 GUILayout.BeginArea( infoGUIRect );
                 {
@@ -62,18 +56,6 @@ namespace RealtimeCSG
                 GUILayout.EndArea();
             }
             finally { Handles.EndGUI(); }
-        }
-
-        // calcs the delta time of the scene view
-        private static void CalcDelta()
-        {
-            if(lastTimeSinceStartup == 0)
-            {
-                lastTimeSinceStartup = (float)EditorApplication.timeSinceStartup;
-            }
-
-            delta = (float)EditorApplication.timeSinceStartup - lastTimeSinceStartup;
-            lastTimeSinceStartup = (float)EditorApplication.timeSinceStartup;
         }
     }
 }
