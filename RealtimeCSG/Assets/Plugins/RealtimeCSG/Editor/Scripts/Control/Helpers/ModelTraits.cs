@@ -289,6 +289,14 @@ namespace RealtimeCSG
             }
         }
 #endif
+        public static bool IsDefaultModel(CSGModel model)
+        {
+            if ((model.hideFlags & MeshInstanceManager.ComponentHideFlags) == MeshInstanceManager.ComponentHideFlags ||
+                (model.hideFlags & HideFlags.DontSave) == HideFlags.DontSave ||
+                (model.hideFlags & HideFlags.DontSaveInEditor) == HideFlags.DontSaveInEditor)
+                return true;
+            return false;
+        }
 
         public static bool IsModelEditable(CSGModel model)
         {

@@ -1509,9 +1509,11 @@ namespace InternalRealtimeCSG
 		public static void UpdateGeneratedMeshesVisibility(GeneratedMeshes container, bool visible)
         {
             if (!ModelTraits.IsModelEditable(container.owner) ||
-				(container.owner.hideFlags & (HideFlags.HideInInspector | HideFlags.HideInHierarchy)) == (HideFlags.HideInInspector | HideFlags.HideInHierarchy))
+                ModelTraits.IsDefaultModel(container.owner))
 				return;
-            
+
+
+
             var containerGameObject = container.gameObject; 
 			
 			HideFlags gameObjectFlags;
@@ -1530,13 +1532,13 @@ namespace InternalRealtimeCSG
 			transformFlags = gameObjectFlags | HideFlags.NotEditable;
 
 			if (containerGameObject.hideFlags != gameObjectFlags)
-			{
-				containerGameObject.hideFlags = gameObjectFlags;
+            {
+                containerGameObject.hideFlags = gameObjectFlags;
 			}
 
 			if (container.transform.hideFlags != transformFlags)
-			{
-				container.transform.hideFlags   = transformFlags;
+            {
+                container.transform.hideFlags   = transformFlags;
 				container.hideFlags             = transformFlags | ComponentHideFlags;
 			}
 		}

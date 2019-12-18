@@ -32,6 +32,7 @@ namespace RealtimeCSG
 			
 			return InternalCSGModelManager.GetDefaultCSGModel(currentScene);
 		}
+
 		internal static CSGModel GetDefaultCSGModelForObject(MonoBehaviour component)
 		{
 			Scene currentScene;
@@ -132,17 +133,17 @@ namespace RealtimeCSG
 									StaticEditorFlags.ReflectionProbeStatic;
 				GameObjectUtility.SetStaticEditorFlags(sceneState.DefaultModel.gameObject, defaultFlags);
 
-				// do not give default CSG model any extra abilities other than rendering
-				//  since an invisible object doesn't work well with navmesh/colliders etc.
-				// force the users to use a CSG-model, but gracefully let it still be 
-				//  visible for objects outside of it.
-				if (inPrefabMode)
-					sceneState.DefaultModelObject.hideFlags = MeshInstanceManager.ComponentHideFlags | HideFlags.DontSaveInEditor;
-				else
-					sceneState.DefaultModelObject.hideFlags = MeshInstanceManager.ComponentHideFlags;
-
 				RegisterModel(sceneState.DefaultModel);
 			}
+
+			// do not give default CSG model any extra abilities other than rendering
+			//  since an invisible object doesn't work well with navmesh/colliders etc.
+			// force the users to use a CSG-model, but gracefully let it still be 
+			//  visible for objects outside of it.
+			if (inPrefabMode)
+				sceneState.DefaultModelObject.hideFlags = MeshInstanceManager.ComponentHideFlags | HideFlags.DontSave;
+			else
+				sceneState.DefaultModelObject.hideFlags = MeshInstanceManager.ComponentHideFlags;
 		}
 		#endregion
 	   
