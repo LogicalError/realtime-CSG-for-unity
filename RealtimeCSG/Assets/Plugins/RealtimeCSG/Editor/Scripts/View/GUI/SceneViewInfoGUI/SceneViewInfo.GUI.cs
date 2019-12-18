@@ -42,7 +42,7 @@ namespace RealtimeCSG
                   .Append( "\nBrushes:\t" )
                   .Append( brushCount );
 
-                GUILayout.BeginArea( infoGUIRect );
+                GUILayout.BeginArea( infoGUIRect, infoGUIBGStyle );
                 {
                     GUILayout.FlexibleSpace();
 
