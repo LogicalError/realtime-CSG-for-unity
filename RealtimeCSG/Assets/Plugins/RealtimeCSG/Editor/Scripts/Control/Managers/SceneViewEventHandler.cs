@@ -44,13 +44,13 @@ namespace RealtimeCSG
 				Event.current.type == EventType.MouseDrag) { mousePressed = true; }
 			else if (Event.current.type == EventType.MouseUp ||
 				Event.current.type == EventType.MouseMove) { mousePressed = false; }
-			
+
 			SceneDragToolManager.OnHandleDragAndDrop(inSceneView: true);
 			RectangleSelectionManager.Update(sceneView);
 			EditModeManager.InitSceneGUI(sceneView);
 
 			if (Event.current.type == EventType.Repaint)
-				MeshInstanceManager.RenderHelperSurfaces(sceneView); 
+				MeshInstanceManager.RenderHelperSurfaces(sceneView);
 
 			if (Event.current.type == EventType.Repaint)
 			{
@@ -59,8 +59,9 @@ namespace RealtimeCSG
 			//if (fallbackGUI)
 			{
 				SceneViewBottomBarGUI.ShowGUI(sceneView);
+                SceneViewInfoGUI.DrawInfoGUI( sceneView );
 			}
-			
+
 			EditModeManager.OnSceneGUI(sceneView);
 
 			//if (fallbackGUI)
@@ -69,6 +70,7 @@ namespace RealtimeCSG
 				if (Event.current.type == EventType.Repaint)
 				{
 					SceneViewBottomBarGUI.ShowGUI(sceneView);
+                	SceneViewInfoGUI.DrawInfoGUI( sceneView );
 				}
 				if (!mousePressed)
 				{

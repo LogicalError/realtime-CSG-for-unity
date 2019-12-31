@@ -31,7 +31,7 @@ namespace RealtimeCSG
     [Flags]
     [Serializable]
     public enum HelperSurfaceFlags
-    {		
+    {
         ShowVisibleSurfaces			= 1,
         [FormerlySerializedAs("ShowDiscardedSurfaces")] ShowHiddenSurfaces	= 2,	// manually hidden surfaces
         [FormerlySerializedAs("ShowInvisibleSurfaces")] ShowCulledSurfaces	= 4,	// surfaces removed by CSG process
@@ -40,7 +40,7 @@ namespace RealtimeCSG
         ShowCastShadowsSurfaces		= 32,
         ShowReceiveShadowsSurfaces	= 64
     };
-    
+
     [Serializable]
     public enum ClipMode
     {
@@ -163,7 +163,7 @@ namespace RealtimeCSG
             {
                 return ActiveSnappingMode != SnapMode.None;
             }
-        }        
+        }
 
         public static bool RotationSnapping
         {
@@ -225,6 +225,7 @@ namespace RealtimeCSG
         static public float					SphereOffset			= 0;
         static public bool					SphereSmoothShading		= true;
         static public bool					SphereDistanceToSide	= true;
+        public static bool                  ShowSceneInfo           = false;
         static public bool					HemiSphereMode			= true;
 
         static public float					LinearStairsStepLength		= 0.30f;
@@ -260,7 +261,7 @@ namespace RealtimeCSG
                     CSGModel.DefaultSettings &= ~ModelSettingsFlags.PreserveUVs;
             }
         }
-        static public bool                  SnapNonCSGObjects				= true; 
+        static public bool                  SnapNonCSGObjects				= true;
 
         static public Vector3				DefaultMoveOffset		= Vector3.zero;
         static public Vector3				DefaultRotateOffset		= Vector3.zero;
@@ -268,7 +269,7 @@ namespace RealtimeCSG
         static System.Type						UnitySnapType				= null;
         static System.Reflection.PropertyInfo   UnitySnapTypeMoveProperty	= null;
         static System.Reflection.PropertyInfo   UnitySnapTypeRotateProperty = null;
-        
+
         static public bool					EnableRealtimeCSG				= true;
 
         internal static ShapeMode			ShapeBuildMode	= ShapeMode.Box;
@@ -287,7 +288,7 @@ namespace RealtimeCSG
             RealtimeCSG.CSGSettings.UpdateWireframeModes();
             RealtimeCSG.CSGSettings.Save();
         }
-        
+
 
         #region UpdateSnapSettings
         internal static void UpdateSnapSettings()
@@ -299,7 +300,7 @@ namespace RealtimeCSG
 
             List<System.Type> types = null;
 
-            // ... but unfortunately Unity also caches it internally 
+            // ... but unfortunately Unity also caches it internally
             // and doesn't expose it to us, so we're forced to use reflection ...
             if (UnitySnapType == null)
             {
@@ -316,7 +317,7 @@ namespace RealtimeCSG
             }
 
             if (UnitySnapType == null)
-            { 
+            {
                 UnitySnapType = types
                     .FirstOrDefault(t => t.FullName == "UnityEditor.SnapSettings");
                 if (UnitySnapType != null)
@@ -447,7 +448,7 @@ namespace RealtimeCSG
                 }
 
                 if (found_all)
-                { 
+                {
                     for (int j = ids.Length - 1; j >= 0; j--)
                     {
                         if (!enabled[j])
@@ -497,7 +498,7 @@ namespace RealtimeCSG
             EditorPrefs.SetFloat(name + "Width", rect.width);
             EditorPrefs.SetFloat(name + "Height", rect.height);
         }
-        
+
         static Vector3 GetVector3(string name, Vector3 defaultVector)
         {
             return new Vector3(EditorPrefs.GetFloat(name + "X", defaultVector.x),
@@ -528,7 +529,7 @@ namespace RealtimeCSG
             var assetObjectGUID = EditorPrefs.GetString(name, null);
             if (assetObjectGUID == null)
                 return defaultValue;
-            
+
             var assetPath	= AssetDatabase.GUIDToAssetPath(assetObjectGUID);
             var assetObject = AssetDatabase.LoadAssetAtPath<Material>(assetPath);
             if (assetObject) return assetObject;
@@ -560,7 +561,7 @@ namespace RealtimeCSG
 
             UniformGrid			= EditorPrefs.GetBool("UniformGrid", true);
             EditMode			= GetEnum("EditMode", ToolEditMode.Generate);
-            
+
             SnapVector			= GetVector3("MoveSnap", Vector3.one);
             DefaultMoveOffset	= GetVector3("DefaultMoveOffset", Vector3.zero);
             DefaultRotateOffset = GetVector3("DefaultRotateOffset", Vector3.zero);
@@ -570,9 +571,9 @@ namespace RealtimeCSG
 
             GridVisible			= EditorPrefs.GetBool("ShowGrid", true);
             SnapMode            = (SnapMode)EditorPrefs.GetInt("SnapMode", (int)(EditorPrefs.GetBool("ForceSnapToGrid", true) ? SnapMode.GridSnapping : SnapMode.None));
-            
+
             VisibleHelperSurfaces = GetEnum("HelperSurfaces", DefaultHelperSurfaceFlags);
-            
+
             ClipMode			= GetEnum("ClipMode", ClipMode.RemovePositive);
             EnableRealtimeCSG	= EditorPrefs.GetBool("EnableRealtimeCSG", true);
 
@@ -587,7 +588,7 @@ namespace RealtimeCSG
             SelectionVertex		= EditorPrefs.GetBool("SelectionVertex",			true);
             SelectionEdge		= EditorPrefs.GetBool("SelectionEdge",				true);
             SelectionSurface	= EditorPrefs.GetBool("SelectionSurface",			true);
-            
+
             HiddenSurfacesNotSelectable		= EditorPrefs.GetBool("HiddenSurfacesNotSelectable", true);
 //			HiddenSurfacesOrthoSelectable	= EditorPrefs.GetBool("HiddenSurfacesOrthoSelectable", true);
             ShowTooltips					= EditorPrefs.GetBool("ShowTooltips", true);
@@ -605,14 +606,14 @@ namespace RealtimeCSG
             CircleSingleSurfaceEnds		= EditorPrefs.GetBool("CircleSingleSurfaceEnds",	true);
             CircleDistanceToSide		= EditorPrefs.GetBool("CircleDistanceToSide",		true);
             CircleRecenter				= EditorPrefs.GetBool("CircleRecenter",				true);
-            
+
 
             SphereSplits				= Mathf.Max(1, EditorPrefs.GetInt("SphereSplits",	1));
             SphereOffset				= EditorPrefs.GetFloat("SphereOffset",				0);
             SphereSmoothShading			= EditorPrefs.GetBool("SphereSmoothShading",		true);
             SphereDistanceToSide		= EditorPrefs.GetBool("SphereDistanceToSide",		true);
-            HemiSphereMode				= EditorPrefs.GetBool("HemiSphereMode",			false); 
-            
+            HemiSphereMode				= EditorPrefs.GetBool("HemiSphereMode",			false);
+
             LinearStairsStepLength		= EditorPrefs.GetFloat("LinearStairsStepLength",	0.30f);
             LinearStairsStepHeight		= EditorPrefs.GetFloat("LinearStairsStepHeight",	0.20f);
             LinearStairsStepWidth		= EditorPrefs.GetFloat("LinearStairsStepWidth",		1.0f);
@@ -625,7 +626,9 @@ namespace RealtimeCSG
 
             DistanceUnit				= GetEnum("DistanceUnit", DistanceUnit.Meters);
 
-            
+            ShowSceneInfo = EditorPrefs.GetBool("ShowSceneInfo", false);
+
+
             var sceneViews = SortedSceneViews();
             EnsureValidSceneviewNames(sceneViews);
             var arrayString = EditorPrefs.GetString("Wireframe", string.Empty);
@@ -652,9 +655,9 @@ namespace RealtimeCSG
             EditorPrefs.SetBool ("UniformGrid",		RealtimeCSG.CSGSettings.UniformGrid);
 
             SetEnum("EditMode",						RealtimeCSG.CSGSettings.EditMode);
-            SetEnum("ClipMode",						RealtimeCSG.CSGSettings.ClipMode);		
+            SetEnum("ClipMode",						RealtimeCSG.CSGSettings.ClipMode);
             SetEnum("HelperSurfaces",				RealtimeCSG.CSGSettings.VisibleHelperSurfaces);
-            SetEnum("DistanceUnit",					RealtimeCSG.CSGSettings.DistanceUnit);			
+            SetEnum("DistanceUnit",					RealtimeCSG.CSGSettings.DistanceUnit);
             SetEnum("ShapeBuildMode",				RealtimeCSG.CSGSettings.ShapeBuildMode);
             SetEnum("DefaultTexGenFlags",           RealtimeCSG.CSGSettings.DefaultTexGenFlags);
 
@@ -684,7 +687,7 @@ namespace RealtimeCSG
             EditorPrefs.SetInt  ("SnapMode",                (int)RealtimeCSG.CSGSettings.SnapMode);
 
             EditorPrefs.SetInt	("MaxSphereSplits",			Mathf.Max(3, MaxSphereSplits));
-            
+
             EditorPrefs.SetInt	("CircleSides",				Mathf.Max(3, CircleSides));
             EditorPrefs.SetInt	("MaxCircleSides",			Mathf.Max(3, MaxCircleSides));
             EditorPrefs.SetFloat("CircleOffset",			CircleOffset);
@@ -692,7 +695,7 @@ namespace RealtimeCSG
             EditorPrefs.SetBool("CircleSingleSurfaceEnds",	CircleSingleSurfaceEnds);
             EditorPrefs.SetBool("CircleDistanceToSide",		CircleDistanceToSide);
             EditorPrefs.SetBool("CircleRecenter",			CircleRecenter);
-            
+
             EditorPrefs.SetInt("SphereSplits",				Mathf.Max(1, SphereSplits));
             EditorPrefs.SetFloat("SphereOffset",			SphereOffset);
             EditorPrefs.SetBool("SphereSmoothShading",		SphereSmoothShading);
@@ -711,14 +714,16 @@ namespace RealtimeCSG
 
             SetMaterial("DefaultMaterial", DefaultMaterial);
 
+            EditorPrefs.SetBool("ShowSceneInfo", RealtimeCSG.CSGSettings.ShowSceneInfo);
+
 
             var builder = new System.Text.StringBuilder();
-            var sceneViews = SortedSceneViews(); 
+            var sceneViews = SortedSceneViews();
             EnsureValidSceneviewNames(sceneViews);
             foreach(SceneView sceneView in sceneViews)
             {
                 if (IsWireframeShown(sceneView))
-                { 
+                {
                     if (builder.Length != 0) builder.Append(':');
                     builder.Append(sceneView.name);
                 }
