@@ -85,7 +85,7 @@ namespace RealtimeCSG.Components
             }
             if (brush.Version == 2.0f)
             {
-                if (brush.tag == "EditorOnly")
+                if (brush.CompareTag("EditorOnly"))
                     brush.tag = "Untagged";
             }
 
@@ -102,7 +102,7 @@ namespace RealtimeCSG.Components
 
             if (operation.Version == 1.0f)
             {
-                if (operation.tag == "EditorOnly")
+                if (operation.CompareTag("EditorOnly"))
                     operation.tag = "Untagged";
             }
 

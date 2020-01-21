@@ -1956,19 +1956,21 @@ namespace InternalRealtimeCSG
 
 			//var isTrigger			= container.owner.IsTrigger;
 			//var collidable		= container.owner.HaveCollider || isTrigger;
-			var ownerStaticFlags	= GameObjectUtility.GetStaticEditorFlags(container.owner.gameObject);
+			var ownerGameObject     = container.owner.gameObject;
+            var ownerStaticFlags	= GameObjectUtility.GetStaticEditorFlags(ownerGameObject);
 			var previousStaticFlags	= GameObjectUtility.GetStaticEditorFlags(container.gameObject);
-			var containerTag		= container.owner.gameObject.tag;
-			var containerLayer		= container.owner.gameObject.layer;
+            
+			var containerLayer		= ownerGameObject.layer;
 			
 			var showVisibleSurfaces	= (RealtimeCSG.CSGSettings.VisibleHelperSurfaces & HelperSurfaceFlags.ShowVisibleSurfaces) != 0;
 
 
 			if (ownerStaticFlags != previousStaticFlags ||
-				containerTag   != container.gameObject.tag ||
+                !ownerGameObject.CompareTag(container.gameObject.tag) ||
 				containerLayer != container.gameObject.layer)
-			{
-				foreach (var meshInstance in container.MeshInstances)
+            {
+                var containerTag = ownerGameObject.tag;
+                foreach (var meshInstance in container.MeshInstances)
 				{
 					if (!meshInstance)
 						continue;
@@ -1984,7 +1986,7 @@ namespace InternalRealtimeCSG
 						var gameObject = transform.gameObject;
 						if (oldStaticFlags != newStaticFlags)
 							GameObjectUtility.SetStaticEditorFlags(gameObject, newStaticFlags);
-						if (gameObject.tag != containerTag)
+						if (!gameObject.CompareTag(containerTag))
 							gameObject.tag = containerTag;
 						if (gameObject.layer != containerLayer)
 							gameObject.layer = containerLayer;

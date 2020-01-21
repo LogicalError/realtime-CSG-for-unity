@@ -161,7 +161,7 @@ namespace InternalRealtimeCSG
                     gameObject.tag = "Untagged";
                     AssignLayerToChildren(gameObject);
                 } else
-                if (gameObject.tag == "Untagged")
+                if (gameObject.CompareTag("Untagged"))
                     removableGameObjects.Add(gameObject);
                 if (csgnode)
                     UnityEngine.Object.DestroyImmediate(csgnode);
@@ -183,7 +183,7 @@ namespace InternalRealtimeCSG
             for (int i = 0; i < transform.childCount; i++)
             {
                 var childTransform = transform.GetChild(i);
-                //if (childTransform.tag != CSGContstants.kRemoveNodeTag)
+                //if (!childTransform.CompareTag(CSGContstants.kRemoveNodeTag))
                 //    return false;
                 if (childTransform.GetComponent<CSGNode>() == null)
                 {
