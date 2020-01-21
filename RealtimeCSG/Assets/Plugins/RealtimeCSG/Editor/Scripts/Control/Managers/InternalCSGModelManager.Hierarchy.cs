@@ -128,7 +128,7 @@ namespace RealtimeCSG
 			for (int i = 0; i < Models.Length; i++)
 			{
 				var model = Models[i];
-				if (!model) continue;
+				if (!model || !model.gameObject.activeInHierarchy) continue;
 
 				if (!model.cachedTransform) model.cachedTransform = model.transform;
 			}

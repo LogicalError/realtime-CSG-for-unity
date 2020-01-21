@@ -56,7 +56,7 @@ namespace RealtimeCSG
 			return gameObjects.ToArray();
 		}
 
-		public static CSGModel[] GetAllModel()
+		public static CSGModel[] GetAllModels()
 		{
 			return InternalCSGModelManager.Models;
 		}

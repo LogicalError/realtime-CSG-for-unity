@@ -117,11 +117,11 @@ namespace InternalRealtimeCSG
 
 		public static void Update()
 		{
-			var models = CSGModelManager.GetAllModel();
+			var models = CSGModelManager.GetAllModels();
 			for (var i = 0; i < models.Length; i++)
 			{
 				var model = models[i];
-				if (model)
+                if (ModelTraits.IsModelEditable(model))
 					MeshInstanceManager.ValidateModelDelayed(model);
 			}
 
@@ -475,8 +475,11 @@ namespace InternalRealtimeCSG
 		{
 			var renderers = new List<UnityEngine.Object>();
 			foreach (var model in models)
-			{
-				if (!model.generatedMeshes)
+            {
+                if (!model || !model.gameObject.activeInHierarchy)
+                    continue;
+
+                if (!model.generatedMeshes)
 					continue;
 
 				foreach (var renderer in model.generatedMeshes.GetComponentsInChildren<MeshRenderer>())
@@ -1725,6 +1728,25 @@ namespace InternalRealtimeCSG
 				return instance;
 
 			return CreateHelperSurfaceDescription(container, modelSettings, meshDescription, renderSurfaceType);
+		}
+
+		public static bool IsObjectGenerated(UnityEngine.Object obj) 
+		{
+			if (!obj) 
+				return false;
+
+			var gameObject = obj as GameObject;
+			if (Equals(gameObject, null))
+				return false;
+
+			if (gameObject.name == MeshContainerName)
+				return true;
+
+			var parent = gameObject.transform.parent;
+			if (Equals(parent, null))
+				return false;
+
+			return parent.name == MeshContainerName;
 		}
 
 #region UpdateTransform

@@ -10,39 +10,58 @@ using RealtimeCSG.Components;
 
 namespace RealtimeCSG
 {
+	/// <summary>
+	/// This class defines an intersection into a specific surface of a brush
+	/// </summary>
+	[Serializable, StructLayout(LayoutKind.Sequential, Pack = 4)]
+	public struct CSGSurfaceIntersection
+	{
+		public Plane		localPlane;
+		public Plane		modelPlane;
+		public Plane		worldPlane;
+
+		public Vector3      worldIntersection;
+		public Vector2      surfaceIntersection;
+
+		public float        distance;
+
+        public readonly static CSGSurfaceIntersection None = new CSGSurfaceIntersection()
+        {
+            localPlane          = new Plane(Vector3.zero, 0),
+            modelPlane          = new Plane(Vector3.zero, 0),
+            worldPlane          = new Plane(Vector3.zero, 0),
+            worldIntersection   = Vector3.zero,
+            surfaceIntersection = Vector2.zero,
+            distance            = float.PositiveInfinity
+        };
+    };
+
+	/// <summary>
+	/// This class defines an intersection into a specific brush
+	/// </summary>
+	[Serializable, StructLayout(LayoutKind.Sequential, Pack = 4)]
+	public struct CSGTreeBrushIntersection
+	{
+		public CSGTree		tree;
+		public CSGTreeBrush	brush;
+		public Int32        surfaceID;
+		public Int32        brushUserID;
+
+		public CSGSurfaceIntersection intersection;
+
+        public readonly static CSGTreeBrushIntersection None = new CSGTreeBrushIntersection()
+        {
+            tree			= (CSGTree)CSGTreeNode.InvalidNode,
+            brush			= (CSGTreeBrush)CSGTreeNode.InvalidNode,
+            brushUserID		= 0,
+            surfaceID	    = -1,
+            intersection    = CSGSurfaceIntersection.None
+        };
+	};
+
 	internal static class NativeMethodBindings
 	{
 		const string NativePluginName =  CSGManager.NativePluginName;
-	
-		/// <summary>
-		/// This class defines an intersection into a specific surface of a brush
-		/// </summary>
-		[Serializable, StructLayout(LayoutKind.Sequential, Pack = 4)]
-		public struct CSGSurfaceIntersection
-		{
-			public Plane		localPlane;
-			public Plane		modelPlane;
-			public Plane		worldPlane;
-
-			public Vector3      worldIntersection;
-			public Vector2      surfaceIntersection;
-
-			public float        distance;
-		};
-	
-		/// <summary>
-		/// This class defines an intersection into a specific brush
-		/// </summary>
-		[Serializable, StructLayout(LayoutKind.Sequential, Pack = 4)]
-		public struct CSGTreeBrushIntersection
-		{
-			public CSGTree		tree;
-			public CSGTreeBrush	brush;
-			public Int32        surfaceID;
-			public Int32        brushUserID;
-
-			public CSGSurfaceIntersection intersection;
-		};
 
 		#region Functionality to allow C# methods to be called from C++
 		public delegate float   GetFloatAction();
