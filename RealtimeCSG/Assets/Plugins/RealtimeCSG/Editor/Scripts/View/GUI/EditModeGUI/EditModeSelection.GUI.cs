@@ -23,7 +23,7 @@ namespace RealtimeCSG
 			if (EditorGUI.EndChangeCheck())
 			{
 				EditModeManager.EditMode = newEditMode;
-				CSG_EditorGUIUtility.UpdateSceneViews();
+				CSG_EditorGUIUtility.RepaintAll();
 			}
 			GUILayout.Space(editModeBounds.height);
 				
@@ -139,7 +139,7 @@ namespace RealtimeCSG
 					if (EditorGUI.EndChangeCheck())
 					{
 						EditModeManager.EditMode = newEditMode;
-						CSG_EditorGUIUtility.UpdateSceneViews();
+						CSG_EditorGUIUtility.RepaintAll();
 					}
 				
 					var buttonArea = bounds;
@@ -190,17 +190,6 @@ namespace RealtimeCSG
 					return allCameras[0];
 
 				return null;
-			}
-		}
-		
-		static RenderingPath SceneViewRenderingPath
-		{
-			get
-			{
-				var mainCamera = MainCamera;
-				if (mainCamera != null)
-					return mainCamera.renderingPath;
-				return RenderingPath.UsePlayerSettings;
 			}
 		}
 

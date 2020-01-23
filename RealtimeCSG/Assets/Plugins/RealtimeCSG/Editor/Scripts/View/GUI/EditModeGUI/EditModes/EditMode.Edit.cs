@@ -197,25 +197,24 @@ namespace RealtimeCSG
 
 			CenterPositionHandle();
 			ForceLineUpdate();
-			CSG_EditorGUIUtility.UpdateSceneViews();  
+			CSG_EditorGUIUtility.RepaintAll();  
 			return false;
 		}
 
 
 		#region Selection & Hover
 
-		private void SelectMarquee(SceneView sceneView, Rect rect, SelectionType selectionType)
+		private void SelectMarquee(Camera camera, Rect rect, SelectionType selectionType)
 		{
 			if (rect.width <= 0 || rect.height <= 0)
 				return;
 
 			try
 			{
-				var camera				= sceneView.camera;
 				var frustum				= CameraUtility.GetCameraSubFrustumGUI(camera, rect);
 				//var isOrthoCamera		= camera.orthographic;
 				var ignoreHiddenPoints	= CSGSettings.HiddenSurfacesNotSelectable;// && (!isOrthoCamera || !CSGSettings.HiddenSurfacesOrthoSelectable);
-				var selectedPoints		= SceneQueryUtility.GetPointsInFrustum(sceneView, frustum.Planes, _brushSelection.Brushes, _brushSelection.States, ignoreHiddenPoints);
+				var selectedPoints		= SceneQueryUtility.GetPointsInFrustum(camera, frustum.Planes, _brushSelection.Brushes, _brushSelection.States, ignoreHiddenPoints);
 
 				Undo.RecordObject(this, "Select points");
 				_brushSelection.RevertSelection();
@@ -245,7 +244,7 @@ namespace RealtimeCSG
 					_brushSelection.RevertSelection();
 					_brushSelection.DestroySelectionBackup();
 					ForceLineUpdate();
-					CSG_EditorGUIUtility.UpdateSceneViews();
+					CSG_EditorGUIUtility.RepaintAll();
 					return true;
 				}
 
@@ -256,7 +255,7 @@ namespace RealtimeCSG
 				}
 				
 				ForceLineUpdate();
-				CSG_EditorGUIUtility.UpdateSceneViews();
+				CSG_EditorGUIUtility.RepaintAll();
 				return true;
 			}
 			finally
@@ -284,7 +283,7 @@ namespace RealtimeCSG
 			UpdateBackupPoints();
 			UpdateMeshStates();
 			CenterPositionHandle();
-			CSG_EditorGUIUtility.UpdateSceneViews();
+			CSG_EditorGUIUtility.RepaintAll();
 		}
 
 		private bool UpdateSelection(bool allowSubstraction = true)
@@ -962,17 +961,17 @@ namespace RealtimeCSG
 		
 		readonly PointMeshManager pointMeshManager = new PointMeshManager();
 		
-		private readonly Dictionary<SceneView, BrushOutlineInfo> _brushOutlineInfos = new Dictionary<SceneView, BrushOutlineInfo>();
+		private readonly Dictionary<Camera, BrushOutlineInfo> _brushOutlineInfos = new Dictionary<Camera, BrushOutlineInfo>();
 
 
-		internal BrushOutlineInfo GetBrushOutLineInfo(SceneView sceneView)
+		internal BrushOutlineInfo GetBrushOutLineInfo(Camera camera)
 		{
 			BrushOutlineInfo brushOutlineInfo;
-			if (_brushOutlineInfos.TryGetValue(sceneView, out brushOutlineInfo))
+			if (_brushOutlineInfos.TryGetValue(camera, out brushOutlineInfo))
 				return brushOutlineInfo;
 			
 			brushOutlineInfo = new BrushOutlineInfo();
-			_brushOutlineInfos[sceneView] = brushOutlineInfo;
+			_brushOutlineInfos[camera] = brushOutlineInfo;
 			return brushOutlineInfo;
 		}
 
@@ -987,7 +986,7 @@ namespace RealtimeCSG
 		private void ForceLineUpdate()
 		{
 			var currentMeshGeneration = InternalCSGModelManager.MeshGeneration;
-			var removeKeys = new List<SceneView>();
+			var removeKeys = new List<Camera>();
 			foreach (var brushOutlineInfo in _brushOutlineInfos)
 			{
 				if (!brushOutlineInfo.Key)
@@ -1019,23 +1018,23 @@ namespace RealtimeCSG
 
 		private void UpdatePointSizes()
 		{
-			var sceneView = SceneView.currentDrawingSceneView;//(SceneView.currentDrawingSceneView == null) ? SceneView.lastActiveSceneView : SceneView.currentDrawingSceneView;
-			if (!sceneView)
+            var camera = Camera.current;
+			if (!camera)
 				return;
 
 			for (var t = 0; t < _brushSelection.Brushes.Length; t++)
-				_brushSelection.States[t].UpdateHandles(sceneView, _brushSelection.BackupControlMeshes[t]);
+				_brushSelection.States[t].UpdateHandles(camera, _brushSelection.BackupControlMeshes[t]);
 		}
 		
 		[NonSerialized] private ViewTool _preViewTool = ViewTool.None;
 		[NonSerialized] private Tool _prevTool = Tool.None;
 		private void UpdateLineMeshes()
 		{
-			var sceneView = SceneView.currentDrawingSceneView;//(SceneView.currentDrawingSceneView == null) ? SceneView.lastActiveSceneView : SceneView.currentDrawingSceneView;
-			if (!sceneView)
+            var camera = Camera.current;
+			if (!camera)
 				return;
 
-			var brushOutlineInfo = GetBrushOutLineInfo(sceneView);
+			var brushOutlineInfo = GetBrushOutLineInfo(camera);
 			if (brushOutlineInfo == null)
 				return;
 			
@@ -1081,7 +1080,7 @@ namespace RealtimeCSG
 			UpdateMeshStates();
 			UpdatePointSizes();
 
-			brushOutlineRenderer.Update(sceneView, _brushSelection.Brushes, _brushSelection.ControlMeshes, _brushSelection.States);
+			brushOutlineRenderer.Update(camera, _brushSelection.Brushes, _brushSelection.ControlMeshes, _brushSelection.States);
 		}
 
 		private void DrawPointText(Vector3 brushCenter, Vector3 vertex, string text)
@@ -1178,13 +1177,13 @@ namespace RealtimeCSG
 		bool DrawAnyPoints		{ get { return DrawBrushPoints || DrawPolygonPoints; } }
 			 
 
-		private void OnPaint()
+		private void OnPaint(SceneView sceneView)
 		{
-			var sceneView = SceneView.currentDrawingSceneView;// (SceneView.currentDrawingSceneView == null) ? SceneView.lastActiveSceneView : SceneView.currentDrawingSceneView;
-			if (!sceneView)
+            var camera = Camera.current;
+			if (!camera)
 				return;
 
-			var brushOutlineInfo = GetBrushOutLineInfo(sceneView);
+			var brushOutlineInfo = GetBrushOutLineInfo(camera);
 			if (brushOutlineInfo == null)
 				return;
 
@@ -1195,12 +1194,13 @@ namespace RealtimeCSG
 				_currentCursor = CursorUtility.GetCursorForDirection(_movePolygonDirection, 90);
 			}
 
-			var currentSceneView = sceneView;//SceneView.currentDrawingSceneView;
-			if (currentSceneView != null)
-			{
-				var windowRect = new Rect(0, 0, currentSceneView.position.width, currentSceneView.position.height - CSG_GUIStyleUtility.BottomToolBarHeight);
-				EditorGUIUtility.AddCursorRect(windowRect, _currentCursor);
-			}
+            {
+                if (sceneView != null)
+                {
+                    var windowRect = new Rect(0, 0, sceneView.position.width, sceneView.position.height - CSG_GUIStyleUtility.BottomToolBarHeight);
+                    EditorGUIUtility.AddCursorRect(windowRect, _currentCursor);
+                }
+            }
 
 			var origMatrix = Handles.matrix;
 			Handles.matrix = MathConstants.identityMatrix;
@@ -1224,19 +1224,19 @@ namespace RealtimeCSG
 								meshState.WorldPoints == null)
 								continue;
 						
-							var sceneViewState = _brushSelection.States[t].GetSceneViewState(sceneView, false);
-							if (sceneViewState == null)
+							var CameraState = _brushSelection.States[t].GetCameraState(camera, false);
+							if (CameraState == null)
 								continue;
 						
 							pointMeshManager.DrawPoints(meshState.WorldPoints, 
-														sceneViewState.WorldPointSizes, 
-														sceneViewState.WorldPointColors);
-							//PaintUtility.DrawDoubleDots(meshState.WorldPoints, 
-							//							sceneViewState.WorldPointSizes, 
-							//							sceneViewState.WorldPointColors, 
-							//							meshState.WorldPoints.Length);
-						}
-					}
+														CameraState.WorldPointSizes, 
+														CameraState.WorldPointColors);
+                            //PaintUtility.DrawDoubleDots(meshState.WorldPoints, 
+                            //							cameraState.WorldPointSizes, 
+                            //							cameraState.WorldPointColors, 
+                            //							meshState.WorldPoints.Length);
+                        }
+                    }
 
 					if (DrawPolygonPoints && CSGSettings.SelectionSurface)
 					{
@@ -1247,19 +1247,19 @@ namespace RealtimeCSG
 							if (modelTransform == null)
 								continue;
 						
-							var sceneViewState = _brushSelection.States[t].GetSceneViewState(sceneView, false);
-							if (sceneViewState == null)
+							var cameraState = _brushSelection.States[t].GetCameraState(camera, false);
+							if (cameraState == null)
 								continue;
 						
 							pointMeshManager.DrawPoints(meshState.PolygonCenterPoints, 
-														sceneViewState.PolygonCenterPointSizes, 
+														cameraState.PolygonCenterPointSizes, 
 														meshState.PolygonCenterColors);
-							//PaintUtility.DrawDoubleDots(meshState.PolygonCenterPoints, 
-							//							sceneViewState.PolygonCenterPointSizes, 
-							//							meshState.PolygonCenterColors, 
-							//							meshState.PolygonCenterPoints.Length);
-						}
-					}
+                            //PaintUtility.DrawDoubleDots(meshState.PolygonCenterPoints, 
+                            //							cameraState.PolygonCenterPointSizes, 
+                            //							meshState.PolygonCenterColors, 
+                            //							meshState.PolygonCenterPoints.Length);
+                        }
+                    }
 					pointMeshManager.End();
 					pointMeshManager.Render(PaintUtility.CustomDotMaterial, PaintUtility.CustomSurfaceNoDepthMaterial);
 				}
@@ -1276,9 +1276,8 @@ namespace RealtimeCSG
 															ColorSettings.RotateCircleOutline);
 						} else
 						{
-							var camera = Camera.current;
-							var inSceneView = camera.pixelRect.Contains(Event.current.mousePosition);
-							if (inSceneView && UpdateRotationCircle())
+							var inCamera = camera.pixelRect.Contains(Event.current.mousePosition);
+							if (inCamera && UpdateRotationCircle())
 							{
 								PaintUtility.DrawRotateCircle(_rotateCenter, _rotateNormal, _rotateTangent, _rotateRadius, 0, _rotateStartAngle, _rotateStartAngle, 
 																ColorSettings.RotateCircleOutline);
@@ -1932,11 +1931,11 @@ namespace RealtimeCSG
 				{
 					_brushSelection.UpdateTargets();
 					UpdateWorkControlMesh();
-					
-					var sceneView = SceneView.currentDrawingSceneView;//(SceneView.currentDrawingSceneView == null) ? SceneView.lastActiveSceneView : SceneView.currentDrawingSceneView;
-					if (sceneView)
+
+                    var camera = Camera.current;
+					if (camera)
 					{
-						var brushOutlineInfo = GetBrushOutLineInfo(sceneView);
+						var brushOutlineInfo = GetBrushOutLineInfo(camera);
 						if (brushOutlineInfo != null)
 						{
 							brushOutlineInfo.LastLineMeshGeneration--;
@@ -1962,10 +1961,10 @@ namespace RealtimeCSG
 				{
 					Handles.color = ColorSettings.HoverOutlines;
 					
-					var sceneView = SceneView.currentDrawingSceneView;//(SceneView.currentDrawingSceneView == null) ? SceneView.lastActiveSceneView : SceneView.currentDrawingSceneView;
-					if (sceneView)
+					var camera = Camera.current;
+					if (camera)
 					{
-						var brushOutlineInfo = GetBrushOutLineInfo(sceneView);
+						var brushOutlineInfo = GetBrushOutLineInfo(camera);
 						if (brushOutlineInfo != null)
 						{
 							brushOutlineInfo.BrushOutlineRenderer.RenderOutlines();
@@ -1981,10 +1980,8 @@ namespace RealtimeCSG
 
 		[NonSerialized] private Vector2 _prevMousePos;
 
-		public void HandleEvents(Rect sceneRect)
+		public void HandleEvents(SceneView sceneView, Rect sceneRect)
 		{
-			var sceneView = SceneView.currentDrawingSceneView;//(SceneView.currentDrawingSceneView == null) ? SceneView.lastActiveSceneView : SceneView.currentDrawingSceneView;
-					
 			var originalEventType = Event.current.type;
 			switch (originalEventType)
 			{
@@ -2029,14 +2026,14 @@ namespace RealtimeCSG
 				!SceneDragToolManager.IsDraggingObjectInScene &&
 				Event.current.GetTypeForControl(_meshEditBrushToolId) == EventType.Repaint)
 			{
-				OnPaint();
+				OnPaint(sceneView);
 			}
 			
 			//if (Event.current.type == EventType.Layout)
 				CreateControlIDs();
 
 
-			var camera = sceneView.camera;// Camera.current;
+			var camera = Camera.current;
 
 			if (SelectionUtility.CurrentModifiers == EventModifiers.None &&
 				currentHotControl != _chamferId &&
@@ -2273,7 +2270,7 @@ namespace RealtimeCSG
 							_doMarquee		= true;
 							_startMousePoint = Event.current.mousePosition;
 								
-							CSG_EditorGUIUtility.UpdateSceneViews();
+							CSG_EditorGUIUtility.RepaintAll();
 						}
 						break;
 					}
@@ -2347,7 +2344,7 @@ namespace RealtimeCSG
 							} else
 								SelectionUtility.DoSelectionClick();
 						} else
-							CSG_EditorGUIUtility.UpdateSceneViews();
+							CSG_EditorGUIUtility.RepaintAll();
 						break;
 					}
 
@@ -2429,9 +2426,9 @@ namespace RealtimeCSG
 						{
 							var currentTool = Tools.current;
 						
-							var inSceneView = camera && camera.pixelRect.Contains(Event.current.mousePosition);
+							var inCamera = camera && camera.pixelRect.Contains(Event.current.mousePosition);
 							
-							if (!inSceneView || _mouseIsDragging || GUIUtility.hotControl != 0)
+							if (!inCamera || _mouseIsDragging || GUIUtility.hotControl != 0)
 								break;
 
 							if (_mouseIsDown || !DrawAnyPoints)
@@ -2462,16 +2459,16 @@ namespace RealtimeCSG
 									HandleUtility.AddControl(newControlId, distance);
 								}
 								
-								var sceneViewState = _brushSelection.States[t].GetSceneViewState(sceneView, false);
-								if (sceneViewState == null)
+								var cameraState = _brushSelection.States[t].GetCameraState(camera, false);
+								if (cameraState == null)
 									continue;
 
 								for (var p = 0; p < meshState.PolygonCenterPoints.Length; p++)
 								{
 									var newControlId = meshState.PolygonControlId[p];
 									if (hotControl == newControlId) hoverControl = newControlId;
-									if (camera.orthographic || p >= sceneViewState.PolygonCenterPointSizes.Length ||
-										sceneViewState.PolygonCenterPointSizes[p] <= 0)
+									if (camera.orthographic || p >= cameraState.PolygonCenterPointSizes.Length ||
+										cameraState.PolygonCenterPointSizes[p] <= 0)
 										continue;
 
 									var center = meshState.PolygonCenterPoints[p];
@@ -2479,8 +2476,8 @@ namespace RealtimeCSG
 											(_handleCenter - center).sqrMagnitude <= MathConstants.EqualityEpsilonSqr)
 										continue;
 										
-									var radius = sceneViewState.PolygonCenterPointSizes[p] * 1.2f;
-									var centerDistance = CameraUtility.DistanceToCircle(sceneView, center, radius);
+									var radius = cameraState.PolygonCenterPointSizes[p] * 1.2f;
+									var centerDistance = CameraUtility.DistanceToCircle(center, radius);
 									HandleUtility.AddControl(newControlId, centerDistance);
 								}
 
@@ -2492,11 +2489,11 @@ namespace RealtimeCSG
 									var center = meshState.WorldPoints[p];
 									if (_useHandleCenter &&
 											(_handleCenter - center).sqrMagnitude <= MathConstants.EqualityEpsilonSqr || 
-											p >= sceneViewState.WorldPointSizes.Length)
+											p >= cameraState.WorldPointSizes.Length)
 										continue;
 									
-									var radius = sceneViewState.WorldPointSizes[p] * 1.2f;
-									var distance = CameraUtility.DistanceToCircle(sceneView, center, radius);
+									var radius = cameraState.WorldPointSizes[p] * 1.2f;
+									var distance = CameraUtility.DistanceToCircle(center, radius);
 									HandleUtility.AddControl(newControlId, distance);
 								}
 							}
@@ -2606,7 +2603,7 @@ namespace RealtimeCSG
 							if (doRepaint)
 							{
 								ForceLineUpdate();
-								CSG_EditorGUIUtility.UpdateSceneViews();
+								CSG_EditorGUIUtility.RepaintAll();
 							}
 						}
 						finally
@@ -2644,9 +2641,9 @@ namespace RealtimeCSG
 								_brushSelection.States.Length == _brushSelection.Brushes.Length)
 							{
 								var selectionType = SelectionUtility.GetEventSelectionType();
-								SelectMarquee(sceneView, CameraUtility.PointsToRect(_startMousePoint, Event.current.mousePosition), selectionType);
+								SelectMarquee(camera, CameraUtility.PointsToRect(_startMousePoint, Event.current.mousePosition), selectionType);
 							}
-							CSG_EditorGUIUtility.UpdateSceneViews();
+							CSG_EditorGUIUtility.RepaintAll();
 							break;
 						}
 						case EventType.MouseUp:
@@ -2672,7 +2669,7 @@ namespace RealtimeCSG
 								_brushSelection.States.Length == _brushSelection.Brushes.Length)
 							{
 								var selectionType = SelectionUtility.GetEventSelectionType();
-								SelectMarquee(sceneView, CameraUtility.PointsToRect(_startMousePoint, Event.current.mousePosition), selectionType);
+								SelectMarquee(camera, CameraUtility.PointsToRect(_startMousePoint, Event.current.mousePosition), selectionType);
 							}
 							break;
 						}
@@ -2819,7 +2816,7 @@ namespace RealtimeCSG
 
 										DoMoveControlPoints(_worldDeltaMovement);
 										CenterPositionHandle();
-										CSG_EditorGUIUtility.UpdateSceneViews();
+										CSG_EditorGUIUtility.RepaintAll();
 										break;
 									}
 									case EventType.MouseUp:
@@ -2924,7 +2921,7 @@ namespace RealtimeCSG
 											_rotateCurrentSnappedAngle = GridUtility.SnappedAngle(_rotateCurrentAngle - _rotateStartAngle) + _rotateStartAngle;
 												
 											DoRotateBrushes(_rotateCenter, _rotateNormal, _rotateCurrentSnappedAngle - _rotateStartAngle);
-											CSG_EditorGUIUtility.UpdateSceneViews();
+											CSG_EditorGUIUtility.RepaintAll();
 											break;
 										}
 
@@ -3070,7 +3067,7 @@ namespace RealtimeCSG
 											DoScaleControlPoints(rotation, _dragEdgeScale, _startHandleCenter);
 										}
 										CenterPositionHandle();
-										CSG_EditorGUIUtility.UpdateSceneViews();
+										CSG_EditorGUIUtility.RepaintAll();
 										break;
 									}
 									case EventType.MouseUp:
@@ -3293,7 +3290,7 @@ namespace RealtimeCSG
 										//	case EditMode.ScalePolygon:  DoScaleControlPoints(worldDeltaMovement, meshState.polygonCenterPoints[p]); break;
 										}
 										CenterPositionHandle();
-										CSG_EditorGUIUtility.UpdateSceneViews();
+										CSG_EditorGUIUtility.RepaintAll();
 										break;
 									}
 									case EventType.MouseUp:

@@ -39,14 +39,14 @@ namespace RealtimeCSG
 		
 		private static Flags s_Flags;
 
-		private SceneView m_sceneView;
+		private Camera m_Camera;
 
 		const float kFrameWidth = 1f;
 		const float kLineHeight = 20f;
 
-		SurfaceVisibilityPopup(SceneView sceneView)
+		SurfaceVisibilityPopup(Camera camera)
 		{
-			m_sceneView = sceneView;
+            m_Camera = camera;
 		}
 
 		
@@ -63,7 +63,7 @@ namespace RealtimeCSG
 
 		public override void OnGUI(Rect rect)
 		{
-			if (!m_sceneView)
+			if (!m_Camera)
 				return;
 
 			if (s_Flags == null)
@@ -103,7 +103,7 @@ namespace RealtimeCSG
 				RealtimeCSG.CSGSettings.VisibleHelperSurfaces = (HelperSurfaceFlags)allVisibleSurfaces;
 				MeshInstanceManager.UpdateHelperSurfaceVisibility();
 				RealtimeCSG.CSGSettings.Save();
-				CSG_EditorGUIUtility.UpdateSceneViews();
+				CSG_EditorGUIUtility.RepaintAll();
 			}
 			drawPos.y += kLineHeight;
 		
@@ -114,7 +114,7 @@ namespace RealtimeCSG
 				RealtimeCSG.CSGSettings.VisibleHelperSurfaces = (HelperSurfaceFlags)allHelperSurfaces;
 				MeshInstanceManager.UpdateHelperSurfaceVisibility();
 				RealtimeCSG.CSGSettings.Save();
-				CSG_EditorGUIUtility.UpdateSceneViews();
+				CSG_EditorGUIUtility.RepaintAll();
 			}
 			drawPos.y += kLineHeight;
 			
@@ -138,7 +138,7 @@ namespace RealtimeCSG
 				else        RealtimeCSG.CSGSettings.VisibleHelperSurfaces = (HelperSurfaceFlags)(helperSurfaces & ~flag);
 				MeshInstanceManager.UpdateHelperSurfaceVisibility();
 				RealtimeCSG.CSGSettings.Save();
-				CSG_EditorGUIUtility.UpdateSceneViews();
+				CSG_EditorGUIUtility.RepaintAll();
 			}
 		}
 
@@ -177,7 +177,7 @@ namespace RealtimeCSG
 			 
 			if (GUI.Button(currentRect, buttonContent, style))
 			{
-				PopupWindow.Show(currentRect, new SurfaceVisibilityPopup(SceneView.currentDrawingSceneView));
+				PopupWindow.Show(currentRect, new SurfaceVisibilityPopup(Camera.current));
 			}
 		}
 	}

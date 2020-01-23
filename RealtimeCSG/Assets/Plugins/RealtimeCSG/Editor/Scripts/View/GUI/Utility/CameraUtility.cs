@@ -250,7 +250,7 @@ namespace RealtimeCSG
 		}
 
 		// Pixel distance from mouse pointer to camera facing circle.
-		public static float DistanceToCircle(SceneView sceneview, Vector3 position, float radius)
+		public static float DistanceToCircle(Vector3 position, float radius)
 		{
 			var position2		= position + rightVector * radius;
 
@@ -341,7 +341,7 @@ namespace RealtimeCSG
 
 			return transformedPoint - physicalOffset;
         }
-
+        /*
 		// Convert world space point to a 2D GUI position.
         static Vector2 WorldToGUIPointSlow2(Vector3 world)
 		{
@@ -388,5 +388,6 @@ namespace RealtimeCSG
 				return false;
 			}
 		}
+        */
 	}
 }

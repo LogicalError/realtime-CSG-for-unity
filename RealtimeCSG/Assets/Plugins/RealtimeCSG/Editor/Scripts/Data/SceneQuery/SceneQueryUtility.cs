@@ -385,7 +385,7 @@ namespace InternalRealtimeCSG
         #endregion
 
         #region GetPointsInFrustum
-		internal static PointSelection[] GetPointsInFrustum(SceneView sceneView,
+		internal static PointSelection[] GetPointsInFrustum(Camera camera,
 															Plane[] planes,
 														    CSGBrush[] brushes,
 															ControlMeshState[] controlMeshStates,
@@ -398,11 +398,11 @@ namespace InternalRealtimeCSG
 				if (targetMeshState == null)
 					continue;
 
-				var sceneViewState = targetMeshState.GetSceneViewState(sceneView, false);
+				var cameraState = targetMeshState.GetCameraState(camera, false);
 
 				for (var p = 0; p < targetMeshState.WorldPoints.Length; p++)
 				{
-					if (ignoreHiddenPoints && sceneViewState.WorldPointBackfaced[p])
+					if (ignoreHiddenPoints && cameraState.WorldPointBackfaced[p])
 						continue;
 					var point = targetMeshState.WorldPoints[p];
 					var found = true;
@@ -430,7 +430,7 @@ namespace InternalRealtimeCSG
         private static List<GameObject> deepClickIgnoreGameObjectList = new List<GameObject>();
         private static List<CSGBrush> deepClickIgnoreBrushList = new List<CSGBrush>();
         private static Vector2 _prevSceenPos = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
-        private static SceneView _prevSceneView;
+        private static Camera _prevCamera;
 
         private static void ResetDeepClick(bool resetPosition = true)
 		{
@@ -439,7 +439,7 @@ namespace InternalRealtimeCSG
             if (resetPosition)
             {
                 _prevSceenPos = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
-                _prevSceneView = null;
+                _prevCamera = null;
             }
         }
 
@@ -527,8 +527,7 @@ namespace InternalRealtimeCSG
 
         static GameObject FindFirstWorldIntersection(Vector2 screenPos, Vector3 worldRayStart, Vector3 worldRayEnd, List<GameObject> ignoreGameObjects = null, List<CSGBrush> ignoreBrushes = null)
         {
-            var sceneView = SceneView.currentDrawingSceneView;
-            var wireframeShown = CSGSettings.IsWireframeShown(sceneView);
+            var wireframeShown = CSGSettings.IsWireframeShown(Camera.current);
             return FindFirstWorldIntersection(screenPos, worldRayStart, worldRayEnd, ignoreGameObjects, ignoreBrushes, wireframeShown);
         }
 
@@ -606,8 +605,7 @@ namespace InternalRealtimeCSG
 
         public static bool FindClickWorldIntersection(Vector2 screenPos, out GameObject foundObject)
 		{
-            var sceneView = SceneView.currentDrawingSceneView;// ? SceneView.currentDrawingSceneView : SceneView.lastActiveSceneView;
-			var camera = sceneView ? sceneView.camera : Camera.current;
+            var camera = Camera.current;
 
 			foundObject = null;
 			if (!camera)
@@ -620,11 +618,11 @@ namespace InternalRealtimeCSG
 
             // If we moved our mouse, reset our ignore list
             if (_prevSceenPos != screenPos ||
-                _prevSceneView != sceneView)
+                _prevCamera != camera)
                 ResetDeepClick();
 
             _prevSceenPos = screenPos;
-            _prevSceneView = sceneView;
+            _prevCamera = camera;
 
             // Get the first click that is not in our ignore list
             foundObject = FindFirstWorldIntersection(screenPos, worldRayStart, worldRayEnd, deepClickIgnoreGameObjectList, deepClickIgnoreBrushList);
@@ -740,14 +738,13 @@ namespace InternalRealtimeCSG
         #region FindUnityWorldIntersection
 		public static bool FindUnityWorldIntersection(Vector2 screenPos, out GameObject foundObject)
 		{
-			var sceneView = SceneView.currentDrawingSceneView;
-			var camera = sceneView ? sceneView.camera : Camera.current;
+			var camera = Camera.current;
 
 			foundObject = null;
 			if (!camera)
 				return false;
 
-			var wireframeShown	= CSGSettings.IsWireframeShown(sceneView);
+			var wireframeShown	= CSGSettings.IsWireframeShown(camera);
 			var worldRay		= HandleUtility.GUIPointToWorldRay(screenPos);
 			var worldRayStart	= worldRay.origin;
 			var worldRayVector	= (worldRay.direction * (camera.farClipPlane - camera.nearClipPlane));

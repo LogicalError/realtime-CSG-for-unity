@@ -152,7 +152,7 @@ namespace RealtimeCSG
 							RealtimeCSG.CSGSettings.DistanceUnit = distanceUnit;
 							RealtimeCSG.CSGSettings.UpdateSnapSettings();
 							RealtimeCSG.CSGSettings.Save();
-							CSG_EditorGUIUtility.UpdateSceneViews();
+							CSG_EditorGUIUtility.RepaintAll();
 						}
 					}
 					//if (!isSceneGUI)
@@ -189,7 +189,7 @@ namespace RealtimeCSG
 								RealtimeCSG.CSGSettings.DistanceUnit = distanceUnit;
 								RealtimeCSG.CSGSettings.UpdateSnapSettings();
 								RealtimeCSG.CSGSettings.Save();
-								CSG_EditorGUIUtility.UpdateSceneViews();
+								CSG_EditorGUIUtility.RepaintAll();
 							}
 						}
 						EditorGUI.EndDisabledGroup();

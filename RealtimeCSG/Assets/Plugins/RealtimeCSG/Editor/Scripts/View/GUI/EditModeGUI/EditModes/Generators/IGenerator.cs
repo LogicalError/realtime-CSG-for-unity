@@ -21,7 +21,7 @@ namespace RealtimeCSG
 		bool UndoRedoPerformed();
 		void PerformDeselectAll();
 
-		void HandleEvents(Rect sceneRect);
+		void HandleEvents(SceneView sceneView, Rect sceneRect);
 		
 		bool OnShowGUI(bool isSceneGUI);
 		void StartGUI();

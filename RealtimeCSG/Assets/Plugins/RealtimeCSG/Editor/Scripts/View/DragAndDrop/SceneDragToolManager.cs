@@ -111,7 +111,7 @@ namespace RealtimeCSG
 							{
 								if (currentDragTool.DragUpdated(transformInInspector, selectionRect.Value))
 								{
-									CSG_EditorGUIUtility.UpdateSceneViews();
+									CSG_EditorGUIUtility.RepaintAll();
 								}
 							}
 							Event.current.Use();
@@ -148,7 +148,7 @@ namespace RealtimeCSG
 						currentDragTool = null;
 						currentTransformInInspector = null;
 						draggingInScene = false;
-						CSG_EditorGUIUtility.UpdateSceneViews();
+						CSG_EditorGUIUtility.RepaintAll();
 					}
 					break;
 				}

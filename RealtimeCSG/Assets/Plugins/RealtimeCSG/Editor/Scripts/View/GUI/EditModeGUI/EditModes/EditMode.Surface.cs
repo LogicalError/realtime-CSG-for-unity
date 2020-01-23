@@ -546,7 +546,7 @@ namespace RealtimeCSG
                     if (dragMode == DragMode.SurfaceSelectRemove)
                     {
                         RemoveSurfaceSelection(intersection);
-                        CSG_EditorGUIUtility.UpdateSceneViews();
+                        CSG_EditorGUIUtility.RepaintAll();
                     }
                 } else
                 {
@@ -556,7 +556,7 @@ namespace RealtimeCSG
                     if (dragMode == DragMode.SurfaceSelectAdd)
                     {
                         AddSurfaceSelection(intersection);
-                        CSG_EditorGUIUtility.UpdateSceneViews();
+                        CSG_EditorGUIUtility.RepaintAll();
                     }
                 }
             }
@@ -944,7 +944,7 @@ namespace RealtimeCSG
         [NonSerialized] Vector2 prevMousePos;
 
 
-        public void HandleEvents(Rect sceneRect)
+        public void HandleEvents(SceneView sceneView, Rect sceneRect)
         {
             var originalEventType = Event.current.type;
             if      (originalEventType == EventType.MouseMove) { mouseIsDragging = false; }
@@ -1109,10 +1109,9 @@ namespace RealtimeCSG
                         if (SceneDragToolManager.IsDraggingObjectInScene)
                             break;
                     
-                        var currentSceneView = SceneView.currentDrawingSceneView;
-                        if (currentSceneView != null)
+                        if (sceneView != null)
                         {
-                            var windowRect = new Rect(0, 0, currentSceneView.position.width, currentSceneView.position.height - CSG_GUIStyleUtility.BottomToolBarHeight);
+                            var windowRect = new Rect(0, 0, sceneView.position.width, sceneView.position.height - CSG_GUIStyleUtility.BottomToolBarHeight);
                             if (currentCursor != MouseCursor.Arrow)
                                 EditorGUIUtility.AddCursorRect(windowRect, currentCursor);
                         }
@@ -1198,8 +1197,8 @@ namespace RealtimeCSG
                             var ray_end			= ray_start + ray_vector;
                             
                             var guiArea			= GetLastSceneGUIRect();
-                            var sceneView		= SceneView.currentDrawingSceneView;
-                            var wireframeShown	= RealtimeCSG.CSGSettings.IsWireframeShown(sceneView);
+                            var camera		    = Camera.current;
+                            var wireframeShown	= RealtimeCSG.CSGSettings.IsWireframeShown(camera);
                             LegacyBrushIntersection intersection = null;
                             if (!mouseIsDragging &&
                                 !guiArea.Contains(Event.current.mousePosition) &&
@@ -1336,7 +1335,7 @@ namespace RealtimeCSG
                         Handles.matrix = origMatrix;
             
                         if (repaint)
-                            CSG_EditorGUIUtility.UpdateSceneViews();
+                            CSG_EditorGUIUtility.RepaintAll();
             
                         if (hoverOnTarget >= 0 && hoverOnSurfaceIndex >= 0 && surfaceStates.Length > hoverOnTarget &&
                             surfaceStates[hoverOnTarget].surfaceSelectState.Length > hoverOnSurfaceIndex)

@@ -288,7 +288,7 @@ namespace RealtimeCSG
 			return material;
 		}
 
-		public static void UpdateSceneViews()
+		public static void RepaintAll()
 		{
 			SceneView.RepaintAll();
 		}
@@ -324,7 +324,7 @@ namespace RealtimeCSG
 				RealtimeCSG.CSGSettings.DistanceUnit = distanceUnit;
 				RealtimeCSG.CSGSettings.UpdateSnapSettings();
 				RealtimeCSG.CSGSettings.Save();
-				UpdateSceneViews();
+				RepaintAll();
 			}
 			GUI.changed = modified;
 			return realValue;
@@ -482,7 +482,7 @@ namespace RealtimeCSG
 				RealtimeCSG.CSGSettings.DistanceUnit = distanceUnit;
 				RealtimeCSG.CSGSettings.UpdateSnapSettings();
 				RealtimeCSG.CSGSettings.Save();
-				UpdateSceneViews();
+				RepaintAll();
 			}
 			GUI.changed = modified;
 			return realValue;

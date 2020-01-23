@@ -11,7 +11,7 @@ namespace RealtimeCSG
 		bool UsesUnitySelection { get; }
 		bool IgnoreUnityRect	{ get; }
 
-		void HandleEvents		(Rect rect);
+		void HandleEvents		(SceneView sceneView, Rect rect);
 		
 		Rect GetLastSceneGUIRect();
 		bool OnSceneGUI			(Rect windowRect);

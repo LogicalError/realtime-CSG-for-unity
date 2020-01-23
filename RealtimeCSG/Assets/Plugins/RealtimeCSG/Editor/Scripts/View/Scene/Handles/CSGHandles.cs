@@ -614,8 +614,8 @@ namespace RealtimeCSG.Helpers
 			var prevColor = Handles.color;
 
 			var handleTransform = Matrix4x4.TRS(position, rotation, Vector3.one);
-			var sceneView = SceneView.currentDrawingSceneView;
-			var cameraToTransformToolVector = handleTransform.inverse.MultiplyPoint(sceneView.camera.transform.position).normalized;
+			var camera = Camera.current;
+			var cameraToTransformToolVector = handleTransform.inverse.MultiplyPoint(camera.transform.position).normalized;
 						
 			if (Mathf.Abs (cameraToTransformToolVector[axisNormalIndex]) < 0.05f && GUIUtility.hotControl != id)
 			{

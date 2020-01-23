@@ -1,6 +1,7 @@
 ﻿using UnityEditor;
 using RealtimeCSG.Legacy;
 using RealtimeCSG.Components;
+using UnityEngine;
 
 namespace RealtimeCSG
 {
@@ -17,7 +18,7 @@ namespace RealtimeCSG
             _polygonManager.Destroy();
 		}
 
-		public void Update(SceneView sceneView, CSGBrush[] brushes, ControlMesh[] controlMeshes, ControlMeshState[] meshStates)
+		public void Update(Camera camera, CSGBrush[] brushes, ControlMesh[] controlMeshes, ControlMeshState[] meshStates)
 		{
 		    if (brushes.Length == 0)
             {
@@ -41,7 +42,7 @@ namespace RealtimeCSG
 					meshState.Edges.Length == 0)
 					continue;
 
-				if (!meshState.UpdateColors(sceneView, brush, controlMeshes[t]))
+				if (!meshState.UpdateColors(camera, brush, controlMeshes[t]))
 					continue;
 
 				_outlinesManager.DrawLines(meshState.WorldPoints, meshState.Edges, ColorSettings.MeshEdgeOutline, thickness: 1.0f);//, zTest: false);

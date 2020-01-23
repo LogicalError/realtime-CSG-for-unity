@@ -143,7 +143,7 @@ namespace RealtimeCSG
 			gridColor.a *= alpha;
 			gridMaterial.SetColor(gridColorID, gridColor);
 
-			SceneView.currentDrawingSceneView.camera.depthTextureMode = DepthTextureMode.Depth;
+			Camera.current.depthTextureMode = DepthTextureMode.Depth;
 			
 			gridMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
 			gridMaterial.SetInt("_ZWrite", 0);
@@ -276,8 +276,7 @@ namespace RealtimeCSG
 
 		public static void UpdateGridOrientation()
 		{
-			var sceneView		= SceneView.currentDrawingSceneView;
-			var camera			= sceneView != null ? sceneView.camera : Camera.current;
+			var camera			= Camera.current;
 			if (camera == null)
 				return;
 

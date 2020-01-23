@@ -77,7 +77,7 @@ namespace RealtimeCSG
 #endif
             return true;
         }
-
+        /*
         public static void AddObjectToModel(CSGModel model, UnityEngine.Object obj)
         {
             if (!model || !obj)
@@ -133,7 +133,7 @@ namespace RealtimeCSG
             AssetDatabase.RemoveObjectFromAsset(obj);
 #endif
         }
-
+        */
 
         public static void RemoveObjectsFromModel(CSGModel model, UnityEngine.Object[] objs)
         {
@@ -203,48 +203,48 @@ namespace RealtimeCSG
             if (foundGeneratedMeshes.Length == 0)
                 return;
 
+            var defaultModel = InternalCSGModelManager.GetDefaultCSGModelForObject(obj.transform);
+            newMeshes.Clear();
+            foreach (var generatedMeshesInstance in foundGeneratedMeshes)
+            {
+                if (generatedMeshesInstance.owner == defaultModel)
+                    continue;
+
+                foreach (var generatedMeshInstance in generatedMeshesInstance.GetComponentsInChildren<GeneratedMeshInstance>())
+                {
+                    if (!generatedMeshInstance) // possible when it's deleted in a prefab
+                        continue;
+                    foundGeneratedMeshInstances.Add(generatedMeshInstance);
+                    if (generatedMeshInstance.SharedMesh)
+                        newMeshes.Add(generatedMeshInstance.SharedMesh);
+                }
+
+                foreach (var helperSurface in generatedMeshesInstance.HelperSurfaces)
+                {
+                    foundHelperSurfaces.Add(helperSurface);
+                    newMeshes.Add(helperSurface.SharedMesh);
+                }
+            }
+
+            var asset       = CSGPrefabUtility.GetPrefabAsset(obj);
+            var assetPath   = AssetDatabase.GetAssetPath(asset);
+
+            var assetObjects = AssetDatabase.LoadAllAssetsAtPath(assetPath);
+            foreach (var assetObject in assetObjects)
+            {
+                var mesh = assetObject as Mesh;
+                if (!mesh)
+                    continue;
+                oldMeshes.Add(mesh);
+            }
+
+            if (newMeshes.Count == 0 && oldMeshes.Count == 0)
+                return;
+
             // We might be modifying a prefab, in which case we need to store meshes inside it that belong to it
             AssetDatabase.StartAssetEditing();
             try
             {
-                var defaultModel = InternalCSGModelManager.GetDefaultCSGModelForObject(obj.transform);
-                newMeshes.Clear();
-                foreach (var generatedMeshesInstance in foundGeneratedMeshes)
-                {
-                    if (generatedMeshesInstance.owner == defaultModel)
-                        continue;
-
-                    foreach (var generatedMeshInstance in generatedMeshesInstance.GetComponentsInChildren<GeneratedMeshInstance>())
-                    {
-                        if (!generatedMeshInstance) // possible when it's deleted in a prefab
-                            continue;
-                        foundGeneratedMeshInstances.Add(generatedMeshInstance);
-                        if (generatedMeshInstance.SharedMesh)
-                            newMeshes.Add(generatedMeshInstance.SharedMesh);
-                    }
-
-                    foreach (var helperSurface in generatedMeshesInstance.HelperSurfaces)
-                    {
-                        foundHelperSurfaces.Add(helperSurface);
-                        newMeshes.Add(helperSurface.SharedMesh);
-                    }
-                }
-
-                var asset       = CSGPrefabUtility.GetPrefabAsset(obj);
-                var assetPath   = AssetDatabase.GetAssetPath(asset);
-
-                var assetObjects = AssetDatabase.LoadAllAssetsAtPath(assetPath);
-                foreach (var assetObject in assetObjects)
-                {
-                    var mesh = assetObject as Mesh;
-                    if (!mesh)
-                        continue;
-                    oldMeshes.Add(mesh);
-                }
-
-                if (newMeshes.Count == 0 && oldMeshes.Count == 0)
-                    return;
-
                 foreach (var oldMesh in oldMeshes)
                 {
                     if (newMeshes.Contains(oldMesh))
@@ -262,23 +262,6 @@ namespace RealtimeCSG
                         if (IsObjectPartOfAsset(assetPath, newMesh))
                             continue;
                     }
-                    /*
-                    var meshPath = AssetDatabase.GetAssetPath(newMesh);
-                    if (!foundNestedPrefabs.Contains(meshPath))
-                    {
-                        var builder = new System.Text.StringBuilder();
-
-                        builder.AppendLine("clone " + meshPath);
-                        foreach(var path in foundNestedPrefabs)
-                        {
-                            builder.AppendLine(path);
-                        }
-                        Debug.Log(builder.ToString());
-                        // Our mesh is part of an asset, but not our prefab.
-                        // we assume we just cloned a prefab or something, and we can't just use this mesh
-                        // so we clone it instead, and fix up all links
-                        newMesh = CloneMesh(newMesh, foundGeneratedMeshInstances, foundHelperSurfaces);
-                    }*/
                     if (CanAddObjectToAsset(assetPath, newMesh))
                         AssetDatabase.AddObjectToAsset(newMesh, asset);
                 }

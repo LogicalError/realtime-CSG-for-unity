@@ -154,7 +154,7 @@ namespace RealtimeCSG
 				Undo.FlushUndoRecordObjects();
 				UpdateTargetClipping();
 			}
-			CSG_EditorGUIUtility.UpdateSceneViews();
+			CSG_EditorGUIUtility.RepaintAll();
 		}
 		
 		public void OnEnableTool()
@@ -188,7 +188,7 @@ namespace RealtimeCSG
 			if (RealtimeCSG.CSGGrid.ForceGrid)
 			{
 				RealtimeCSG.CSGGrid.ForceGrid = false;
-				CSG_EditorGUIUtility.UpdateSceneViews();
+				CSG_EditorGUIUtility.RepaintAll();
 			}
 			forceWireframeUpdate = true;
 		}
@@ -288,7 +288,7 @@ namespace RealtimeCSG
 			finally
 			{
 				InternalCSGModelManager.skipCheckForChanges = false;
-				CSG_EditorGUIUtility.UpdateSceneViews();
+				CSG_EditorGUIUtility.RepaintAll();
 				forceWireframeUpdate = true;
 			}
 		}
@@ -323,7 +323,7 @@ namespace RealtimeCSG
 			finally
 			{
 				InternalCSGModelManager.skipCheckForChanges = false;
-				CSG_EditorGUIUtility.UpdateSceneViews();
+				CSG_EditorGUIUtility.RepaintAll();
 				//backupData = null;
 				forceWireframeUpdate = true;
 			}
@@ -484,7 +484,7 @@ namespace RealtimeCSG
 					InternalCSGModelManager.OnHierarchyModified();
 					InternalCSGModelManager.UpdateRemoteMeshes();
 					//CSGModelManager.Refresh(true);
-					//CSG_EditorGUIUtility.UpdateSceneViews();
+					//CSG_EditorGUIUtility.RepaintAll();
 				}
 			}
 			finally
@@ -753,7 +753,7 @@ namespace RealtimeCSG
 			}
 			finally
 			{
-				CSG_EditorGUIUtility.UpdateSceneViews();
+				CSG_EditorGUIUtility.RepaintAll();
 			}
 		}
 		
@@ -769,7 +769,7 @@ namespace RealtimeCSG
 			}
 			finally
 			{
-				CSG_EditorGUIUtility.UpdateSceneViews();
+				CSG_EditorGUIUtility.RepaintAll();
 			}
 			return true;
 		}
@@ -789,7 +789,7 @@ namespace RealtimeCSG
 //					prevClipPlane = clipPlane;
 //					prevClipPlaneValid = clipPlaneValid;
 					RestoreTargetData();
-					CSG_EditorGUIUtility.UpdateSceneViews();
+					CSG_EditorGUIUtility.RepaintAll();
 				}
 			} else
 			//if (!prevClipPlaneValid ||
@@ -798,7 +798,7 @@ namespace RealtimeCSG
 //				prevClipPlane = clipPlane;
 //				prevClipPlaneValid = clipPlaneValid;
 				UpdateTargetClipping();
-				CSG_EditorGUIUtility.UpdateSceneViews();
+				CSG_EditorGUIUtility.RepaintAll();
 			}			
 		}
 
@@ -830,9 +830,8 @@ namespace RealtimeCSG
 
 		void UpdateMouseIntersection()
 		{
-			var sceneView = SceneView.currentDrawingSceneView;//(SceneView.currentDrawingSceneView != null) ? SceneView.currentDrawingSceneView : SceneView.lastActiveSceneView;
-			var camera = (sceneView == null) ? null : sceneView.camera;
-			var assume2DView = CSGSettings.Assume2DView(sceneView);
+			var camera = Camera.current;
+			var assume2DView = CSGSettings.Assume2DView(camera);
 
 			var world_ray	= HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
 			LegacyBrushIntersection intersection;
@@ -873,7 +872,7 @@ namespace RealtimeCSG
 			if (prevMovePlane != movePlane || currentMousePoint != prevMousePoint)
 			{
 				prevMovePlane = movePlane;
-				CSG_EditorGUIUtility.UpdateSceneViews();
+				CSG_EditorGUIUtility.RepaintAll();
 				prevMousePoint = currentMousePoint;
 			}
 
@@ -914,9 +913,8 @@ namespace RealtimeCSG
 				return;
 
 
-			var sceneView = SceneView.currentDrawingSceneView;//(SceneView.currentDrawingSceneView != null) ? SceneView.currentDrawingSceneView : SceneView.lastActiveSceneView;
-			var camera = (sceneView == null) ? null : sceneView.camera;
-			var assume2DView = CSGSettings.Assume2DView(sceneView);
+			var camera = Camera.current;
+			var assume2DView = CSGSettings.Assume2DView(camera);
 
 
 			var intersectionPoint = currentMousePoint.Value;
@@ -977,7 +975,7 @@ namespace RealtimeCSG
 			planeCreationID = GUIUtility.GetControlID(planeCreationHash, FocusType.Keyboard);
 		}
 		
-		public void HandleEvents(Rect sceneRect)
+		public void HandleEvents(SceneView sceneView, Rect sceneRect)
 		{
 			var originalEventType = Event.current.type;
 			if      (originalEventType == EventType.MouseDown ||
@@ -994,12 +992,12 @@ namespace RealtimeCSG
 				case EditMode.CreatingPoint1:
 				case EditMode.CreatingPoint2:
 				{
-					HandleCreatePointEvents(sceneRect);
+					HandleCreatePointEvents(sceneView, sceneRect);
 					break;
 				}
 				case EditMode.EditPoints:					
 				{
-					HandleEditPointEvents(sceneRect);
+					HandleEditPointEvents(sceneView, sceneRect);
 					break;
 				}
 			}
@@ -1022,12 +1020,11 @@ namespace RealtimeCSG
 		}
 
 
-		void OnPaint()
+		void OnPaint(SceneView sceneView)
 		{					
-			SceneView currentSceneView = SceneView.currentDrawingSceneView;
-			if (currentSceneView != null)
+			if (sceneView != null)
 			{
-				Rect windowRect = new Rect(0, 0, currentSceneView.position.width, currentSceneView.position.height - CSG_GUIStyleUtility.BottomToolBarHeight);
+				Rect windowRect = new Rect(0, 0, sceneView.position.width, sceneView.position.height - CSG_GUIStyleUtility.BottomToolBarHeight);
 				if (currentCursor != MouseCursor.Arrow)
 					EditorGUIUtility.AddCursorRect(windowRect, currentCursor);
 			}
@@ -1152,7 +1149,7 @@ namespace RealtimeCSG
 			}
 		}
 		
-		public void HandleCreatePointEvents(Rect sceneRect)
+		public void HandleCreatePointEvents(SceneView sceneView, Rect sceneRect)
 		{
 //			onHandle = false;
 			switch (Event.current.type)
@@ -1207,7 +1204,7 @@ namespace RealtimeCSG
 					if (SceneDragToolManager.IsDraggingObjectInScene)
 						break;
 					
-					OnPaint();
+					OnPaint(sceneView);
 					
 					if (currentMousePoint.HasValue)
 					{ 
@@ -1244,7 +1241,7 @@ namespace RealtimeCSG
 						currentCursor = MouseCursor.ArrowPlus;
 					}
 					if (prevCursor != currentCursor)
-						CSG_EditorGUIUtility.UpdateSceneViews();
+						CSG_EditorGUIUtility.RepaintAll();
 					break;
 				}
 				case EventType.ValidateCommand:
@@ -1356,7 +1353,7 @@ namespace RealtimeCSG
 						if (pointsUsed == 3)
 							UpdateClipPlane();
 
-						CSG_EditorGUIUtility.UpdateSceneViews();
+						CSG_EditorGUIUtility.RepaintAll();
 					}
 					break;
 				}
@@ -1446,11 +1443,10 @@ namespace RealtimeCSG
 		
 		Vector2 startMousePosition;	
 		
-		public void HandleEditPointEvents(Rect sceneRect)
+		public void HandleEditPointEvents(SceneView sceneView, Rect sceneRect)
 		{
-			var sceneView = SceneView.currentDrawingSceneView;//(SceneView.currentDrawingSceneView != null) ? SceneView.currentDrawingSceneView : SceneView.lastActiveSceneView;
-			var camera = (sceneView == null) ? null : sceneView.camera;
-			var assume2DView = CSGSettings.Assume2DView(sceneView);
+			var camera = Camera.current;
+			var assume2DView = CSGSettings.Assume2DView(camera);
 
 			int[] ids = new int[3];
 			float[] sizes = new float[3];
@@ -1578,7 +1574,7 @@ namespace RealtimeCSG
 						if (SceneDragToolManager.IsDraggingObjectInScene)
 							break;
 
-						OnPaint();
+						OnPaint(sceneView);
 
 						Color temp = Handles.color;
 						for (int i = 0; i < pointsShown; i++)

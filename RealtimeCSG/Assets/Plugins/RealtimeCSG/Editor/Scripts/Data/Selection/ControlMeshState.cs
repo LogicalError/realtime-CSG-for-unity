@@ -18,7 +18,7 @@ namespace RealtimeCSG
 
 	internal sealed class SceneMeshState
 	{
-		public SceneView	SceneView;
+		public Camera	    Camera;
 		public bool[]       WorldPointBackfaced;
 		public float[]		WorldPointSizes;                // render
 		public float[]		PolygonCenterPointSizes;        // render        
@@ -72,7 +72,7 @@ namespace RealtimeCSG
 
 		[SerializeField] public Vector3         BrushCenter;                    // render
 
-		SceneMeshState[]    SceneViewStates = new SceneMeshState[0];		    // render
+		SceneMeshState[] CameraStates = new SceneMeshState[0];		            // render
 		
 
 		public ControlMeshState(CSGBrush brush)
@@ -124,25 +124,25 @@ namespace RealtimeCSG
 			PolygonPointIndices			= new int[polygonCount][];
 		}
 
-		public SceneMeshState GetSceneViewState(SceneView sceneView, bool generate)
+		public SceneMeshState GetCameraState(Camera camera, bool generate)
 		{
-			if (!sceneView)
+			if (!camera)
 				return null;
 
-			if (SceneViewStates != null)
+			if (CameraStates != null)
 			{
-				for (int i = SceneViewStates.Length - 1; i >= 0; i--)
+				for (int i = CameraStates.Length - 1; i >= 0; i--)
 				{
-					var sceneMeshState = SceneViewStates[i];
+					var sceneMeshState = CameraStates[i];
 					if (sceneMeshState == null ||
-						System.Object.ReferenceEquals(sceneMeshState.SceneView, null) ||
-						!sceneMeshState.SceneView)
+						System.Object.ReferenceEquals(sceneMeshState.Camera, null) ||
+						!sceneMeshState.Camera)
 					{
-						ArrayUtility.RemoveAt(ref SceneViewStates, i);
+						ArrayUtility.RemoveAt(ref CameraStates, i);
 						continue;
 					}
-					if (SceneViewStates[i].SceneView == sceneView)
-						return SceneViewStates[i];
+					if (CameraStates[i].Camera == camera)
+						return CameraStates[i];
 				}
 			}
 
@@ -150,23 +150,23 @@ namespace RealtimeCSG
 				return null;
 
 			int index;
-			if (SceneViewStates != null)
+			if (CameraStates != null)
 			{
-				index = SceneViewStates.Length;
-				Array.Resize(ref SceneViewStates, index + 1);
+				index = CameraStates.Length;
+				Array.Resize(ref CameraStates, index + 1);
 			} else
 			{
-				SceneViewStates = new SceneMeshState[1];
+				CameraStates = new SceneMeshState[1];
 				index = 0;
 			}
 
-			SceneViewStates[index] = new SceneMeshState();
-			SceneViewStates[index].SceneView				= sceneView;
-			SceneViewStates[index].WorldPointSizes			= new float[PointControlId.Length];
-			SceneViewStates[index].WorldPointBackfaced		= new bool[PointControlId.Length];
-			SceneViewStates[index].WorldPointColors			= new Color[PointControlId.Length * 2];
-			SceneViewStates[index].PolygonCenterPointSizes	= new float[PolygonCenterPoints.Length];
-			return SceneViewStates[index];
+			CameraStates[index] = new SceneMeshState();
+			CameraStates[index].Camera				    = camera;
+			CameraStates[index].WorldPointSizes			= new float[PointControlId.Length];
+			CameraStates[index].WorldPointBackfaced		= new bool[PointControlId.Length];
+			CameraStates[index].WorldPointColors		= new Color[PointControlId.Length * 2];
+			CameraStates[index].PolygonCenterPointSizes	= new float[PolygonCenterPoints.Length];
+			return CameraStates[index];
 		}
 
 		public void UpdateTransforms(CSGBrush brush)
@@ -457,7 +457,7 @@ namespace RealtimeCSG
 		}
 		
 
-		public void UpdateHandles(SceneView sceneView, ControlMesh controlMesh)
+		public void UpdateHandles(Camera camera, ControlMesh controlMesh)
 		{
 			if (controlMesh == null ||
 				controlMesh.Vertices == null ||
@@ -469,24 +469,23 @@ namespace RealtimeCSG
 			}
 
 			
-			var sceneViewState = GetSceneViewState(sceneView, true);
+			var cameraState     = GetCameraState(camera, true);
 
-			var camera			= sceneView.camera;
 			var cameraPosition	= camera.transform.position;
 			var cameraOrtho		= camera.orthographic;
 			
-			GetHandleSizes(camera, ref sceneViewState.PolygonCenterPointSizes, PolygonCenterPoints);
-			GetHandleSizes(camera, ref sceneViewState.WorldPointSizes, WorldPoints);
+			GetHandleSizes(camera, ref cameraState.PolygonCenterPointSizes, PolygonCenterPoints);
+			GetHandleSizes(camera, ref cameraState.WorldPointSizes, WorldPoints);
 
-			if (sceneViewState.WorldPointBackfaced.Length != WorldPoints.Length)
-				sceneViewState.WorldPointBackfaced = new bool[WorldPoints.Length];
+			if (cameraState.WorldPointBackfaced.Length != WorldPoints.Length)
+				cameraState.WorldPointBackfaced = new bool[WorldPoints.Length];
 
-			for (var p = 0; p < sceneViewState.WorldPointBackfaced.Length; p++)
-				sceneViewState.WorldPointBackfaced[p] = true;
+			for (var p = 0; p < cameraState.WorldPointBackfaced.Length; p++)
+				cameraState.WorldPointBackfaced[p] = true;
 
 			for (int p = 0; p < PolygonCenterPoints.Length; p++)
 			{
-				var handleSize = sceneViewState.PolygonCenterPointSizes[p];
+				var handleSize = cameraState.PolygonCenterPointSizes[p];
 				var delta1 = (PolygonCenterPoints[p] - BrushCenter).normalized;
 				var delta2 = (PolygonCenterPoints[p] - cameraPosition).normalized;
 				var dot = Vector3.Dot(delta1, delta2);
@@ -510,44 +509,43 @@ namespace RealtimeCSG
 						{
 							for (var i = 0; i < indices.Length; i++)
 							{
-								if (indices[i] >= sceneViewState.WorldPointBackfaced.Length)
+								if (indices[i] >= cameraState.WorldPointBackfaced.Length)
 								{
 									PolygonPointIndices[p] = null;
 									break;
 								}
-								sceneViewState.WorldPointBackfaced[indices[i]] = false;
+								cameraState.WorldPointBackfaced[indices[i]] = false;
 							}
 						}
 					}
 				}
 
-				sceneViewState.PolygonCenterPointSizes[p] = handleSize;
+				cameraState.PolygonCenterPointSizes[p] = handleSize;
 			}
 
-			for (var p = 0; p < sceneViewState.WorldPointSizes.Length; p++)
+			for (var p = 0; p < cameraState.WorldPointSizes.Length; p++)
 			{				
-				var handleSize = sceneViewState.WorldPointSizes[p];
-				if (sceneViewState.WorldPointBackfaced[p])
+				var handleSize = cameraState.WorldPointSizes[p];
+				if (cameraState.WorldPointBackfaced[p])
 					handleSize *= GUIConstants.backHandleScale;
 				else
 					handleSize *= GUIConstants.handleScale;
 				
-				sceneViewState.WorldPointSizes[p] = handleSize;
+				cameraState.WorldPointSizes[p] = handleSize;
 			}
 		}
 
-		public bool UpdateColors(SceneView sceneView, CSGBrush brush, ControlMesh controlMesh)
+		public bool UpdateColors(Camera camera, CSGBrush brush, ControlMesh controlMesh)
 		{
 			if (controlMesh == null)
 				return false;
 			
-			var sceneViewState = GetSceneViewState(sceneView, false);
-			if (sceneViewState == null)
+			var cameraState = GetCameraState(camera, false);
+			if (cameraState == null)
 				return false;
 
 			var valid			= controlMesh.Valid;
 
-			var camera			= sceneView.camera;
 			var cameraPosition	= camera.transform.position;
 			var cameraOrtho		= camera.orthographic;
 			
@@ -606,8 +604,8 @@ namespace RealtimeCSG
 				}
 			}
 
-			if (sceneViewState.WorldPointColors.Length != Selection.Points.Length * 2)
-				sceneViewState.WorldPointColors = new Color[Selection.Points.Length * 2];
+			if (cameraState.WorldPointColors.Length != Selection.Points.Length * 2)
+				cameraState.WorldPointColors = new Color[Selection.Points.Length * 2];
 			
 			for (int j = 0, p = 0; p < Selection.Points.Length; p++, j += 2)
 			{
@@ -623,7 +621,7 @@ namespace RealtimeCSG
 					color2 = ColorSettings.InvalidInnerStateColor[state];
 				}
 				
-				if (sceneViewState.WorldPointBackfaced[p])
+				if (cameraState.WorldPointBackfaced[p])
 				{
 					color1.a *= GUIConstants.backfaceTransparency;
 					color2.a *= GUIConstants.backfaceTransparency;
@@ -632,8 +630,8 @@ namespace RealtimeCSG
 					color2.a = 1.0f;
 				}
 
-				sceneViewState.WorldPointColors[j + 0] = color1;
-				sceneViewState.WorldPointColors[j + 1] = color2;
+				cameraState.WorldPointColors[j + 0] = color1;
+				cameraState.WorldPointColors[j + 1] = color2;
 			}
 			return true;
 		}

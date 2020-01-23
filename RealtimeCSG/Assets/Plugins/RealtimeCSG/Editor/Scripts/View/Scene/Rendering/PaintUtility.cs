@@ -1720,7 +1720,7 @@ namespace RealtimeCSG
 
 		public static void DrawWorldText(Vector3 center, GUIContent content, GUIStyle style = null)
 		{
-			var camera		= SceneView.currentDrawingSceneView.camera;
+			var camera		= Camera.current;
 			var screenPoint = camera.WorldToScreenPoint(center);
 			if (screenPoint.z < 0)
 				return;
@@ -1769,8 +1769,8 @@ namespace RealtimeCSG
 		//HoverTextDistance * 2
 		public static void DrawScreenText(Vector3 center, float distance, string text, GUIStyle style = null)
 		{
-			var camera		= SceneView.currentDrawingSceneView.camera;			
-			var screenPoint = camera.WorldToScreenPoint(center);
+			var camera		= Camera.current;
+            var screenPoint = camera.WorldToScreenPoint(center);
 			if (screenPoint.z < 0)
 				return;
 			
@@ -2261,7 +2261,7 @@ namespace RealtimeCSG
 
 			var center = ((vertexB + vertexA) * 0.5f);
 
-			var camera		= SceneView.currentDrawingSceneView.camera;			
+			var camera		= Camera.current;
 			var screenPoint = camera.WorldToScreenPoint(center);
 			if (screenPoint.z < 0)
 				return;
@@ -2348,7 +2348,7 @@ namespace RealtimeCSG
 
 			var center = ((lineB1 + lineA1) * 0.5f);
 
-			var camera		= SceneView.currentDrawingSceneView.camera;			
+			var camera		= Camera.current;
 			var screenPoint = camera.WorldToScreenPoint(center);
 			if (screenPoint.z < 0)
 			{

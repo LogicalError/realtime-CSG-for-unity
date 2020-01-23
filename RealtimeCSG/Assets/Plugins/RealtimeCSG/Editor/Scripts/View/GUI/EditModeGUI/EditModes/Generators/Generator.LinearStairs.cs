@@ -506,9 +506,9 @@ namespace RealtimeCSG
 			}
 		}
 		
-		public override void HandleEvents(Rect sceneRect)
+		public override void HandleEvents(SceneView sceneView, Rect sceneRect)
 		{
-			base.HandleEvents(sceneRect);
+			base.HandleEvents(sceneView, sceneRect);
 
 			if (Event.current.type == EventType.MouseUp)
 			{
@@ -696,9 +696,8 @@ namespace RealtimeCSG
 			CSGBrush	vertexOnBrush		= null;
 			
 			CSGPlane	hoverBuildPlane		= buildPlane;
-			var sceneView = SceneView.currentDrawingSceneView;//(SceneView.currentDrawingSceneView != null) ? SceneView.currentDrawingSceneView : SceneView.lastActiveSceneView;
-			var camera = (sceneView == null) ? null : sceneView.camera;
-			var assume2DView = CSGSettings.Assume2DView(sceneView);
+			var camera = Camera.current;
+			var assume2DView = CSGSettings.Assume2DView(camera);
 			if (camera != null &&
 				camera.pixelRect.Contains(Event.current.mousePosition))
 			{
@@ -827,7 +826,7 @@ namespace RealtimeCSG
 						}
 					}
 					if (Event.current.type != EventType.Repaint)
-						CSG_EditorGUIUtility.UpdateSceneViews();
+						CSG_EditorGUIUtility.RepaintAll();
 				}
 				
 				visualSnappedGrid = RealtimeCSG.CSGGrid.FindAllGridEdgesThatTouchPoint(worldPosition);
@@ -979,7 +978,7 @@ namespace RealtimeCSG
 							settings.AddPoint(worldPosition);
 														
 							UpdateSizes();
-							CSG_EditorGUIUtility.UpdateSceneViews();
+							CSG_EditorGUIUtility.RepaintAll();
 							if (settings.vertices.Length == kMaxPoints)
 							{
 								HotKeyReleased();

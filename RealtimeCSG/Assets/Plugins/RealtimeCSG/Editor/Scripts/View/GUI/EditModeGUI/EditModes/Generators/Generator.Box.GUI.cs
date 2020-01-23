@@ -39,7 +39,7 @@ namespace RealtimeCSG
 							RealtimeCSG.CSGSettings.DistanceUnit = distanceUnit;
 							RealtimeCSG.CSGSettings.UpdateSnapSettings();
 							RealtimeCSG.CSGSettings.Save();
-							CSG_EditorGUIUtility.UpdateSceneViews();
+							CSG_EditorGUIUtility.RepaintAll();
 						}
 					}
 					GUILayout.EndHorizontal();
@@ -66,7 +66,7 @@ namespace RealtimeCSG
 							RealtimeCSG.CSGSettings.DistanceUnit = distanceUnit;
 							RealtimeCSG.CSGSettings.UpdateSnapSettings();
 							RealtimeCSG.CSGSettings.Save();
-							CSG_EditorGUIUtility.UpdateSceneViews();
+							CSG_EditorGUIUtility.RepaintAll();
 						}
 					}
 					GUILayout.EndHorizontal();
@@ -89,7 +89,7 @@ namespace RealtimeCSG
 							RealtimeCSG.CSGSettings.DistanceUnit = distanceUnit;
 							RealtimeCSG.CSGSettings.UpdateSnapSettings();
 							RealtimeCSG.CSGSettings.Save();
-							CSG_EditorGUIUtility.UpdateSceneViews();
+							CSG_EditorGUIUtility.RepaintAll();
 						}
 					}
 					GUILayout.EndHorizontal();

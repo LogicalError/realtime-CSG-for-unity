@@ -420,9 +420,8 @@ namespace RealtimeCSG
 				return;
 
 			Vector3 middlePoint = (end + start) * 0.5f;
-			
-			var sceneView = SceneView.currentDrawingSceneView;//(SceneView.currentDrawingSceneView != null) ? SceneView.currentDrawingSceneView : SceneView.lastActiveSceneView;
-			var camera = (sceneView == null) ? null : sceneView.camera;
+
+            var camera = Camera.current;
 			if (camera == null)
 				return;
 
@@ -491,12 +490,11 @@ namespace RealtimeCSG
 
 		protected void GrabHeightHandle(int index, bool ignoreFirstMouseUp = false)
 		{
-			var sceneView = SceneView.currentDrawingSceneView;//(SceneView.currentDrawingSceneView != null) ? SceneView.currentDrawingSceneView : SceneView.lastActiveSceneView;
-			var camera = (sceneView == null) ? null : sceneView.camera;
+            var camera = Camera.current;
 			if (camera == null)
 				return;
 
-			var assume2DView = CSGSettings.Assume2DView(sceneView);
+			var assume2DView = CSGSettings.Assume2DView(camera);
 
 			firstClick = ignoreFirstMouseUp;
 			editMode = EditMode.ExtrudeShape;
@@ -885,9 +883,9 @@ namespace RealtimeCSG
 			HandleKeyboard(shapeType);
 		}
 
-		public override void HandleEvents(Rect sceneRect)
+		public override void HandleEvents(SceneView sceneView, Rect sceneRect)
 		{
-			base.HandleEvents(sceneRect);
+			base.HandleEvents(sceneView, sceneRect);
 
 			//if (editMode != EditMode.EditShape)
 			//	return;

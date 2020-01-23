@@ -40,9 +40,9 @@ namespace RealtimeCSG
 		[SerializeField] protected EditMode			prevEditMode		= EditMode.CreatePlane;
 
 		
-		protected bool IgnoreDepthForRayCasts(SceneView sceneview)
+		protected bool IgnoreDepthForRayCasts(Camera camera)
 		{
-			return CSGSettings.Assume2DView(sceneview);
+			return CSGSettings.Assume2DView(camera);
 		}
 
 
@@ -395,16 +395,15 @@ namespace RealtimeCSG
 			}
 		}
 
-		protected void SetCameraPosition(Vector3 center, float size)
+		protected void SetCameraPosition(SceneView sceneView, Vector3 center, float size)
 		{
 			if (float.IsInfinity(size) || float.IsNaN(size) ||
 				float.IsInfinity(center.x) || float.IsNaN(center.x) ||
 				float.IsInfinity(center.y) || float.IsNaN(center.y) ||
 				float.IsInfinity(center.z) || float.IsNaN(center.z))
 				return;
-			var scene = SceneView.currentDrawingSceneView;
-			if (scene)
-				scene.LookAt(center, scene.rotation, Mathf.Max(size, (scene.camera.transform.position - center).magnitude));
+			if (sceneView)
+                sceneView.LookAt(center, sceneView.rotation, Mathf.Max(size, (sceneView.camera.transform.position - center).magnitude));
 		}
 		
 
@@ -620,7 +619,7 @@ namespace RealtimeCSG
 
 		public abstract AABB GetShapeBounds();
 		
-		protected void HandleCameraOrbit(bool allowCameraOrbit)
+		protected void HandleCameraOrbit(SceneView sceneView, bool allowCameraOrbit)
 		{
 			if (!ignoreOrbit &&
 				Tools.viewTool == ViewTool.Orbit &&
@@ -630,7 +629,7 @@ namespace RealtimeCSG
 				var bounds	= GetShapeBounds();
 				var size	= bounds.Size.magnitude;
 				var center	= bounds.Center;
-				SetCameraPosition(center, size);
+				SetCameraPosition(sceneView, center, size);
 			}
 			previousViewTool = Tools.viewTool;
 
@@ -648,7 +647,7 @@ namespace RealtimeCSG
 			return true;
 		}
 
-		public virtual void HandleEvents(Rect sceneRect)
+		public virtual void HandleEvents(SceneView sceneView, Rect sceneRect)
 		{
 			if (Event.current.type == EventType.MouseDown ||
 				Event.current.type == EventType.MouseMove) mouseIsDragging = false; else
@@ -658,7 +657,7 @@ namespace RealtimeCSG
 
 			if (mouseIsDragging || 
 				(Event.current.type == EventType.MouseDown && Tools.viewTool == ViewTool.Orbit))
-				HandleCameraOrbit(editMode != EditMode.CreatePlane);
+				HandleCameraOrbit(sceneView, editMode != EditMode.CreatePlane);
 						
 			// pretend we dragged so we don't click if we just changed edit modes
 			if (prevEditMode != editMode)
@@ -701,7 +700,7 @@ namespace RealtimeCSG
 			}
 			
 			isFinished  = true;
-			CSG_EditorGUIUtility.UpdateSceneViews();
+			CSG_EditorGUIUtility.RepaintAll();
 		}
 
 		public virtual void Cancel()

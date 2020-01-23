@@ -48,7 +48,7 @@ namespace RealtimeCSG
 				RealtimeCSG.CSGSettings.Save();
 
 				if (ActiveTool != null)
-					CSG_EditorGUIUtility.UpdateSceneViews();
+					CSG_EditorGUIUtility.RepaintAll();
 			}
 		}
 
@@ -229,7 +229,7 @@ namespace RealtimeCSG
 			if (EditorApplication.isPlayingOrWillChangePlaymode)
 				return;
 
-			CSG_EditorGUIUtility.UpdateSceneViews();
+			CSG_EditorGUIUtility.RepaintAll();
 		}
 		
 		static bool GetTargetSelection(ref HashSet<CSGNode> nodes, ref HashSet<Transform> others)
@@ -520,7 +520,9 @@ namespace RealtimeCSG
 						var sceneSize = sceneView.position.size;
 						var sceneRect = new Rect(0, 0, sceneSize.x, sceneSize.y - ((CSG_GUIStyleUtility.BottomToolBarHeight + 4) + 17));
 						
-						instance.activeTool.HandleEvents(sceneRect);
+                        // This helps prevent weird issues with overlapping sceneviews + avoid some performance issues with multiple sceneviews open
+                        if (EditorWindow.mouseOverWindow == sceneView || (Event.current.type != EventType.MouseMove && Event.current.type != EventType.Layout))
+                            instance.activeTool.HandleEvents(sceneView, sceneRect);
 					} else
 					{
 						if (Event.current.type == EventType.Repaint)

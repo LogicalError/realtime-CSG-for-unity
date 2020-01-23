@@ -61,29 +61,33 @@ namespace RealtimeCSG
 
 
         internal static HashSet<string> wireframeSceneviews = new HashSet<string>();
-        internal static Dictionary<SceneView, bool> sceneViewShown = new Dictionary<SceneView, bool>();
+        internal static Dictionary<Camera, bool> sceneViewShown = new Dictionary<Camera, bool>();
 
-
-        internal static bool Assume2DView(SceneView sceneview)
+        internal static bool Assume2DView(Camera camera)
         {
-            return sceneview != null && sceneview.camera != null && sceneview.camera.orthographic && IsWireframeShown(sceneview);
+            return camera != null && camera != null && camera.orthographic && IsWireframeShown(camera);
         }
 
         internal static bool IsWireframeShown(SceneView sceneView)
         {
-            if (!sceneView)
+            return IsWireframeShown(sceneView?.camera);
+        }
+
+        internal static bool IsWireframeShown(Camera camera)
+        {
+            if (!camera)
                 return false;
 
             bool isShown;
-            if (sceneViewShown.TryGetValue(sceneView, out isShown))
+            if (sceneViewShown.TryGetValue(camera, out isShown))
                 return isShown;
 
-            var name = sceneView.name;
+            var name = camera.name;
             if (name != null) name = name.Trim();
             if (string.IsNullOrEmpty(name))
-                sceneView.name = GetUniqueSceneviewName(GetKnownSceneviewNames());
-            isShown = wireframeSceneviews.Contains(sceneView.name);
-            sceneViewShown[sceneView] = isShown;
+                camera.name = GetUniqueSceneviewName(GetKnownSceneviewNames());
+            isShown = wireframeSceneviews.Contains(camera.name);
+            sceneViewShown[camera] = isShown;
             return isShown;
         }
 
@@ -107,30 +111,32 @@ namespace RealtimeCSG
             if (!sceneView)
                 return;
 
-            var name = sceneView.name;
+            var camera = sceneView.camera;
+
+            var name = camera.name;
             if (name != null) name = name.Trim();
             if (string.IsNullOrEmpty(name))
             {
-                sceneView.name = GetUniqueSceneviewName(GetKnownSceneviewNames());
+                camera.name = GetUniqueSceneviewName(GetKnownSceneviewNames());
             }
 
             if (show)
             {
-                if (!wireframeSceneviews.Contains(sceneView.name))
+                if (!wireframeSceneviews.Contains(camera.name))
                 {
                     sceneView.SetSceneViewShaderReplace(ColorSettings.GetWireframeShader(), null);
-                    wireframeSceneviews.Add(sceneView.name);
+                    wireframeSceneviews.Add(camera.name);
                 }
             } else
             {
-                if (wireframeSceneviews.Contains(sceneView.name))
+                if (wireframeSceneviews.Contains(camera.name))
                 {
                     sceneView.SetSceneViewShaderReplace(null, null);
-                    wireframeSceneviews.Remove(sceneView.name);
+                    wireframeSceneviews.Remove(camera.name);
                 }
             }
 
-            sceneViewShown[sceneView] = show;
+            sceneViewShown[camera] = show;
         }
 
         static List<SceneView> SortedSceneViews()
@@ -347,9 +353,10 @@ namespace RealtimeCSG
             for (int i = 0; i < SceneView.sceneViews.Count; i++)
             {
                 var sceneView = SceneView.sceneViews[i] as SceneView;
-                if (!sceneView || string.IsNullOrEmpty(sceneView.name))
+                var camera = sceneView?.camera;
+                if (!camera || string.IsNullOrEmpty(camera.name))
                     continue;
-                knownNames.Add(sceneView.name);
+                knownNames.Add(camera.name);
             }
             return knownNames;
         }
@@ -371,7 +378,11 @@ namespace RealtimeCSG
             for (int i = 0; i < sceneViews.Count; i++)
             {
                 var sceneView = sceneViews[i];
-                var name = sceneView.name;
+                var camera = sceneView?.camera;
+                if (!camera)
+                    continue;
+
+                var name = camera.name;
                 if (name == null || name.Length == 0)
                     continue;
                 name = name.Trim();
@@ -384,11 +395,14 @@ namespace RealtimeCSG
             for (int i = 0; i < sceneViews.Count; i++)
             {
                 var sceneView = sceneViews[i];
-                if (string.IsNullOrEmpty(sceneView.name) || foundNames.Contains(sceneView.name))
+                var camera = sceneView?.camera;
+                if (!camera)
+                    continue;
+                if (string.IsNullOrEmpty(camera.name) || foundNames.Contains(camera.name))
                 {
-                    sceneView.name = GetUniqueSceneviewName(knownNames);
-                    knownNames.Add(sceneView.name);
-                    foundNames.Add(sceneView.name);
+                    camera.name = GetUniqueSceneviewName(knownNames);
+                    knownNames.Add(camera.name);
+                    foundNames.Add(camera.name);
                 }
             }
         }
@@ -476,7 +490,7 @@ namespace RealtimeCSG
             {
                 if (ArrayUtility.Contains(wireframeInstanceIDs, sceneViews[i].GetInstanceID()))
                 {
-                    wireframeSceneviews.Add(sceneViews[i].name);
+                    wireframeSceneviews.Add(sceneViews[i].camera.name);
                 }
             }
         }
@@ -725,7 +739,7 @@ namespace RealtimeCSG
                 if (IsWireframeShown(sceneView))
                 {
                     if (builder.Length != 0) builder.Append(':');
-                    builder.Append(sceneView.name);
+                    builder.Append(sceneView.camera.name);
                 }
             }
             EditorPrefs.SetString("Wireframe", builder.ToString());

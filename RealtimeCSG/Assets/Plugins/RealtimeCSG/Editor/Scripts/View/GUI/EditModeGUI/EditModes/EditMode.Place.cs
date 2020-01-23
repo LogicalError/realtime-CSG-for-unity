@@ -49,7 +49,7 @@ namespace RealtimeCSG
 		bool		cloneDragKeyPressed = false;
 		bool		mouseIsDragging		= false;
 		bool		firstMove			= false;
-		SceneView   draggingOnSceneView	= null;
+		Camera      draggingOnCamera	= null;
 		#endregion 
 
 		#region Misc state
@@ -798,7 +798,7 @@ namespace RealtimeCSG
 			lastLineMeshGeneration--;
 			activeSpaceMatrices = null;
 			UpdateTargetBounds();
-			CSG_EditorGUIUtility.UpdateSceneViews();
+			CSG_EditorGUIUtility.RepaintAll();
 		}
 
 		void RotateObjects(Transform[] transforms, Vector3 center, Vector3 normal, float angle)
@@ -863,7 +863,7 @@ namespace RealtimeCSG
 						newTransform.localRotation	= originalTransform.localRotation;
 					});
 					UpdateTargetBounds();
-					CSG_EditorGUIUtility.UpdateSceneViews();
+					CSG_EditorGUIUtility.RepaintAll();
 					return true;
 				}
 			}
@@ -884,7 +884,7 @@ namespace RealtimeCSG
 				//transforms[t].rotation = backupRotations[t];				
 			}
 			UpdateTargetBounds();
-			CSG_EditorGUIUtility.UpdateSceneViews();
+			CSG_EditorGUIUtility.RepaintAll();
 			return false;
 		}
 
@@ -1001,7 +1001,7 @@ namespace RealtimeCSG
 			lastLineMeshGeneration--;
 			UpdateTargetBounds();
 			UpdateTargetBoundsHandles();
-			CSG_EditorGUIUtility.UpdateSceneViews();
+			CSG_EditorGUIUtility.RepaintAll();
 		}
 
 		void MoveBoundsEdge(int edgeCenter, Vector3 offset, out Vector3 snappedOffset, SnapMode snapMode)
@@ -1106,7 +1106,7 @@ namespace RealtimeCSG
 			lastLineMeshGeneration--;
 			UpdateTargetBounds();
 			UpdateTargetBoundsHandles();
-			CSG_EditorGUIUtility.UpdateSceneViews();
+			CSG_EditorGUIUtility.RepaintAll();
 		}
 
 		MouseCursor currentCursor = MouseCursor.Arrow;
@@ -1152,7 +1152,7 @@ namespace RealtimeCSG
 
 					UpdateTargetBounds();
 					UpdateTargetBoundsHandles();
-					CSG_EditorGUIUtility.UpdateSceneViews();
+					CSG_EditorGUIUtility.RepaintAll();
 
 					prevInverseMatrix			= activeTransform.worldToLocalMatrix;
 					prevActiveTransformPosition = activeTransform.position;
@@ -1346,16 +1346,15 @@ namespace RealtimeCSG
 
 		[NonSerialized] Vector2 prevMousePos;
 
-		public void HandleEvents(Rect sceneRect)
+		public void HandleEvents(SceneView sceneView, Rect sceneRect)
 		{
-			var currentSceneView	= SceneView.currentDrawingSceneView;
-			var camera				= currentSceneView.camera;
-			var inSceneView			= (camera != null) && camera.pixelRect.Contains(Event.current.mousePosition);
+			var camera				= Camera.current;
+			var inCamera			= (camera != null) && camera.pixelRect.Contains(Event.current.mousePosition);
 
 			var originalEventType = Event.current.type;
-			if      (originalEventType == EventType.MouseMove) { mouseIsDragging = false; draggingOnSceneView = null; realMousePosition = Event.current.mousePosition; }
-			else if (originalEventType == EventType.MouseDown) { mouseIsDragging = false; draggingOnSceneView = currentSceneView; realMousePosition = prevMousePos = Event.current.mousePosition; }
-			else if (originalEventType == EventType.MouseUp)   { draggingOnSceneView = null; }
+			if      (originalEventType == EventType.MouseMove) { mouseIsDragging = false; draggingOnCamera = null; realMousePosition = Event.current.mousePosition; }
+			else if (originalEventType == EventType.MouseDown) { mouseIsDragging = false; draggingOnCamera = camera; realMousePosition = prevMousePos = Event.current.mousePosition; }
+			else if (originalEventType == EventType.MouseUp)   { draggingOnCamera = null; }
 			else if (originalEventType == EventType.MouseDrag)
 			{
 				if (!mouseIsDragging && (prevMousePos - Event.current.mousePosition).sqrMagnitude > 4.0f)
@@ -1367,11 +1366,11 @@ namespace RealtimeCSG
 
 			try
 			{
-				if (draggingOnSceneView != null) inSceneView = false;
-				if (draggingOnSceneView == currentSceneView) inSceneView = true;
+				if (draggingOnCamera != null) inCamera = false;
+				if (draggingOnCamera == camera) inCamera = true;
 				
 				//if (Event.current.type == EventType.Layout)
-					CreateControlIDs(inSceneView);
+					CreateControlIDs(inCamera);
 				
 				UpdateTransforms();
 				if (Selection.activeTransform != null)
@@ -1386,11 +1385,13 @@ namespace RealtimeCSG
 				{
 					if (!SceneDragToolManager.IsDraggingObjectInScene)
 					{
-						if (currentSceneView)
-						{
-							var windowRect = new Rect(0, 0, currentSceneView.position.width, currentSceneView.position.height - CSG_GUIStyleUtility.BottomToolBarHeight);
-							EditorGUIUtility.AddCursorRect(windowRect, currentCursor);
-						}
+                        {
+                            if (sceneView)
+                            {
+                                var windowRect = new Rect(0, 0, sceneView.position.width, sceneView.position.height - CSG_GUIStyleUtility.BottomToolBarHeight);
+                                EditorGUIUtility.AddCursorRect(windowRect, currentCursor);
+                            }
+                        }
 
 						if (!mouseIsDragging &&
 							(toolEditMode == ToolEditMode.MovingObject ||
@@ -1603,7 +1604,7 @@ namespace RealtimeCSG
 						{ 
 							if (hoverOnBoundsEdge != -1)
 							{
-								if (inSceneView && !mouseIsDragging)
+								if (inCamera && !mouseIsDragging)
 								{
 									UpdateRotationCircle(activeSpaceMatrices.activeLocalToWorld, realMousePosition);
 								}
@@ -1847,7 +1848,7 @@ namespace RealtimeCSG
 						UpdateMouseCursor();
 						try
 						{
-							if (inSceneView && !mouseIsDragging &&
+							if (inCamera && !mouseIsDragging &&
 								GUIUtility.hotControl == 0)
 							{
 								//var forward = camera.transform.forward.normalized;
@@ -2112,7 +2113,7 @@ namespace RealtimeCSG
 									if (newCursor != currentCursor)
 									{
 										currentCursor = newCursor;
-										CSG_EditorGUIUtility.UpdateSceneViews();
+										CSG_EditorGUIUtility.RepaintAll();
 									}
 								}
 							}
@@ -2200,12 +2201,12 @@ namespace RealtimeCSG
 							Event.current.Use();
 
 							RealtimeCSG.CSGGrid.ForceGrid = false;
-							CSG_EditorGUIUtility.UpdateSceneViews();					
+							CSG_EditorGUIUtility.RepaintAll();					
 							break;
 						}
 						case EventType.Repaint:
 						{
-							if (!inSceneView)
+							if (!inCamera)
 								break;
 							var textCenter2D = Event.current.mousePosition;
 							textCenter2D.y += hover_text_distance * 2;
@@ -2395,7 +2396,7 @@ namespace RealtimeCSG
 									
 										Undo.RecordObjects(topTransforms, "Drag objects");
 										UpdateTargetBounds();
-										CSG_EditorGUIUtility.UpdateSceneViews();
+										CSG_EditorGUIUtility.RepaintAll();
 										var center		= GridUtility.CleanPosition(brushPosition + worldDeltaMovement);
 										var rotation	= hoverRotation * Quaternion.Inverse(brushRotation);
 									
@@ -2415,7 +2416,7 @@ namespace RealtimeCSG
 											BrushOutlineManager.ForceUpdateOutlines(brushes[b].brushNodeID);
 									}
 									
-									CSG_EditorGUIUtility.UpdateSceneViews();
+									CSG_EditorGUIUtility.RepaintAll();
 								}
 							} else
 							{
@@ -2445,7 +2446,7 @@ namespace RealtimeCSG
 							Event.current.Use();
 
 							RealtimeCSG.CSGGrid.ForceGrid = false;
-							CSG_EditorGUIUtility.UpdateSceneViews();
+							CSG_EditorGUIUtility.RepaintAll();
 							break;
 						}
 						case EventType.Repaint:
@@ -2522,7 +2523,7 @@ namespace RealtimeCSG
 								Event.current.Use();
 
 								RealtimeCSG.CSGGrid.ForceGrid = false;
-								CSG_EditorGUIUtility.UpdateSceneViews();
+								CSG_EditorGUIUtility.RepaintAll();
 								break;
 							}
 							case EventType.Repaint:
@@ -2614,7 +2615,7 @@ namespace RealtimeCSG
 								Event.current.Use();
 
 								RealtimeCSG.CSGGrid.ForceGrid = false;
-								CSG_EditorGUIUtility.UpdateSceneViews();
+								CSG_EditorGUIUtility.RepaintAll();
 								break;
 							}
 							case EventType.Repaint:

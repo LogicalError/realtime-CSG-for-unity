@@ -871,8 +871,7 @@ namespace RealtimeCSG
 			CSGBrush vertexOnBrush		= null;
 			CSGPlane vertexOnPlane		= buildPlane;
 			CSGPlane hoverBuildPlane	= buildPlane;
-			var sceneView = SceneView.currentDrawingSceneView;//(SceneView.currentDrawingSceneView != null) ? SceneView.currentDrawingSceneView : SceneView.lastActiveSceneView;
-			var camera = (sceneView == null) ? null : sceneView.camera;
+            var camera = Camera.current;
 			if (camera != null && (GUIUtility.hotControl == base.shapeId || GUIUtility.hotControl == 0) &&
 				camera.pixelRect.Contains(current.mousePosition))
 			{
@@ -903,7 +902,7 @@ namespace RealtimeCSG
 					}
 					
 					LegacyBrushIntersection intersection;
-					if (!IgnoreDepthForRayCasts(sceneView) && !havePlane &&
+					if (!IgnoreDepthForRayCasts(camera) && !havePlane &&
 						SceneQueryUtility.FindWorldIntersection(current.mousePosition, out intersection))
 					{
 						worldPosition	= intersection.worldIntersection;
@@ -988,7 +987,7 @@ namespace RealtimeCSG
 					prevWorldPosition = worldPosition;
 					if (current.type != EventType.Repaint)
 					{
-						CSG_EditorGUIUtility.UpdateSceneViews();
+						CSG_EditorGUIUtility.RepaintAll();
 					}
 				}
 				
@@ -1119,10 +1118,10 @@ namespace RealtimeCSG
 							}
 							
 							settings.AddVertex(worldPosition, vertexOnBrush, vertexOnPlane, vertexOnGeometry);
-							CSG_EditorGUIUtility.UpdateSceneViews();
+							CSG_EditorGUIUtility.RepaintAll();
 						}
 							
-						CSG_EditorGUIUtility.UpdateSceneViews();
+						CSG_EditorGUIUtility.RepaintAll();
 					}
 					return;
 				}
@@ -1319,7 +1318,7 @@ namespace RealtimeCSG
 					foundTangentIndex != settings.prevHoverTangent ||
 					foundEdgeIndex != settings.prevHoverEdge)
 				{
-					CSG_EditorGUIUtility.UpdateSceneViews();
+					CSG_EditorGUIUtility.RepaintAll();
 					settings.prevHoverVertex	= foundVertexIndex;
 					settings.prevHoverTangent	= foundTangentIndex;
 					settings.prevHoverEdge		= foundEdgeIndex;
@@ -1808,7 +1807,6 @@ namespace RealtimeCSG
 							EditorGUIUtility.SetWantsMouseJumping(1);
 							Event.current.Use(); 
 							clickMousePosition = Event.current.mousePosition;
-							//clickSceneView = SceneView.lastActiveSceneView;
 							prevDragDifference = MathConstants.zeroVector3;
 							haveDragged			= false;
 							settings.realEdge	= null;
@@ -1839,13 +1837,6 @@ namespace RealtimeCSG
 							}
 	
 							RealtimeCSG.CSGGrid.SetForcedGrid(buildPlane);
-
-							//if (Camera.current == null ||
-							//	clickSceneView != SceneView.lastActiveSceneView)
-							//{
-							//	Event.current.Use(); 
-							//	break;
-							//}
 
 							Undo.RecordObject(this, "Modify shape");
 							if (!settings.IsEdgeSelected(i))
@@ -1923,7 +1914,7 @@ namespace RealtimeCSG
 									}
 								}
 								prevDragDifference = difference;
-								CSG_EditorGUIUtility.UpdateSceneViews();
+								CSG_EditorGUIUtility.RepaintAll();
 							}
 
 							if (editMode == EditMode.ExtrudeShape)
@@ -2155,7 +2146,7 @@ namespace RealtimeCSG
 										}
 									}
 									prevDragDifference = difference;
-									CSG_EditorGUIUtility.UpdateSceneViews();
+									CSG_EditorGUIUtility.RepaintAll();
 								}
 
 								if (editMode == EditMode.ExtrudeShape)
@@ -2268,7 +2259,6 @@ namespace RealtimeCSG
 							EditorGUIUtility.SetWantsMouseJumping(1);
 							Event.current.Use(); 
 							clickMousePosition = Event.current.mousePosition;
-							//clickSceneView = SceneView.lastActiveSceneView;
 							prevDragDifference = MathConstants.zeroVector3;
 							haveDragged = false;
 							settings.CopyBackupVertices();
@@ -2300,12 +2290,6 @@ namespace RealtimeCSG
 								
 							RealtimeCSG.CSGGrid.SetForcedGrid(buildPlane);
 
-							//if (Camera.current == null ||
-							//	clickSceneView != SceneView.lastActiveSceneView)
-							//{
-							//	Event.current.Use(); 
-							//	break;
-							//}
 							Undo.RecordObject(this, "Modify shape");
 							if (!settings.IsVertexSelected(i))
 							{
@@ -2367,7 +2351,7 @@ namespace RealtimeCSG
 									}
 								}
 								prevDragDifference = difference;
-								CSG_EditorGUIUtility.UpdateSceneViews();
+								CSG_EditorGUIUtility.RepaintAll();
 							}
 
 							if (editMode == EditMode.ExtrudeShape)

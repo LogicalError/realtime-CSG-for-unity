@@ -740,7 +740,7 @@ namespace RealtimeCSG
 				GUI.changed = true;
 				RealtimeCSG.CSGSettings.UpdateSnapSettings();
 				RealtimeCSG.CSGSettings.Save();
-				CSG_EditorGUIUtility.UpdateSceneViews();
+				CSG_EditorGUIUtility.RepaintAll();
 			}
 			#endregion
 		}
