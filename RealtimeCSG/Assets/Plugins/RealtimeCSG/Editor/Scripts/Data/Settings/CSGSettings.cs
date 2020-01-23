@@ -65,7 +65,7 @@ namespace RealtimeCSG
 
         internal static bool Assume2DView(Camera camera)
         {
-            return camera != null && camera != null && camera.orthographic && IsWireframeShown(camera);
+            return camera != null && camera.orthographic && IsWireframeShown(camera);
         }
 
         internal static bool IsWireframeShown(SceneView sceneView)
