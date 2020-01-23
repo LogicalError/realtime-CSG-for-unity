@@ -925,19 +925,14 @@ namespace InternalRealtimeCSG
 			if (!container || !container.owner)
 				return;
 
-            AssetDatabase.StartAssetEditing(); // We might be modifying a prefab, in which case we need to store a mesh inside it
-            try
-            { 
-                foreach (var instance in container.MeshInstances)
-			    {
-				    if (!instance)
-					    continue;
+            foreach (var instance in container.MeshInstances)
+			{
+				if (!instance)
+					continue;
 
-				    Refresh(instance, model, onlyFastRefreshes: false, skipAssetDatabaseUpdate: true);
-				    ClearUVs(instance);
-                }
+				Refresh(instance, model, onlyFastRefreshes: false, skipAssetDatabaseUpdate: true);
+				ClearUVs(instance);
             }
-            finally { AssetDatabase.StopAssetEditing(); }
         }
 
 		public static void ClearUVs(GeneratedMeshInstance instance)
@@ -952,7 +947,7 @@ namespace InternalRealtimeCSG
 			instance.HasUV2 = false;
 		}
 
-		public static void Refresh(CSGModel model, bool postProcessScene = false, bool onlyFastRefreshes = true, bool skipAssetDatabaseUpdate = false)
+		public static void Refresh(CSGModel model, bool postProcessScene = false, bool onlyFastRefreshes = true)
         {
             if (!ModelTraits.IsModelEditable(model))
                 return;
@@ -961,22 +956,12 @@ namespace InternalRealtimeCSG
 			if (!generatedMeshes || generatedMeshes.owner != model)
 				return;
 
-            if (!skipAssetDatabaseUpdate)
-                AssetDatabase.StartAssetEditing(); // We might be modifying a prefab, in which case we need to store a mesh inside it
-            try
+            foreach (var instance in generatedMeshes.MeshInstances)
             {
-                foreach (var instance in generatedMeshes.MeshInstances)
-                {
-                    if (!instance)
-                        continue;
+                if (!instance)
+                    continue;
 
-                    Refresh(instance, model, postProcessScene, onlyFastRefreshes, skipAssetDatabaseUpdate: true);
-                }
-            }
-            finally
-            {
-                if (!skipAssetDatabaseUpdate)
-                    AssetDatabase.StopAssetEditing();
+                Refresh(instance, model, postProcessScene, onlyFastRefreshes, skipAssetDatabaseUpdate: true);
             }
         }
 

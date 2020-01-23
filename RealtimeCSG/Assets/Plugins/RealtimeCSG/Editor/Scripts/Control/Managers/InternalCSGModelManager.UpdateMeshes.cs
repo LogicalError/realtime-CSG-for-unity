@@ -511,8 +511,6 @@ namespace RealtimeCSG
                     __foundHelperSurfaces.Clear();
 					__foundGeneratedMeshInstance.Clear();
                     __unfoundMeshInstances.Clear();
-                    AssetDatabase.StartAssetEditing(); // We might be modifying a prefab, in which case we need to store a mesh inside it
-                    try
                     {
                         var startUnityMeshUpdates = EditorApplication.timeSinceStartup;
                         for (int meshIndex = 0; meshIndex < __meshDescriptions.Length; meshIndex++)
@@ -573,8 +571,6 @@ namespace RealtimeCSG
                         MeshInstanceManager.UpdateContainerComponents(meshContainer, __foundGeneratedMeshInstance, __foundHelperSurfaces);
                         unityMeshUpdates += (EditorApplication.timeSinceStartup - startUnityMeshUpdates);
                     }
-                    finally { AssetDatabase.StopAssetEditing(); }
-
 				}
 
                 if (haveUpdates)
