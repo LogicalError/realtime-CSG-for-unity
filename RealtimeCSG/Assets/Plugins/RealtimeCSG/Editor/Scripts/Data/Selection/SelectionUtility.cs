@@ -101,7 +101,7 @@ namespace RealtimeCSG
 			return hoverParent;
 		}
 
-		public static Quaternion FindDragOrientation(Vector3 normal, PrefabSourceAlignment sourceSurfaceAlignment, PrefabDestinationAlignment destinationSurfaceAlignment)
+		public static Quaternion FindDragOrientation(SceneView sceneView, Vector3 normal, PrefabSourceAlignment sourceSurfaceAlignment, PrefabDestinationAlignment destinationSurfaceAlignment)
 		{
 			Quaternion srcRotation;
 			switch (sourceSurfaceAlignment)
@@ -129,7 +129,7 @@ namespace RealtimeCSG
 					// aligned vector that is most aligned with the camera's up vector
 					if (absX <= absY && absX <= absZ && absY > absZ)
 					{
-						tangent = GeometryUtility.SnapToClosestAxis(Camera.current.transform.up);
+						tangent = GeometryUtility.SnapToClosestAxis(sceneView.camera ? sceneView.camera.transform.up : MathConstants.upVector3);
 					}
 
 					return Quaternion.LookRotation(normal, tangent) * srcRotation;
@@ -139,7 +139,7 @@ namespace RealtimeCSG
 					normal.y = 0;
 					normal.Normalize();
 					if (normal.sqrMagnitude == 0)
-						normal = GeometryUtility.SnapToClosestAxis(Camera.current ? Camera.current.transform.forward : MathConstants.forwardVector3);
+						normal = GeometryUtility.SnapToClosestAxis(sceneView.camera ? sceneView.camera.transform.forward : MathConstants.forwardVector3);
 
 					var tangent = MathConstants.upVector3; // assume up is up in the world
 					var absX = Mathf.Abs(normal.x);
@@ -150,7 +150,7 @@ namespace RealtimeCSG
 					// aligned vector that is most aligned with the camera's up vector
 					if (absX <= absY && absX <= absZ && absY > absZ)
 					{
-						tangent = GeometryUtility.SnapToClosestAxis(Camera.current.transform.up);
+						tangent = GeometryUtility.SnapToClosestAxis(sceneView.camera ? sceneView.camera.transform.up : MathConstants.upVector3);
 					}
 
 					return Quaternion.LookRotation(normal, tangent) * srcRotation;
@@ -379,10 +379,11 @@ namespace RealtimeCSG
 
 
 #region DoSelectionClick
-		public static void DoSelectionClick()
+		public static void DoSelectionClick(SceneView sceneView)
 		{
+            var camera = sceneView.camera;
 			GameObject gameobject;
-			SceneQueryUtility.FindClickWorldIntersection(Event.current.mousePosition, out gameobject);
+			SceneQueryUtility.FindClickWorldIntersection(camera, Event.current.mousePosition, out gameobject);
             
 			gameobject = SceneQueryUtility.FindSelectionBase(gameobject);
 

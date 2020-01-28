@@ -307,9 +307,9 @@ namespace RealtimeCSG
 		}
 
 
-		public static Vector3 SnapToWorld(CSGPlane snapPlane, Vector3 unsnappedPosition, Vector3 snappedPosition, ref List<Vector3> snappingEdges, out CSGBrush snappedOnBrush, CSGBrush[] ignoreBrushes = null)
+		public static Vector3 SnapToWorld(Camera camera, CSGPlane snapPlane, Vector3 unsnappedPosition, Vector3 snappedPosition, ref List<Vector3> snappingEdges, out CSGBrush snappedOnBrush, CSGBrush[] ignoreBrushes = null)
 		{
-			snappedOnBrush = null;
+            snappedOnBrush = null;
 
 			test_points[0] = unsnappedPosition;
 			test_points[1] = snappedPosition;
@@ -319,7 +319,7 @@ namespace RealtimeCSG
 			{
 				var test_point2D = CameraUtility.WorldToGUIPoint(test_points[i]);
 				LegacyBrushIntersection intersection;
-				if (SceneQueryUtility.FindWorldIntersection(test_point2D, out intersection))
+				if (SceneQueryUtility.FindWorldIntersection(camera, test_point2D, out intersection))
 				{
 					if (intersection.brush &&
 						intersection.brush.ControlMesh != null)
@@ -360,7 +360,8 @@ namespace RealtimeCSG
 						snappedOnBrush = worldIntersections[i].brush;
 					}
 				}
-				if (GridUtility.SnapToEdge(worldIntersections[i].brush, snappingPlane ?? worldIntersections[i].worldPlane,
+				if (GridUtility.SnapToEdge(camera,
+                                           worldIntersections[i].brush, snappingPlane ?? worldIntersections[i].worldPlane,
 										   worldIntersections[i].worldIntersection,
 										   out outEdgePoints,
 										   out outPosition))
@@ -627,7 +628,7 @@ namespace RealtimeCSG
 		static Vector3[] _internal_snapVertices;
 		static int _internal_snapVertexCount;
 
-		public static bool SnapToEdge(CSGBrush brush, CSGPlane? _snapPlane, Vector3 _worldPoint, out List<Vector3> outEdgePoints,
+		public static bool SnapToEdge(Camera camera, CSGBrush brush, CSGPlane? _snapPlane, Vector3 _worldPoint, out List<Vector3> outEdgePoints,
 										out Vector3 outPosition)//, float _closestDistance = float.PositiveInfinity)
 		{
 			outPosition = MathConstants.zeroVector3;
@@ -637,7 +638,7 @@ namespace RealtimeCSG
 				return false;
 
 			var controlMesh = brush.ControlMesh;
-			if (controlMesh == null || Camera.current == null)
+			if (controlMesh == null || camera == null)
 				return false;
 
 			var snapData = new SnapData

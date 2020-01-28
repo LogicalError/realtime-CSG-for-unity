@@ -141,7 +141,9 @@ namespace RealtimeCSG
 
 		public bool HotKeyReleased()
 		{
-			ResetVisuals();
+            var camera = Camera.current;
+
+            ResetVisuals();
 			switch (editMode)
 			{
 				default:
@@ -160,7 +162,7 @@ namespace RealtimeCSG
 						Cancel();
 						return false;
 					}
-					StartEditMode();
+					StartEditMode(camera);
 					return true;
 				}
 				case EditMode.CreatePlane:
@@ -237,13 +239,13 @@ namespace RealtimeCSG
 			}
 		}
 
-		internal override bool StartExtrudeMode(bool showErrorMessage = true)
-		{
-			// reverse buildPlane if it's different
-			if (BuildPlaneIsReversed)
+		internal override bool StartExtrudeMode(Camera camera, bool showErrorMessage = true)
+        {
+            // reverse buildPlane if it's different
+            if (BuildPlaneIsReversed)
 			{
 				buildPlane = buildPlane.Negated();
-				CalculateWorldSpaceTangents();
+				CalculateWorldSpaceTangents(camera);
 			}
 			
 			var outlineVertices	= settings.GetVertices(buildPlane, worldPosition, base.gridTangent, base.gridBinormal, out shapeIsValid);
@@ -324,12 +326,10 @@ namespace RealtimeCSG
 			PaintUtility.DrawPolygon(MathConstants.identityMatrix, points, color);
 		}
 
-		void PaintBounds()
+		void PaintBounds(Camera camera)
 		{
 			if (HaveHeight)
 			{
-				var camera = Camera.current;
-
 				var localBounds = GetShapeBounds(toGridQuaternion);
 
 				var volume = new Vector3[8];
@@ -339,13 +339,14 @@ namespace RealtimeCSG
 			}
 		}
 
-		void PaintShape(int id)
+		void PaintShape(SceneView sceneView, int id)
 		{
-			var temp		= Handles.color;
+            var camera      = sceneView.camera;
+            var temp		= Handles.color;
 			var origMatrix	= Handles.matrix;
 					
 			Handles.matrix = MathConstants.identityMatrix;
-			var rotation = Camera.current.transform.rotation;
+			var rotation = camera.transform.rotation;
 
 			bool isValid;
 			var realVertices = settings.GetVertices(buildPlane, worldPosition, gridTangent, gridBinormal, out isValid);
@@ -381,7 +382,7 @@ namespace RealtimeCSG
 					PaintUtility.SquareDotCap(id, settings.vertices[i], rotation, scaledHandleSize);
 				}
 				PaintSquare();
-				PaintBounds();
+				PaintBounds(camera);
 			}
 						
 			Handles.color = ColorSettings.PointInnerStateColor[3];
@@ -448,9 +449,9 @@ namespace RealtimeCSG
 			}
 		}
 		
-		protected override void HandleCreateShapeEvents(Rect sceneRect)
+		protected override void HandleCreateShapeEvents(SceneView sceneView, Rect sceneRect)
 		{
-			if (settings.vertices.Length < 2)
+            if (settings.vertices.Length < 2)
 			{
 				if (editMode == EditMode.ExtrudeShape ||
 					editMode == EditMode.EditShape)
@@ -463,7 +464,7 @@ namespace RealtimeCSG
 			CSGBrush	vertexOnBrush		= null;
 			
 			CSGPlane	hoverBuildPlane		= buildPlane;
-            var camera = Camera.current;
+            var camera = sceneView.camera;
 			if (camera != null &&
 				camera.pixelRect.Contains(Event.current.mousePosition))
 			{
@@ -483,7 +484,8 @@ namespace RealtimeCSG
 				{
 					LegacyBrushIntersection intersection;
 					if (!IgnoreDepthForRayCasts(camera) && !havePlane &&
-						SceneQueryUtility.FindWorldIntersection(Event.current.mousePosition, out intersection))
+                        EditorWindow.mouseOverWindow == sceneView &&
+                        SceneQueryUtility.FindWorldIntersection(camera, Event.current.mousePosition, out intersection))
 					{
 						worldPosition	= intersection.worldIntersection;
 						hoverBuildPlane = intersection.worldPlane;
@@ -504,7 +506,7 @@ namespace RealtimeCSG
 					if (snapFunction != null)
 					{
 						CSGBrush snappedOnBrush;
-						worldPosition = snapFunction(worldPosition, hoverBuildPlane, ref visualSnappedEdges, out snappedOnBrush, generatedBrushes);
+						worldPosition = snapFunction(camera, worldPosition, hoverBuildPlane, ref visualSnappedEdges, out snappedOnBrush, generatedBrushes);
 						if (snappedOnBrush != null)
 						{
 							pointOnEdge = (visualSnappedEdges != null &&
@@ -535,7 +537,7 @@ namespace RealtimeCSG
 					if (snapFunction != null)
 					{
 						CSGBrush snappedOnBrush;
-						worldPosition = snapFunction(worldPosition, hoverBuildPlane, ref visualSnappedEdges, out snappedOnBrush, generatedBrushes);
+						worldPosition = snapFunction(camera, worldPosition, hoverBuildPlane, ref visualSnappedEdges, out snappedOnBrush, generatedBrushes);
 						if (snappedOnBrush != null)
 						{
 							pointOnEdge = (visualSnappedEdges != null &&
@@ -558,18 +560,18 @@ namespace RealtimeCSG
 						CSG_EditorGUIUtility.RepaintAll();
 				}
 				
-				visualSnappedGrid = RealtimeCSG.CSGGrid.FindAllGridEdgesThatTouchPoint(worldPosition);
+				visualSnappedGrid = RealtimeCSG.CSGGrid.FindAllGridEdgesThatTouchPoint(camera, worldPosition);
 				visualSnappedBrush = vertexOnBrush;
 			}
 
-			RealtimeCSG.CSGGrid.SetForcedGrid(hoverBuildPlane);
+			RealtimeCSG.CSGGrid.SetForcedGrid(camera, hoverBuildPlane);
 			
 
 			if (!SceneDragToolManager.IsDraggingObjectInScene &&
 				Event.current.type == EventType.Repaint)
 			{
 				PaintSnapVisualisation();
-				PaintShape(base.shapeId);
+				PaintShape(sceneView, base.shapeId);
 			}
 			
 
@@ -633,7 +635,7 @@ namespace RealtimeCSG
 						if ((GUIUtility.hotControl == 0 ||
 							GUIUtility.hotControl == base.shapeEditId) && base.shapeId != -1)
                         {
-							base.CalculateWorldSpaceTangents();
+							base.CalculateWorldSpaceTangents(camera);
                             GUIUtility.hotControl = base.shapeId;
 							GUIUtility.keyboardControl = base.shapeId;
 							EditorGUIUtility.editingTextField = false; 
@@ -648,7 +650,7 @@ namespace RealtimeCSG
 						{
 							if (hoverBuildPlane.normal.sqrMagnitude != 0)
 								buildPlane = hoverBuildPlane;
-							CalculateWorldSpaceTangents();
+							CalculateWorldSpaceTangents(camera);
 
 							if (settings.vertices.Length == 0)
 							{
@@ -763,8 +765,10 @@ namespace RealtimeCSG
 
 		}
 
-		protected override void HandleEditShapeEvents(Rect sceneRect)
+		protected override void HandleEditShapeEvents(SceneView sceneView, Rect sceneRect)
 		{
+            var camera = sceneView.camera;
+
 			if (settings.vertices.Length < 2)
 			{
 				if (editMode == EditMode.ExtrudeShape ||
@@ -799,11 +803,11 @@ namespace RealtimeCSG
 
 				var origMatrix = Handles.matrix;
 				Handles.matrix = MathConstants.identityMatrix;
-				PaintBounds();
+				PaintBounds(camera);
 				Handles.matrix = origMatrix;
 			}
 			
-			HandleHeightHandles(sceneRect, false);
+			HandleHeightHandles(sceneView, sceneRect, false);
 
 			for (int i = 0; i < settings.vertices.Length; i++)
 			{
@@ -821,7 +825,7 @@ namespace RealtimeCSG
 						var origMatrix	= Handles.matrix;
 					
 						Handles.matrix = MathConstants.identityMatrix;
-						var rotation = Camera.current.transform.rotation;
+						var rotation = camera.transform.rotation;
 
 
 						if (isSelected)
@@ -915,7 +919,7 @@ namespace RealtimeCSG
 							Undo.RecordObject(this, "Modify shape");
 
 							var mouseRay		= HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
-							RealtimeCSG.CSGGrid.SetForcedGrid(buildPlane);
+							RealtimeCSG.CSGGrid.SetForcedGrid(camera, buildPlane);
 							var alignedPlane	= new CSGPlane(RealtimeCSG.CSGGrid.CurrentWorkGridPlane.normal, settings.vertices[0]);
 							var worldPosition	= buildPlane.Project(alignedPlane.RayIntersection(mouseRay));
 							if (float.IsInfinity(worldPosition.x) || float.IsNaN(worldPosition.x) ||
@@ -927,10 +931,10 @@ namespace RealtimeCSG
 							if (snapFunction != null)
 							{
 								CSGBrush snappedOnBrush;
-								worldPosition = snapFunction(worldPosition, buildPlane, ref base.visualSnappedEdges, out snappedOnBrush, generatedBrushes);
+								worldPosition = snapFunction(camera, worldPosition, buildPlane, ref base.visualSnappedEdges, out snappedOnBrush, generatedBrushes);
 							}
 								
-							base.visualSnappedGrid = RealtimeCSG.CSGGrid.FindAllGridEdgesThatTouchPoint(worldPosition);
+							base.visualSnappedGrid = RealtimeCSG.CSGGrid.FindAllGridEdgesThatTouchPoint(camera, worldPosition);
 
 							settings.vertices[i] = worldPosition;
 							
@@ -939,7 +943,7 @@ namespace RealtimeCSG
 
 							if (editMode == EditMode.ExtrudeShape)
 							{
-								StartExtrudeMode();
+								StartExtrudeMode(camera);
 								UpdateBaseShape();
 							}
 							UpdateExtrudedShape();

@@ -24,7 +24,7 @@ namespace RealtimeCSG
 			RotateCurrentSnappedAngle	= 0;
 		}
 
-		public void Render()
+		public void Render(Camera camera)
 		{
 			var endAngle = RotateCurrentStartAngle + RotateCurrentSnappedAngle;
 			if (HaveRotateStartAngle)
@@ -33,7 +33,7 @@ namespace RealtimeCSG
 												RotateOriginalAngle, RotateCurrentStartAngle, endAngle,
 												ColorSettings.RotateCircleOutline);//, RotateCirclePieFill, ColorSettings.RotateCirclePieOutline);
 			}
-			PaintUtility.DrawRotateCircle(RotateCenterPoint, RotateSurfaceNormal, RotateSurfaceTangent, RotateRadius,
+			PaintUtility.DrawRotateCircle(camera, RotateCenterPoint, RotateSurfaceNormal, RotateSurfaceTangent, RotateRadius,
 											RotateOriginalAngle, RotateCurrentStartAngle, endAngle,
 											ColorSettings.RotateCircleOutline);//, ColorSettings.RotateCircleHatches);
 		}

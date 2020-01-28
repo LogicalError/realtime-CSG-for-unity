@@ -49,34 +49,34 @@ namespace RealtimeCSG
 			}
 		}
 
-		internal static void OnPaint()
+		internal static void OnPaint(Camera camera)
 		{
 			if (currentDragTool != null)
-				currentDragTool.OnPaint();
+				currentDragTool.OnPaint(camera);
 		}
 
-		static void ValidateDrop(bool inSceneView, Transform transformInInspector)
+		static void ValidateDrop(SceneView sceneView, Transform transformInInspector)
 		{
 			if (currentDragTool != null)
 				currentDragTool.Reset(); 
 			currentDragTool = null;
 			currentDragToolActive = false;
 			currentTransformInInspector = transformInInspector;
-			if (materialDragTool.ValidateDrop(inSceneView))
+			if (materialDragTool.ValidateDrop(sceneView))
 			{
 				currentDragTool = materialDragTool;
 			} else
-			if (brushDragTool.ValidateDrop(inSceneView))
+			if (brushDragTool.ValidateDrop(sceneView))
 			{
 				currentDragTool = brushDragTool;
 			} else
-			if (meshDragTool.ValidateDrop(inSceneView))
+			if (meshDragTool.ValidateDrop(sceneView))
 			{
 				currentDragTool = meshDragTool;
 			}
 		}
 
-		internal static void OnHandleDragAndDrop(bool inSceneView, Transform transformInInspector = null, Rect? selectionRect = null)
+		internal static void OnHandleDragAndDrop(SceneView sceneView, Transform transformInInspector = null, Rect? selectionRect = null)
 		{
 			switch (Event.current.type)
 			{
@@ -84,16 +84,16 @@ namespace RealtimeCSG
 				{
 					if (!draggingInScene)
 					{
-						ValidateDrop(inSceneView, transformInInspector);
+						ValidateDrop(sceneView, transformInInspector);
 					}
 
 					if (currentDragTool != null)
 					{
-						if (!currentDragTool.ValidateDropPoint(inSceneView))
+						if (!currentDragTool.ValidateDropPoint(sceneView))
 						{
 							if (currentDragTool != null && currentDragToolActive)
 							{
-								currentDragTool.DragExited(inSceneView);
+								currentDragTool.DragExited(sceneView);
 							}
 							currentDragToolActive = false;
 						} else
@@ -101,9 +101,9 @@ namespace RealtimeCSG
 							currentDragToolActive = true;
 							IsDraggingObjectInScene = true;
 							DragAndDrop.visualMode = DragAndDropVisualMode.Generic;
-							if (inSceneView)
+							if (sceneView)
 							{
-								if (currentDragTool.DragUpdated())
+								if (currentDragTool.DragUpdated(sceneView))
 								{
 									HandleUtility.Repaint();
 								}
@@ -127,7 +127,7 @@ namespace RealtimeCSG
 						DragAndDrop.visualMode = DragAndDropVisualMode.Generic;
 						if (currentDragToolActive)
 						{
-							currentDragTool.DragPerform(inSceneView);
+							currentDragTool.DragPerform(sceneView);
 							currentDragTool.Reset();
 							Event.current.Use();
 						}
@@ -142,7 +142,7 @@ namespace RealtimeCSG
 				{
 					if (currentDragTool != null)
 					{
-						currentDragTool.DragExited(inSceneView);
+						currentDragTool.DragExited(sceneView);
 						Event.current.Use();
 						IsDraggingObjectInScene = false;
 						currentDragTool = null;

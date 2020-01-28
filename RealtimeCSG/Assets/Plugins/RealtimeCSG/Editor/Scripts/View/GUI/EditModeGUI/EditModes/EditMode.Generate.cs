@@ -346,10 +346,10 @@ namespace RealtimeCSG
 			return EditModeGenerateGUI.OnSceneGUI(windowRect, this);
 		}
 
-		public void GenerateFromPolygon(CSGBrush brush, CSGPlane plane, Vector3 direction, Vector3[] meshVertices, int[] indices, uint[] smoothingGroups, bool drag, CSGOperationType forceDragSource, bool autoCommitExtrusion)
+		public void GenerateFromPolygon(Camera camera, CSGBrush brush, CSGPlane plane, Vector3 direction, Vector3[] meshVertices, int[] indices, uint[] smoothingGroups, bool drag, CSGOperationType forceDragSource, bool autoCommitExtrusion)
 		{
 			BuilderMode = ShapeMode.FreeDraw;
-			freedrawGenerator.GenerateFromPolygon(brush, plane, direction, meshVertices, indices, smoothingGroups, drag, forceDragSource, autoCommitExtrusion);
+			freedrawGenerator.GenerateFromPolygon(camera, brush, plane, direction, meshVertices, indices, smoothingGroups, drag, forceDragSource, autoCommitExtrusion);
 		}
 	}
 }

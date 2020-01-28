@@ -10,7 +10,7 @@ namespace RealtimeCSG.Helpers
 		private static Vector3[] s_SnapVertices;
 		private static Vector2 s_StartPlaneOffset;
 		
-		public static Vector3 Do(int id, Vector3 handlePos, Vector3 offset, Vector3 handleDir, Vector3 slideDir1, Vector3 slideDir2, float handleSize, CSGHandles.CapFunction capFunction, SnapMode snapMode, Vector3[] snapVertices, CSGHandles.InitFunction initFunction, CSGHandles.InitFunction shutdownFunction)
+		public static Vector3 Do(Camera camera, int id, Vector3 handlePos, Vector3 offset, Vector3 handleDir, Vector3 slideDir1, Vector3 slideDir2, float handleSize, CSGHandles.CapFunction capFunction, SnapMode snapMode, Vector3[] snapVertices, CSGHandles.InitFunction initFunction, CSGHandles.InitFunction shutdownFunction)
 		{
 			bool orgGuiChanged = GUI.changed;
 			GUI.changed = false;
@@ -32,12 +32,12 @@ namespace RealtimeCSG.Helpers
                 {
                     case SnapMode.GridSnapping:
                     {
-                        handlePos = RealtimeCSG.CSGGrid.SnapDeltaToGrid(handlePos - s_StartPosition, s_SnapVertices, snapToGridPlane: false, snapToSelf: true) + s_StartPosition;
+                        handlePos = RealtimeCSG.CSGGrid.SnapDeltaToGrid(camera, handlePos - s_StartPosition, s_SnapVertices, snapToGridPlane: false, snapToSelf: true) + s_StartPosition;
                         break;
                     }
                     case SnapMode.RelativeSnapping:
                     {
-                        handlePos = RealtimeCSG.CSGGrid.SnapDeltaRelative(handlePos - s_StartPosition, snapToGridPlane: false) + s_StartPosition;
+                        handlePos = RealtimeCSG.CSGGrid.SnapDeltaRelative(camera, handlePos - s_StartPosition, snapToGridPlane: false) + s_StartPosition;
                         break;
                     }
                     default:

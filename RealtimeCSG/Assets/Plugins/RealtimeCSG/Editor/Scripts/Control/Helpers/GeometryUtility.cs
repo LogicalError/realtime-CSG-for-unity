@@ -651,11 +651,11 @@ namespace RealtimeCSG
             return q;
         }
         
-        public static float DistancePointToCircle(Vector3 point, Vector3 circleCenter, float circleRadius)
+        public static float DistancePointToCircle(SceneView sceneView, Vector3 point, Vector3 circleCenter, float circleRadius)
         {
             var pointCenter  = HandleUtility.WorldToGUIPoint(point);
             var screenCenter = HandleUtility.WorldToGUIPoint(circleCenter);
-            var cam			 = Camera.current;
+            var cam			 = sceneView.camera;
             if (cam)
             {
                 var screenEdge = HandleUtility.WorldToGUIPoint(circleCenter + cam.transform.right * circleRadius);

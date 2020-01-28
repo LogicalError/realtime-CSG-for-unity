@@ -326,7 +326,7 @@ namespace RealtimeCSG
 							GUILayout.EndHorizontal();
 							*/
 						
-							if (GUILayout.Button(ContentSnapToGrid)) { tool.SnapToGrid(); }
+							if (GUILayout.Button(ContentSnapToGrid)) { tool.SnapToGrid(Camera.current); }
 							TooltipUtility.SetToolTip(TooltipSnapToGrid);
 						}
 						EditorGUI.EndDisabledGroup();

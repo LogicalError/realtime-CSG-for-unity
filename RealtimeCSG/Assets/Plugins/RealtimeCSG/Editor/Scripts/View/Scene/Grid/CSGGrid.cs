@@ -143,7 +143,7 @@ namespace RealtimeCSG
 			gridColor.a *= alpha;
 			gridMaterial.SetColor(gridColorID, gridColor);
 
-			Camera.current.depthTextureMode = DepthTextureMode.Depth;
+			camera.depthTextureMode = DepthTextureMode.Depth;
 			
 			gridMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
 			gridMaterial.SetInt("_ZWrite", 0);
@@ -185,10 +185,10 @@ namespace RealtimeCSG
 			}
 		}
 
-		public static CSGPlane		CurrentGridPlane		{ get { UpdateGridOrientation(); return gridOrientation.gridPlane; } }
-		public static CSGPlane		CurrentWorkGridPlane	{ get { UpdateGridOrientation(); return gridOrientation.gridWorkPlane; } }
-		public static Vector3		CurrentWorkGridCenter	{ get { UpdateGridOrientation(); return gridOrientation.gridWorkCenter; } }
-		public static Vector3		CurrentGridSnapVector	{ get { UpdateGridOrientation(); return gridOrientation.gridSnapVector; } }
+		public static CSGPlane		CurrentGridPlane		{ get { UpdateGridOrientation(Camera.current); return gridOrientation.gridPlane; } }
+		public static CSGPlane		CurrentWorkGridPlane	{ get { UpdateGridOrientation(Camera.current); return gridOrientation.gridWorkPlane; } }
+		public static Vector3		CurrentWorkGridCenter	{ get { UpdateGridOrientation(Camera.current); return gridOrientation.gridWorkCenter; } }
+		public static Vector3		CurrentGridSnapVector	{ get { UpdateGridOrientation(Camera.current); return gridOrientation.gridSnapVector; } }
 		
 		internal sealed class GridOrientation
 		{
@@ -223,9 +223,9 @@ namespace RealtimeCSG
 
 		internal static GridOrientation gridOrientation = null;
 
-		static void OnRender()
+		static void OnRender(Camera camera)
 		{
-			UpdateGridOrientation();
+			UpdateGridOrientation(camera);
 						
 			if (gridOrientation.gridOrtho)
 			{
@@ -266,17 +266,16 @@ namespace RealtimeCSG
 			}	
 		}
 
-		public static void RenderGrid()
+		public static void RenderGrid(Camera camera)
 		{
 			if (Event.current.type != EventType.Repaint)
 				return;
 			
-			OnRender();
+			OnRender(camera);
 		}
 
-		public static void UpdateGridOrientation()
+		public static void UpdateGridOrientation(Camera camera)
 		{
-			var camera			= Camera.current;
 			if (camera == null)
 				return;
 
@@ -463,11 +462,11 @@ namespace RealtimeCSG
 			return currentPosition;
 		}
 
-		public static List<Vector3> FindAllGridEdgesThatTouchPoint(Vector3 point)
+		public static List<Vector3> FindAllGridEdgesThatTouchPoint(Camera camera, Vector3 point)
 		{
 			var lines = new List<Vector3>();
 			
-			UpdateGridOrientation();
+			UpdateGridOrientation(camera);
 			if (gridOrientation == null)
 				return lines;
 
@@ -507,14 +506,14 @@ namespace RealtimeCSG
 			return lines;
 		}
 		
-		public static Vector3 ForceSnapToGrid(Vector3 worldPoint)
+		public static Vector3 ForceSnapToGrid(Camera camera, Vector3 worldPoint)
 		{
-			return worldPoint + SnapDeltaToGrid(MathConstants.zeroVector3, new Vector3[] { worldPoint });
+			return worldPoint + SnapDeltaToGrid(camera, MathConstants.zeroVector3, new Vector3[] { worldPoint });
 		}
 
-		public static Vector3 ForceSnapDeltaToGrid(Vector3 worldDeltaMovement, Vector3 worldPoint)
+		public static Vector3 ForceSnapDeltaToGrid(Camera camera, Vector3 worldDeltaMovement, Vector3 worldPoint)
 		{
-			return SnapDeltaToGrid(worldDeltaMovement, new Vector3[] { worldPoint });
+			return SnapDeltaToGrid(camera, worldDeltaMovement, new Vector3[] { worldPoint });
 		}
 
 		public static Vector3 HandleLockedAxi(Vector3 worldDeltaMovement)
@@ -529,9 +528,9 @@ namespace RealtimeCSG
 			return VectorFromGridSpace(gridLocalDeltaMovement);
 		}
 
-		public static Vector3 SnapLocalPointToWorldGridDelta(Matrix4x4 pointLocalToWorld, Matrix4x4 pointWorldToLocal, Vector3[] localPoints)
+		public static Vector3 SnapLocalPointToWorldGridDelta(Camera camera, Matrix4x4 pointLocalToWorld, Matrix4x4 pointWorldToLocal, Vector3[] localPoints)
 		{
-			UpdateGridOrientation();
+			UpdateGridOrientation(camera);
 			if (gridOrientation == null || localPoints == null || localPoints.Length == 0)
 				return Vector3.zero;
 
@@ -585,9 +584,9 @@ namespace RealtimeCSG
 		}
 
 		
-		public static Vector3 SnapDeltaToGrid(Vector3 worldDeltaMovement, Vector3[] worldPoints, bool snapToGridPlane = true, bool snapToSelf = false)
+		public static Vector3 SnapDeltaToGrid(Camera camera, Vector3 worldDeltaMovement, Vector3[] worldPoints, bool snapToGridPlane = true, bool snapToSelf = false)
 		{
-			UpdateGridOrientation();
+			UpdateGridOrientation(camera);
 			if (gridOrientation == null || worldPoints == null || worldPoints.Length == 0)
 				return worldDeltaMovement; 
 
@@ -678,9 +677,9 @@ namespace RealtimeCSG
 		}
 
         
-		public static Vector3 SnapDeltaRelative(Vector3 worldDeltaMovement, bool snapToGridPlane = true)
+		public static Vector3 SnapDeltaRelative(Camera camera, Vector3 worldDeltaMovement, bool snapToGridPlane = true)
         {
-            UpdateGridOrientation();
+            UpdateGridOrientation(camera);
 			if (gridOrientation == null)
 				return worldDeltaMovement; 
 
@@ -718,19 +717,19 @@ namespace RealtimeCSG
 			return worldDeltaMovement;
 		}
 
-		public static Vector3 ForceSnapToRay(Ray worldRay, Vector3 worldPoint)
+		public static Vector3 ForceSnapToRay(Camera camera, Ray worldRay, Vector3 worldPoint)
 		{
-			return worldPoint + SnapDeltaToRayGrid(worldRay, MathConstants.zeroVector3, new Vector3[] { worldPoint });
+			return worldPoint + SnapDeltaToRayGrid(camera, worldRay, MathConstants.zeroVector3, new Vector3[] { worldPoint });
 		}
 		
-		public static Vector3 ForceSnapDeltaToRay(Ray worldRay, Vector3 worldDeltaMovement, Vector3 worldPoint)
+		public static Vector3 ForceSnapDeltaToRay(Camera camera, Ray worldRay, Vector3 worldDeltaMovement, Vector3 worldPoint)
 		{
-			return SnapDeltaToRayGrid(worldRay, worldDeltaMovement, new Vector3[] { worldPoint });
+			return SnapDeltaToRayGrid(camera, worldRay, worldDeltaMovement, new Vector3[] { worldPoint });
 		}
 		
-		public static Vector3 SnapDeltaToRayGrid(Ray worldRay, Vector3 worldDeltaMovement, Vector3[] worldPoints, bool snapToSelf = false)
+		public static Vector3 SnapDeltaToRayGrid(Camera camera, Ray worldRay, Vector3 worldDeltaMovement, Vector3[] worldPoints, bool snapToSelf = false)
 		{
-			UpdateGridOrientation();
+			UpdateGridOrientation(camera);
 			if (gridOrientation == null || worldPoints == null || worldPoints.Length == 0)
 				return worldDeltaMovement;
 			
@@ -798,9 +797,9 @@ namespace RealtimeCSG
 			return worldDeltaMovement;
 		}
 		
-		public static Vector3 SnapDeltaToRayRelative(Ray worldRay, Vector3 worldDeltaMovement)
+		public static Vector3 SnapDeltaToRayRelative(Camera camera, Ray worldRay, Vector3 worldDeltaMovement)
 		{
-			UpdateGridOrientation();
+			UpdateGridOrientation(camera);
 			if (gridOrientation == null)
 				return worldDeltaMovement;
 			
@@ -826,9 +825,8 @@ namespace RealtimeCSG
 		//public static bool YMoveModeActive { get; set; }
 
 
-		public static bool SetupWorkPlane(Vector3 worldCenterPoint, ref CSGPlane workPlane)
+		public static bool SetupWorkPlane(Camera camera, Vector3 worldCenterPoint, ref CSGPlane workPlane)
 		{
-			var camera = Camera.current; 
 			if (camera == null || !camera)
 				return false;
 
@@ -853,12 +851,11 @@ namespace RealtimeCSG
 			}*/
 
 			workPlane = new CSGPlane(GridUtility.CleanNormal(normal), worldCenterPoint);
-			return CSGGrid.SetForcedGrid(workPlane);
+			return CSGGrid.SetForcedGrid(camera, workPlane);
 		}
 
-		public static bool SetupWorkPlane(Vector3 worldCenterPoint, Vector3 worldDirection, ref CSGPlane workPlane)
+		public static bool SetupWorkPlane(Camera camera, Vector3 worldCenterPoint, Vector3 worldDirection, ref CSGPlane workPlane)
 		{
-			var camera = Camera.current; 
 			if (camera == null || !camera)
 				return false;
 
@@ -883,12 +880,11 @@ namespace RealtimeCSG
 			}*/
 
 			workPlane = new CSGPlane(GridUtility.CleanNormal(normal), worldCenterPoint);
-			return CSGGrid.SetForcedGrid(workPlane);
+			return CSGGrid.SetForcedGrid(camera, workPlane);
 		}
 
-		public static bool SetupRayWorkPlane(Vector3 worldOrigin, Vector3 worldDirection, ref CSGPlane outWorkPlane)
+		public static bool SetupRayWorkPlane(Camera camera, Vector3 worldOrigin, Vector3 worldDirection, ref CSGPlane outWorkPlane)
 		{
-			var camera = Camera.current; 
 			if (camera == null || !camera)
 				return false;			
 							
@@ -921,12 +917,12 @@ namespace RealtimeCSG
 
 			outWorkPlane = new CSGPlane(GridUtility.CleanNormal(normal), worldOrigin);
 			
-			return CSGGrid.SetForcedGrid(outWorkPlane);
+			return CSGGrid.SetForcedGrid(camera, outWorkPlane);
 		}
 
-		public static Vector3 CubeProject(CSGPlane plane, Vector3 pos)
+		public static Vector3 CubeProject(Camera camera, CSGPlane plane, Vector3 pos)
 		{
-			UpdateGridOrientation();
+			UpdateGridOrientation(camera);
 			var closest_axis	= GeometryUtility.SnapToClosestAxis(plane.normal);
 			var intersection	= plane.LineIntersection(pos, pos + closest_axis);
 
@@ -940,7 +936,7 @@ namespace RealtimeCSG
 			return intersection;
 		}
 
-		public static bool SetForcedGrid(CSGPlane plane)
+		public static bool SetForcedGrid(Camera camera, CSGPlane plane)
 		{
 			if (float.IsNaN(plane.a) || float.IsInfinity(plane.a) ||
 				float.IsNaN(plane.b) || float.IsInfinity(plane.b) ||
@@ -954,8 +950,8 @@ namespace RealtimeCSG
 
 			// cube-project the center of the grid so that it lies on the plane
 			
-			UpdateGridOrientation();
-			var center = CubeProject(plane, gridOrientation.gridCenter);
+			UpdateGridOrientation(camera);
+			var center = CubeProject(camera, plane, gridOrientation.gridCenter);
 
 			var normal = Quaternion.Inverse(gridOrientation.gridRotation) * plane.normal;
 			if (normal.sqrMagnitude < MathConstants.NormalEpsilon)

@@ -101,7 +101,7 @@ namespace RealtimeCSG
 
 		static PointMeshManager pointMeshManager	= new PointMeshManager();
 
-		public static void DrawDoubleDots(Vector3[] positions, float[] sizes, Color[] colors, int points)
+		public static void DrawDoubleDots(Camera camera, Vector3[] positions, float[] sizes, Color[] colors, int points)
 		{
 			if (Event.current.type != EventType.Repaint)
 			{
@@ -116,12 +116,11 @@ namespace RealtimeCSG
 			}
 
 			pointMeshManager.Begin();
-			pointMeshManager.DrawPoints(positions, sizes, colors);
+			pointMeshManager.DrawPoints(camera, positions, sizes, colors);
 			pointMeshManager.End();
 			pointMeshManager.Render(CustomDotMaterial, CustomSurfaceNoDepthMaterial);
 
 			/*
-			var camera	= Camera.current;
 			var right	= camera.transform.right;
 			var up		= camera.transform.up;
 				
@@ -173,7 +172,7 @@ namespace RealtimeCSG
 			}*/
 		}
 
-		public static void DrawDoubleDots(Matrix4x4 matrix, Vector3[] positions, float[] sizes, Color[] colors, int points)
+		public static void DrawDoubleDots(Camera camera, Matrix4x4 matrix, Vector3[] positions, float[] sizes, Color[] colors, int points)
 		{
 			if (Event.current.type != EventType.Repaint)
 			{
@@ -187,7 +186,6 @@ namespace RealtimeCSG
 				return;
 			}
 
-			var camera	= Camera.current;
 			var right	= camera.transform.right;
 			var up		= camera.transform.up;
 				
@@ -359,13 +357,13 @@ namespace RealtimeCSG
 			{
 				return;
 			}
+            var camera = Camera.current;
 
-			DrawFilledCameraAlignedCircle(position, size);
+            DrawFilledCameraAlignedCircle(camera, position, size);
 		}
 		
-		public static void DrawCameraAlignedCircle(Vector3 position, float size, Color innerColor, Color outerColor)
+		public static void DrawCameraAlignedCircle(Camera camera, Vector3 position, float size, Color innerColor, Color outerColor)
 		{
-			var camera	= Camera.current;
 			var right	= camera.transform.right;
 			var up		= camera.transform.up;
 
@@ -402,9 +400,8 @@ namespace RealtimeCSG
 			}
 		}
 		
-		public static void DrawFilledCameraAlignedCircle(Vector3 position, float size)
+		public static void DrawFilledCameraAlignedCircle(Camera camera, Vector3 position, float size)
 		{
-			var camera	= Camera.current;
 			var right	= camera.transform.right;
 			var up		= camera.transform.up;
 
@@ -531,7 +528,7 @@ namespace RealtimeCSG
 				thickness *= EditorGUIUtility.pixelsPerPoint;
 				thickness *= 100;
 
-				//var cameraPosition = matrix.inverse.MultiplyPoint(Camera.current.transform.position);
+				//var cameraPosition = matrix.inverse.MultiplyPoint(camera.transform.position);
 				
 				var thickness0 = new Vector3(thickness, -1, 0);
 				var thickness1 = new Vector3(thickness,  1, 0);
@@ -1006,7 +1003,7 @@ namespace RealtimeCSG
 			}
 		}
 
-		public static void DrawLines(Vector3[] vertices, Int32[] indices, float thickness, Color[] colors)
+		public static void DrawLines(Camera camera, Vector3[] vertices, Int32[] indices, float thickness, Color[] colors)
 		{
 			if (Event.current.type != EventType.Repaint)
 			{
@@ -1033,9 +1030,9 @@ namespace RealtimeCSG
 				thickness *= EditorGUIUtility.pixelsPerPoint;
 				thickness *= 100;
 
-				//var cameraPosition = Camera.current.transform.position;
-				
-				var thickness0 = new Vector3(thickness, -1, 0);
+                //var cameraPosition = camera.transform.position;
+
+                var thickness0 = new Vector3(thickness, -1, 0);
 				var thickness1 = new Vector3(thickness,  1, 0);
 				var thickness2 = new Vector3(thickness,  1, 0);
 				var thickness3 = new Vector3(thickness, -1, 0);
@@ -1223,9 +1220,9 @@ namespace RealtimeCSG
 				thickness *= EditorGUIUtility.pixelsPerPoint;
 				thickness *= 100;
 
-				//var cameraPosition = matrix.inverse.MultiplyPoint(Camera.current.transform.position);
-				
-				var thickness0 = new Vector3(thickness, -1, 0);
+                //var cameraPosition = matrix.inverse.MultiplyPoint(camera.transform.position);
+
+                var thickness0 = new Vector3(thickness, -1, 0);
 				var thickness1 = new Vector3(thickness,  1, 0);
 				var thickness2 = new Vector3(thickness,  1, 0);
 				var thickness3 = new Vector3(thickness, -1, 0);
@@ -1297,9 +1294,9 @@ namespace RealtimeCSG
 				thickness *= EditorGUIUtility.pixelsPerPoint;
 				thickness *= 100;
 
-				//var cameraPosition = Camera.current.transform.position;
-				
-				var thickness0 = new Vector3(thickness, -1, 0);
+                //var cameraPosition = camera.transform.position;
+
+                var thickness0 = new Vector3(thickness, -1, 0);
 				var thickness1 = new Vector3(thickness,  1, 0);
 				var thickness2 = new Vector3(thickness,  1, 0);
 				var thickness3 = new Vector3(thickness, -1, 0);
@@ -1718,9 +1715,8 @@ namespace RealtimeCSG
 			}*/
 			}
 
-		public static void DrawWorldText(Vector3 center, GUIContent content, GUIStyle style = null)
+		public static void DrawWorldText(Camera camera, Vector3 center, GUIContent content, GUIStyle style = null)
 		{
-			var camera		= Camera.current;
 			var screenPoint = camera.WorldToScreenPoint(center);
 			if (screenPoint.z < 0)
 				return;
@@ -1744,9 +1740,9 @@ namespace RealtimeCSG
 			Handles.matrix = prevMatrix;
 		}
 
-		public static void DrawWorldText(Vector3 center, string text, GUIStyle style = null)
+		public static void DrawWorldText(Camera camera, Vector3 center, string text, GUIStyle style = null)
 		{
-			DrawWorldText(center, new GUIContent(text), style);
+			DrawWorldText(camera, center, new GUIContent(text), style);
 		}
 		
 		public static void DrawScreenText(Vector2 center, GUIContent content, GUIStyle style = null)
@@ -1767,9 +1763,8 @@ namespace RealtimeCSG
 		}
 
 		//HoverTextDistance * 2
-		public static void DrawScreenText(Vector3 center, float distance, string text, GUIStyle style = null)
+		public static void DrawScreenText(Camera camera, Vector3 center, float distance, string text, GUIStyle style = null)
 		{
-			var camera		= Camera.current;
             var screenPoint = camera.WorldToScreenPoint(center);
 			if (screenPoint.z < 0)
 				return;
@@ -1784,7 +1779,7 @@ namespace RealtimeCSG
 			textCenter2D.y += distance;
 
 			var textCenterRay	= HandleUtility.GUIPointToWorldRay(textCenter2D);
-			var textCenter		= textCenterRay.origin + textCenterRay.direction * ((Camera.current.farClipPlane + Camera.current.nearClipPlane) * 0.5f);
+			var textCenter		= textCenterRay.origin + textCenterRay.direction * ((camera.farClipPlane + camera.nearClipPlane) * 0.5f);
 
 			Handles.color = Color.black;
 			Handles.DrawLine(center, textCenter);
@@ -1932,7 +1927,7 @@ namespace RealtimeCSG
 			Handles.matrix = originalMatrix;
 		}
 		
-		public static Vector3 HandlePivot(Vector3 center, Quaternion rotation, Color color, bool active)
+		public static Vector3 HandlePivot(Camera camera, Vector3 center, Quaternion rotation, Color color, bool active)
 		{
 			if (Event.current.type == EventType.Repaint)
 			{
@@ -1941,9 +1936,9 @@ namespace RealtimeCSG
 				var originalColor = Handles.color;
 
 				Handles.color = color;
-				DrawFilledCameraAlignedCircle(center, handleSize * GUIConstants.handleScale * 1.00f);
+				DrawFilledCameraAlignedCircle(camera, center, handleSize * GUIConstants.handleScale * 1.00f);
 
-				DrawCameraAlignedCircle(center, handleSize * GUIConstants.handleScale * 4.0f, Color.white, Color.black);
+				DrawCameraAlignedCircle(camera, center, handleSize * GUIConstants.handleScale * 4.0f, Color.white, Color.black);
 
 				Handles.color = originalColor;
 			}
@@ -1951,13 +1946,13 @@ namespace RealtimeCSG
 				return center;
 			
 			var activeSnappingMode	= RealtimeCSG.CSGSettings.ActiveSnappingMode;
-			return RealtimeCSG.Helpers.CSGHandles.PositionHandle(center, rotation, activeSnappingMode);
+			return RealtimeCSG.Helpers.CSGHandles.PositionHandle(camera, center, rotation, activeSnappingMode);
 		}
 
-		public static Vector3 HandlePosition(Vector3 center, Quaternion rotation, Vector3[] snapVertices = null, RealtimeCSG.Helpers.CSGHandles.InitFunction initFunction = null, RealtimeCSG.Helpers.CSGHandles.InitFunction shutdownFunction = null)
+		public static Vector3 HandlePosition(Camera camera, Vector3 center, Quaternion rotation, Vector3[] snapVertices = null, RealtimeCSG.Helpers.CSGHandles.InitFunction initFunction = null, RealtimeCSG.Helpers.CSGHandles.InitFunction shutdownFunction = null)
 		{
 			var activeSnappingMode = RealtimeCSG.CSGSettings.ActiveSnappingMode;
-			return RealtimeCSG.Helpers.CSGHandles.PositionHandle(center, rotation, activeSnappingMode, snapVertices, initFunction, shutdownFunction);
+			return RealtimeCSG.Helpers.CSGHandles.PositionHandle(camera, center, rotation, activeSnappingMode, snapVertices, initFunction, shutdownFunction);
 		}
 
 		public static Vector3 HandleScale(Vector3 scale, Vector3 center, Quaternion rotation, RealtimeCSG.Helpers.CSGHandles.InitFunction initFunction = null, RealtimeCSG.Helpers.CSGHandles.InitFunction shutdownFunction = null)
@@ -1966,13 +1961,13 @@ namespace RealtimeCSG
 			return RealtimeCSG.Helpers.CSGHandles.ScaleHandle(scale, center, rotation, doSnapping, initFunction, shutdownFunction);
 		}
 
-		public static Quaternion HandleRotation(Vector3 center, Quaternion rotation, RealtimeCSG.Helpers.CSGHandles.InitFunction initFunction = null, RealtimeCSG.Helpers.CSGHandles.InitFunction shutdownFunction = null)
+		public static Quaternion HandleRotation(Camera camera, Vector3 center, Quaternion rotation, RealtimeCSG.Helpers.CSGHandles.InitFunction initFunction = null, RealtimeCSG.Helpers.CSGHandles.InitFunction shutdownFunction = null)
 		{
 			var doSnapping = RealtimeCSG.CSGSettings.RotationSnapping;
-			return RealtimeCSG.Helpers.CSGHandles.DoRotationHandle(rotation, center, doSnapping, initFunction, shutdownFunction);
+			return RealtimeCSG.Helpers.CSGHandles.DoRotationHandle(camera, rotation, center, doSnapping, initFunction, shutdownFunction);
 		}
 
-		public static void DrawProjectedPivot(Vector3 center, Color color)
+		public static void DrawProjectedPivot(Camera camera, Vector3 center, Color color)
 		{
 			if (Event.current.type != EventType.Repaint)
 				return;
@@ -1982,7 +1977,7 @@ namespace RealtimeCSG
 			var originalColor = Handles.color;
 
 			Handles.color = color;
-			DrawFilledCameraAlignedCircle(center, handleSize * GUIConstants.handleScale * 1.00f);
+			DrawFilledCameraAlignedCircle(camera, center, handleSize * GUIConstants.handleScale * 1.00f);
 				
 			Handles.color = originalColor;
 		}
@@ -2008,7 +2003,7 @@ namespace RealtimeCSG
 			Handles.matrix = originalMatrix;
 		}
 		
-		public static void DrawRotateCircle(Vector3 center, Vector3 normal, Vector3 tangent, float radius, 
+		public static void DrawRotateCircle(Camera camera, Vector3 center, Vector3 normal, Vector3 tangent, float radius, 
 											float originalAngle, float startAngle, float endAngle,
 											//Color colorOuter, Color colorHatch,
 											Color color,
@@ -2096,7 +2091,7 @@ namespace RealtimeCSG
 					{
 						if ((tick_type == 3 && hatch_count > 24) || hatch_count > 72)
 						{ 
-							DrawWorldText(center + (Quaternion.AngleAxis(a + angleOffset, normal) * labelDistance), 
+							DrawWorldText(camera, center + (Quaternion.AngleAxis(a + angleOffset, normal) * labelDistance), 
 										  Units.ToAngleString(Mathf.RoundToInt(a)));
 						}
 					}
@@ -2126,17 +2121,17 @@ namespace RealtimeCSG
 				if (centerText)
 				{
 					if (!string.IsNullOrEmpty(axisName))
-						DrawWorldText(center,
+						DrawWorldText(camera, center,
 										string.Format(CultureInfo.InvariantCulture, "{0}: Δ{1}", 
 										axisName,
 										Units.ToRoundedAngleString(endAngle - startAngle)));
 					else
-						DrawWorldText(center,
+						DrawWorldText(camera, center,
 										string.Format(CultureInfo.InvariantCulture, "Δ{0}",
 										Units.ToRoundedAngleString(endAngle - startAngle)));
 				} else
 				{
-					DrawWorldText(center + (Quaternion.AngleAxis(startAngle, normal) * labelDistance), 
+					DrawWorldText(camera, center + (Quaternion.AngleAxis(startAngle, normal) * labelDistance), 
 								  Units.ToAngleString(originalAngle));
 					{
 						/*
@@ -2146,12 +2141,12 @@ namespace RealtimeCSG
 									  Units.ToRoundedAngleString(originalAngle + endAngle - startAngle)));
 						/*/
 						if (!string.IsNullOrEmpty(axisName))
-							DrawWorldText(center + (Quaternion.AngleAxis(endAngle, normal) * (innerDistance * 0.75f)), 
+							DrawWorldText(camera, center + (Quaternion.AngleAxis(endAngle, normal) * (innerDistance * 0.75f)), 
 										  string.Format(CultureInfo.InvariantCulture, "{0}: Δ{1}", 
 										  axisName,
 										  Units.ToRoundedAngleString(endAngle - startAngle)));
 						else
-							DrawWorldText(center + (Quaternion.AngleAxis(endAngle, normal) * (innerDistance * 0.75f)),
+							DrawWorldText(camera, center + (Quaternion.AngleAxis(endAngle, normal) * (innerDistance * 0.75f)),
 										  string.Format(CultureInfo.InvariantCulture, "Δ{0}",
 										  Units.ToRoundedAngleString(endAngle - startAngle)));
 						//*/
@@ -2225,7 +2220,7 @@ namespace RealtimeCSG
 			Handles.matrix = prevMatrix;
 		}
 		
-		public static void DrawLength(string axisName, float handleSize, Matrix4x4 matrix, Vector3 sideNormal, Vector3 vertexA, Vector3 vertexB, Color color, GUIStyle style = null)
+		public static void DrawLength(Camera camera, string axisName, float handleSize, Matrix4x4 matrix, Vector3 sideNormal, Vector3 vertexA, Vector3 vertexB, Color color, GUIStyle style = null)
 		{
 			vertexA	= matrix.MultiplyPoint(vertexA);
 			vertexB	= matrix.MultiplyPoint(vertexB);
@@ -2261,7 +2256,6 @@ namespace RealtimeCSG
 
 			var center = ((vertexB + vertexA) * 0.5f);
 
-			var camera		= Camera.current;
 			var screenPoint = camera.WorldToScreenPoint(center);
 			if (screenPoint.z < 0)
 				return;
@@ -2289,7 +2283,7 @@ namespace RealtimeCSG
 			Handles.matrix = prevMatrix;
 		}
 
-		public static void DrawEdgeLength(string axisName, float handleSize, Vector3 normal, Vector3 vertexA, Vector3 vertexB, Color color, GUIStyle style = null)
+		public static void DrawEdgeLength(Camera camera, string axisName, float handleSize, Vector3 normal, Vector3 vertexA, Vector3 vertexB, Color color, GUIStyle style = null)
 		{
 			var tangent	= (vertexB - vertexA);
 			var length	= tangent.magnitude;
@@ -2348,7 +2342,6 @@ namespace RealtimeCSG
 
 			var center = ((lineB1 + lineA1) * 0.5f);
 
-			var camera		= Camera.current;
 			var screenPoint = camera.WorldToScreenPoint(center);
 			if (screenPoint.z < 0)
 			{
@@ -2377,7 +2370,7 @@ namespace RealtimeCSG
 			Handles.matrix = prevMatrix;
 		}
 
-		static void DrawBoundsEdgeLength(string axisName, float handleSize, Vector3 cameraPosition, Matrix4x4 matrix, Vector3[] vertices, int edgeIndex, Color color)
+		static void DrawBoundsEdgeLength(Camera camera, string axisName, float handleSize, Vector3 cameraPosition, Matrix4x4 matrix, Vector3[] vertices, int edgeIndex, Color color)
 		{
 			var vertexA		= vertices[BoundsUtilities.AABBEdgeIndices[edgeIndex][0]];
 			var vertexB		= vertices[BoundsUtilities.AABBEdgeIndices[edgeIndex][1]];
@@ -2401,10 +2394,10 @@ namespace RealtimeCSG
 			vertexB		= matrix.MultiplyPoint(vertexB);
 			sideNormal	= matrix.MultiplyVector(sideNormal).normalized;
 
-			DrawEdgeLength(axisName, handleSize, sideNormal, vertexA, vertexB, color);
+			DrawEdgeLength(camera, axisName, handleSize, sideNormal, vertexA, vertexB, color);
 		}
 
-		static void DrawBoundsEdgeLength(string axisName, float handleSize, Vector3 cameraPosition, Quaternion rotation, Vector3[] vertices, int edgeIndex, Color color)
+		static void DrawBoundsEdgeLength(Camera camera, string axisName, float handleSize, Vector3 cameraPosition, Quaternion rotation, Vector3[] vertices, int edgeIndex, Color color)
 		{
 			var vertexA		= vertices[BoundsUtilities.AABBEdgeIndices[edgeIndex][0]];
 			var vertexB		= vertices[BoundsUtilities.AABBEdgeIndices[edgeIndex][1]];
@@ -2428,7 +2421,7 @@ namespace RealtimeCSG
 			vertexB		= rotation * vertexB;
 			sideNormal	= rotation * sideNormal;
 
-			DrawEdgeLength(axisName, handleSize, sideNormal, vertexA, vertexB, color);
+			DrawEdgeLength(camera, axisName, handleSize, sideNormal, vertexA, vertexB, color);
 		}
 
 		static void GetActiveEdges(Vector3 cameraPosition, Vector3 cameraDirection, bool ortho, Vector3[] vertices, ref int xAxis, ref int yAxis, ref int zAxis)
@@ -2646,9 +2639,9 @@ namespace RealtimeCSG
 				handleSize = Mathf.Max(handleSize, HandleUtility.GetHandleSize(matrix.MultiplyPoint(vertices[BoundsUtilities.AABBEdgeIndices[zAxis][1]])));
 			}
 
-			if (showAxisX && xAxis >= 0) DrawBoundsEdgeLength("x: ", handleSize, cameraPosition, matrix, vertices, xAxis, colorAxisX);
-			if (showAxisY && yAxis >= 0) DrawBoundsEdgeLength("y: ", handleSize, cameraPosition, matrix, vertices, yAxis, colorAxisY);
-			if (showAxisZ && zAxis >= 0) DrawBoundsEdgeLength("z: ", handleSize, cameraPosition, matrix, vertices, zAxis, colorAxisZ); 
+			if (showAxisX && xAxis >= 0) DrawBoundsEdgeLength(camera, "x: ", handleSize, cameraPosition, matrix, vertices, xAxis, colorAxisX);
+			if (showAxisY && yAxis >= 0) DrawBoundsEdgeLength(camera, "y: ", handleSize, cameraPosition, matrix, vertices, yAxis, colorAxisY);
+			if (showAxisZ && zAxis >= 0) DrawBoundsEdgeLength(camera, "z: ", handleSize, cameraPosition, matrix, vertices, zAxis, colorAxisZ); 
 			
 			Handles.matrix = prevMatrix;
 		}
@@ -2679,12 +2672,12 @@ namespace RealtimeCSG
 				xAxis >= 0)
 			{
 				vertex = rotation * vertices[BoundsUtilities.AABBEdgeIndices[xAxis][0]];
-				distance = (vertex - Camera.current.transform.position).magnitude;
+				distance = (vertex - camera.transform.position).magnitude;
 				if (closest_distance == float.PositiveInfinity ||
 					distance < closest_distance) { closest_distance = distance; closestPointToCamera = vertex; }
 
 				vertex = rotation * vertices[BoundsUtilities.AABBEdgeIndices[xAxis][1]];
-				distance = (vertex - Camera.current.transform.position).magnitude;
+				distance = (vertex - camera.transform.position).magnitude;
 				if (closest_distance == float.PositiveInfinity ||
 					distance < closest_distance) { closest_distance = distance; closestPointToCamera = vertex; }
 			}
@@ -2692,12 +2685,12 @@ namespace RealtimeCSG
 				yAxis >= 0)
 			{
 				vertex = rotation * vertices[BoundsUtilities.AABBEdgeIndices[yAxis][0]];
-				distance = (vertex - Camera.current.transform.position).magnitude;
+				distance = (vertex - camera.transform.position).magnitude;
 				if (closest_distance == float.PositiveInfinity ||
 					distance < closest_distance) { closest_distance = distance; closestPointToCamera = vertex; }
 
 				vertex = rotation * vertices[BoundsUtilities.AABBEdgeIndices[yAxis][1]];
-				distance = (vertex - Camera.current.transform.position).magnitude;
+				distance = (vertex - camera.transform.position).magnitude;
 				if (closest_distance == float.PositiveInfinity ||
 					distance < closest_distance) { closest_distance = distance; closestPointToCamera = vertex; }
 			}
@@ -2705,12 +2698,12 @@ namespace RealtimeCSG
 				zAxis >= 0)
 			{
 				vertex = rotation * vertices[BoundsUtilities.AABBEdgeIndices[zAxis][0]];
-				distance = (vertex - Camera.current.transform.position).magnitude;
+				distance = (vertex - camera.transform.position).magnitude;
 				if (closest_distance == float.PositiveInfinity ||
 					distance < closest_distance) { closest_distance = distance; closestPointToCamera = vertex; }
 
 				vertex = rotation * vertices[BoundsUtilities.AABBEdgeIndices[zAxis][1]];
-				distance = (vertex - Camera.current.transform.position).magnitude;
+				distance = (vertex - camera.transform.position).magnitude;
 				if (closest_distance == float.PositiveInfinity ||
 					distance < closest_distance) { closest_distance = distance; closestPointToCamera = vertex; }
 			}
@@ -2720,9 +2713,9 @@ namespace RealtimeCSG
 
 			handleSize = HandleUtility.GetHandleSize(closestPointToCamera);
 
-			if (showAxisX && xAxis >= 0) DrawBoundsEdgeLength("x: ", handleSize, cameraPosition, rotation, vertices, xAxis, colorAxisX);
-			if (showAxisY && yAxis >= 0) DrawBoundsEdgeLength("y: ", handleSize, cameraPosition, rotation, vertices, yAxis, colorAxisY);
-			if (showAxisZ && zAxis >= 0) DrawBoundsEdgeLength("z: ", handleSize, cameraPosition, rotation, vertices, zAxis, colorAxisZ);
+			if (showAxisX && xAxis >= 0) DrawBoundsEdgeLength(camera, "x: ", handleSize, cameraPosition, rotation, vertices, xAxis, colorAxisX);
+			if (showAxisY && yAxis >= 0) DrawBoundsEdgeLength(camera, "y: ", handleSize, cameraPosition, rotation, vertices, yAxis, colorAxisY);
+			if (showAxisZ && zAxis >= 0) DrawBoundsEdgeLength(camera, "z: ", handleSize, cameraPosition, rotation, vertices, zAxis, colorAxisZ);
 			
 			Handles.matrix = prevMatrix;
 		}

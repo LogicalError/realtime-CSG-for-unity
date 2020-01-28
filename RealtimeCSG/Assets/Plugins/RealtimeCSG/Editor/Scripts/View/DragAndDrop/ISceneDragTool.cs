@@ -8,14 +8,14 @@ namespace RealtimeCSG
 
 	internal interface ISceneDragTool
 	{
-		bool ValidateDrop		(bool inSceneView);
-		bool ValidateDropPoint	(bool inSceneView);
+		bool ValidateDrop		(SceneView sceneView);
+		bool ValidateDropPoint	(SceneView sceneView);
 		void Reset				();
 		bool DragUpdated		(Transform transformInInspector, Rect selectionRect);
-		bool DragUpdated		();
-		void DragPerform		(bool inSceneView);
-		void DragExited			(bool inSceneView);
-		void OnPaint			();
+		bool DragUpdated		(SceneView sceneView);
+		void DragPerform		(SceneView sceneView);
+		void DragExited			(SceneView sceneView);
+		void OnPaint			(Camera camera);
 	}
 
 }

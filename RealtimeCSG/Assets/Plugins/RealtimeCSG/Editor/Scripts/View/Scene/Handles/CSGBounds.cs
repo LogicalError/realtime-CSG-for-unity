@@ -25,7 +25,7 @@ namespace RealtimeCSG.Helpers
 		internal static AABB		originalBounds	= new AABB();
 		internal static readonly int BoundsHash = "Bounds".GetHashCode();		
 
-		internal static AABB Do(AABB bounds, Quaternion worldToLocalRotation, bool showEdgePoints = true)
+		internal static AABB Do(Camera camera, AABB bounds, Quaternion worldToLocalRotation, bool showEdgePoints = true)
 		{
 			for (int i = 0; i < sideControlIDs.Length; i++)
 				sideControlIDs[i] = GUIUtility.GetControlID(BoundsHash, FocusType.Passive);
@@ -33,14 +33,14 @@ namespace RealtimeCSG.Helpers
 			for (int i = 0; i < edgeControlIDs.Length; i++)
 				edgeControlIDs[i] = GUIUtility.GetControlID(BoundsHash, FocusType.Passive);
 
-			UpdateColors(bounds, worldToLocalRotation, showEdgePoints);
+			UpdateColors(camera, bounds, worldToLocalRotation, showEdgePoints);
 
 			var evt = Event.current;
 			switch (evt.type)
 			{
 				case EventType.Repaint:
 				{
-					Render(bounds, worldToLocalRotation, showEdgePoints);
+					Render(camera, bounds, worldToLocalRotation, showEdgePoints);
 					break;
 				}
 			}
@@ -75,7 +75,7 @@ namespace RealtimeCSG.Helpers
 				var size		= sideSizes[i];
 				var id			= sideControlIDs[i];
 				EditorGUI.BeginChangeCheck();
-				position = CSGSlider1D.Do(id, position, normal, size, CSGHandles.HoverArrowHandleCap, activeSnappingMode, null, init, shutdown);
+				position = CSGSlider1D.Do(camera, id, position, normal, size, CSGHandles.HoverArrowHandleCap, activeSnappingMode, null, init, shutdown);
 				if (EditorGUI.EndChangeCheck())
 				{
 					var originalPoint = BoundsUtilities.GetBoundsSidePoint(originalBounds, i);
@@ -105,7 +105,7 @@ namespace RealtimeCSG.Helpers
 					var size		= edgeSizes[i] / 20.0f;
 					var id			= edgeControlIDs[i];
 					EditorGUI.BeginChangeCheck();
-					position = CSGHandles.Slider2D(id, position, Vector3.zero, normal, direction1, direction2, size, null, activeSnappingMode, null, init, shutdown);
+					position = CSGHandles.Slider2D(camera, id, position, Vector3.zero, normal, direction1, direction2, size, null, activeSnappingMode, null, init, shutdown);
 					if (EditorGUI.EndChangeCheck())
 					{
 						var originalPoint = BoundsUtilities.GetBoundsEdgePoint(originalBounds, i);
@@ -144,9 +144,8 @@ namespace RealtimeCSG.Helpers
 			return bounds;
 		}
 
-		internal static void UpdateColors(AABB bounds, Quaternion worldToLocalRotation, bool showEdgePoints)
+		internal static void UpdateColors(Camera camera, AABB bounds, Quaternion worldToLocalRotation, bool showEdgePoints)
 		{
-			var camera = Camera.current;
 			if (!camera)
 				return;
 
@@ -280,9 +279,8 @@ namespace RealtimeCSG.Helpers
 
 		}
 
-		internal static void Render(AABB bounds, Quaternion worldToLocalRotation, bool showEdgePoints)
+		internal static void Render(Camera camera, AABB bounds, Quaternion worldToLocalRotation, bool showEdgePoints)
 		{
-			var camera = Camera.current;
 			if (!camera)
 				return;
 
@@ -291,9 +289,9 @@ namespace RealtimeCSG.Helpers
 
 
 			//PaintUtility.DrawDoubleDots(localToWorld, cornerPoints, cornerSizes, cornerColors, cornerPoints.Length);
-			PaintUtility.DrawDoubleDots(localToWorld, sidePoints, sidePointSizes, sideColors, sidePoints.Length);
+			PaintUtility.DrawDoubleDots(camera, localToWorld, sidePoints, sidePointSizes, sideColors, sidePoints.Length);
 			if (showEdgePoints)
-				PaintUtility.DrawDoubleDots(localToWorld, edgePoints, edgePointSizes, edgeColors, edgePoints.Length);
+				PaintUtility.DrawDoubleDots(camera, localToWorld, edgePoints, edgePointSizes, edgeColors, edgePoints.Length);
 
 			PaintUtility.RenderBoundsSizes(worldToLocalRotation, localToWorldRotation, camera, cornerPoints, 						
 											RealtimeCSG.CSGSettings.LockAxisX ? Color.red : Color.white, 

@@ -171,9 +171,8 @@ namespace RealtimeCSG
 			pointMeshes.Add(new PointMesh());
 		}
 
-		public void DrawPoint(Vector3 position, float size, Color innerColor, Color outerColor)
+		public void DrawPoint(Camera camera, Vector3 position, float size, Color innerColor, Color outerColor)
 		{
-			var camera	= Camera.current;
 			var right	= camera.transform.right;
 			var up		= camera.transform.up;
 				
@@ -238,9 +237,8 @@ namespace RealtimeCSG
 			pointMesh.lineIndexCount  = dstLineIndexCount;
 		}
 
-		public void DrawPoints(Vector3[] vertices, float[] sizes, Color[] colors)
+		public void DrawPoints(Camera camera, Vector3[] vertices, float[] sizes, Color[] colors)
 		{
-			var camera	= Camera.current;
 			var right	= camera.transform.right;
 			var up		= camera.transform.up;
 				

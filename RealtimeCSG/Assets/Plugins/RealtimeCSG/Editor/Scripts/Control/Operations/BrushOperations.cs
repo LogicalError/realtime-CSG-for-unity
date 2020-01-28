@@ -11,7 +11,7 @@ namespace InternalRealtimeCSG
 {
     internal static class BrushOperations
     {
-        public static void SnapToGrid(CSGBrush[] brushes)
+        public static void SnapToGrid(Camera camera, CSGBrush[] brushes)
         {
             var worldDeltaMovement = MathConstants.zeroVector3;
 
@@ -38,7 +38,7 @@ namespace InternalRealtimeCSG
                     worldPoints[p] = brushLocalToWorld.MultiplyPoint(points[p]);
                 }
 
-                worldDeltaMovement = RealtimeCSG.CSGGrid.SnapDeltaToGrid(worldDeltaMovement, worldPoints.ToArray(), snapToGridPlane: false, snapToSelf: false);
+                worldDeltaMovement = RealtimeCSG.CSGGrid.SnapDeltaToGrid(camera, worldDeltaMovement, worldPoints.ToArray(), snapToGridPlane: false, snapToSelf: false);
             }
 
             if (worldDeltaMovement.x == 0.0f && worldDeltaMovement.y == 0.0f && worldDeltaMovement.z == 0.0f)

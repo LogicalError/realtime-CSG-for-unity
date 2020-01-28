@@ -186,7 +186,7 @@ namespace InternalRealtimeCSG
 				InternalCSGModelManager.CheckForChanges();
 		}
 		
-		public static void PointSnapToGrid(this BrushSelection selection)
+		public static void PointSnapToGrid(this BrushSelection selection, Camera camera)
 		{
 			var minWorldDeltaMovement = MathConstants.PositiveInfinityVector3;
 			for (var t = 0; t < selection.States.Length; t++)
@@ -212,7 +212,7 @@ namespace InternalRealtimeCSG
 
 				if (localPoints.Count > 0)
 				{
-					var worldDeltaMovement	= RealtimeCSG.CSGGrid.SnapLocalPointToWorldGridDelta(brushLocalToWorld, brushWorldToLocal, localPoints.ToArray());
+					var worldDeltaMovement	= RealtimeCSG.CSGGrid.SnapLocalPointToWorldGridDelta(camera, brushLocalToWorld, brushWorldToLocal, localPoints.ToArray());
 					if (Mathf.Abs(worldDeltaMovement.x) < Mathf.Abs(minWorldDeltaMovement.x)) { minWorldDeltaMovement.x = worldDeltaMovement.x; }
 					if (Mathf.Abs(worldDeltaMovement.y) < Mathf.Abs(minWorldDeltaMovement.y)) { minWorldDeltaMovement.y = worldDeltaMovement.y; }
 					if (Mathf.Abs(worldDeltaMovement.z) < Mathf.Abs(minWorldDeltaMovement.z)) { minWorldDeltaMovement.z = worldDeltaMovement.z; }

@@ -828,20 +828,20 @@ namespace RealtimeCSG
 			return true;
 		}
 
-		void UpdateMouseIntersection()
+		void UpdateMouseIntersection(SceneView sceneView)
 		{
-			var camera = Camera.current;
-			var assume2DView = CSGSettings.Assume2DView(camera);
+			var camera = sceneView.camera;
+            var assume2DView = CSGSettings.Assume2DView(camera);
 
 			var world_ray	= HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
 			LegacyBrushIntersection intersection;
 			currentOnBrush = null;
-			if (SceneQueryUtility.FindWorldIntersection(world_ray, out intersection))
+			if (SceneQueryUtility.FindWorldIntersection(camera, world_ray, out intersection))
 			{
 				movePlane = intersection.worldPlane;
 				currentOnBrush = intersection.brush;
 				currentMousePoint = intersection.worldIntersection;
-				RealtimeCSG.CSGGrid.SetForcedGrid(movePlane);
+				RealtimeCSG.CSGGrid.SetForcedGrid(camera, movePlane);
 			} else
 			{
 				RealtimeCSG.CSGGrid.ForceGrid = false;
@@ -864,7 +864,7 @@ namespace RealtimeCSG
 			if (currentMousePoint.HasValue)
 			{
 				CSGBrush snapOnBrush;
-				currentMousePoint = EditModeManager.SnapPointToGrid(currentMousePoint.Value, movePlane, ref visualSnappedLines, out snapOnBrush, null);
+				currentMousePoint = EditModeManager.SnapPointToGrid(camera, currentMousePoint.Value, movePlane, ref visualSnappedLines, out snapOnBrush, null);
 				if (snapOnBrush != null)
 					currentOnBrush = snapOnBrush;
 			}			
@@ -895,11 +895,11 @@ namespace RealtimeCSG
 		}
 
 		
-		Vector3 HandleMovement(Vector2 startMousePosition, Vector2 currentMousePosition)
+		Vector3 HandleMovement(SceneView sceneView, Vector2 startMousePosition, Vector2 currentMousePosition)
 		{
 			//ResetTargets(true);
 			RestoreTargetData(hoverMode: true);
-			UpdateMouseIntersection();
+			UpdateMouseIntersection(sceneView);
 			if (currentMousePoint.HasValue)
 			{
 				return currentMousePoint.Value;
@@ -907,14 +907,14 @@ namespace RealtimeCSG
 				return MathConstants.zeroVector3;
 		}
 		
-		void CreateFirstPoint()
+		void CreateFirstPoint(SceneView sceneView)
 		{
 			if (!currentMousePoint.HasValue)
 				return;
 
 
-			var camera = Camera.current;
-			var assume2DView = CSGSettings.Assume2DView(camera);
+			var camera = sceneView.camera;
+            var assume2DView = CSGSettings.Assume2DView(camera);
 
 
 			var intersectionPoint = currentMousePoint.Value;
@@ -1181,7 +1181,7 @@ namespace RealtimeCSG
 							}
 					
 							RestoreTargetData(hoverMode: true);
-							UpdateMouseIntersection();
+							UpdateMouseIntersection(sceneView);
 						}
 					}
 					break;
@@ -1194,7 +1194,7 @@ namespace RealtimeCSG
 
 						if (!mouseDragged)
 						{
-							SelectionUtility.DoSelectionClick();
+							SelectionUtility.DoSelectionClick(sceneView);
 						}
 					}
 					break;
@@ -1232,7 +1232,7 @@ namespace RealtimeCSG
 				{
 					var prevCursor = currentCursor;
 					UpdateMouseCursor();
-					UpdateMouseIntersection();
+					UpdateMouseIntersection(sceneView);
 					
 					if (currentCursor != MouseCursor.ArrowPlus && 
 						clipBrushes != null && 
@@ -1282,7 +1282,7 @@ namespace RealtimeCSG
 
 						if (!mouseDragged)
 						{
-							SelectionUtility.DoSelectionClick();
+							SelectionUtility.DoSelectionClick(sceneView);
 							break;
 						}
 
@@ -1308,11 +1308,11 @@ namespace RealtimeCSG
 						Event.current.Use();
 
 						if (pointsUsed == 0)
-							CreateFirstPoint();
+							CreateFirstPoint(sceneView);
 
 						if (pointsUsed != 0)
 							RestoreTargetData(hoverMode: true);
-						UpdateMouseIntersection();
+						UpdateMouseIntersection(sceneView);
 
 						if (currentMousePoint.HasValue)
 						{
@@ -1445,8 +1445,8 @@ namespace RealtimeCSG
 		
 		public void HandleEditPointEvents(SceneView sceneView, Rect sceneRect)
 		{
-			var camera = Camera.current;
-			var assume2DView = CSGSettings.Assume2DView(camera);
+			var camera = sceneView.camera;
+            var assume2DView = CSGSettings.Assume2DView(camera);
 
 			int[] ids = new int[3];
 			float[] sizes = new float[3];
@@ -1519,7 +1519,7 @@ namespace RealtimeCSG
 							} else
 							if (!mouseDragged)
 							{
-								SelectionUtility.DoSelectionClick();
+								SelectionUtility.DoSelectionClick(sceneView);
 							}
 						}
 						break;
@@ -1540,10 +1540,10 @@ namespace RealtimeCSG
 						if (GUIUtility.hotControl == 0)
 						{
 							RestoreTargetData(hoverMode: true);
-							UpdateMouseIntersection();
+							UpdateMouseIntersection(sceneView);
 							UpdateClipPlane();
 						} else
-							UpdateMouseIntersection();
+							UpdateMouseIntersection(sceneView);
 						break;
 					}
 					case EventType.ValidateCommand:
@@ -1629,7 +1629,7 @@ namespace RealtimeCSG
 						{
 							if (GUIUtility.hotControl == ids[i])
 							{
-								var newPoint = HandleMovement(startMousePosition, Event.current.mousePosition);
+								var newPoint = HandleMovement(sceneView, startMousePosition, Event.current.mousePosition);
 								if (camera != null && assume2DView)
 									newPoint = new CSGPlane(camera.transform.forward, points[i]).Project(newPoint);
 								var delta = newPoint - points[i];

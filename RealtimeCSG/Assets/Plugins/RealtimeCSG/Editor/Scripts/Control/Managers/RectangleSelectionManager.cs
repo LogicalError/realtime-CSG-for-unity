@@ -170,7 +170,7 @@ namespace RealtimeCSG
 							var rect	= CameraUtility.PointsToRect(prevStartScreenPoint, prevMouseScreenPoint);
 							if (rect.width > 3 && rect.height > 3)
 							{ 
-								var frustum = CameraUtility.GetCameraSubFrustumGUI(Camera.current, rect);
+								var frustum = CameraUtility.GetCameraSubFrustumGUI(sceneView.camera, rect);
 								
 								// Find all the brushes (and it's gameObjects) that are in the frustum
 								if (SceneQueryUtility.GetItemsInFrustum(frustum.Planes, 
@@ -356,7 +356,7 @@ namespace RealtimeCSG
 								}
 							}
 							
-							SelectionUtility.DoSelectionClick();
+							SelectionUtility.DoSelectionClick(sceneView);
 							Event.current.Use();
 						}
 

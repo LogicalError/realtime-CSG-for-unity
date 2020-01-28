@@ -18,15 +18,15 @@ namespace RealtimeCSG
 
 		public static SnapFunction snapFunction = null;
 
-		public static Vector3 FreeMoveHandle (Vector3 position, Quaternion rotation, float size, DrawCapFunction capFunc = null)
+		public static Vector3 FreeMoveHandle(Camera camera, Vector3 position, Quaternion rotation, float size, DrawCapFunction capFunc = null)
 		{
 			int id = GUIUtility.GetControlID (SnappedPointHash, FocusType.Keyboard);
-			return FreeMoveHandle(id, position, rotation, size, capFunc);
+			return FreeMoveHandle(camera, id, position, rotation, size, capFunc);
 		}
 
-		public static Vector3 FreeMoveHandle(int id, Vector3 position, Quaternion rotation, float size, DrawCapFunction capFunc = null)
+		public static Vector3 FreeMoveHandle(Camera camera, int id, Vector3 position, Quaternion rotation, float size, DrawCapFunction capFunc = null)
 		{
-			if (capFunc == null)
+            if (capFunc == null)
 				capFunc = PaintUtility.SquareDotCap;
 			Vector3		worldPosition	= Handles.matrix.MultiplyPoint(position);
 			Matrix4x4	origMatrix		= Handles.matrix;
@@ -69,7 +69,7 @@ namespace RealtimeCSG
 							break;
 						
 						position = snapFunction(startMousePosition, Event.current.mousePosition);
-						if (Camera.current != null && Camera.current.orthographic)
+						if (camera != null && camera.orthographic)
 							position = movePlane.Project(position);
 
 						GUI.changed = true;
@@ -99,7 +99,7 @@ namespace RealtimeCSG
 						Handles.color = Color.gray;
 					
 					Handles.matrix = MathConstants.identityMatrix;
-					capFunc(id, worldPosition, Camera.current.transform.rotation, size);
+					capFunc(id, worldPosition, camera.transform.rotation, size);
 					Handles.matrix = origMatrix;
 
 					if (isSelected)

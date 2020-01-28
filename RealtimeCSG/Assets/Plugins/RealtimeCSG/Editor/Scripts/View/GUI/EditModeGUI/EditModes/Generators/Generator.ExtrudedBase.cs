@@ -109,7 +109,8 @@ namespace RealtimeCSG
 				{
 					if (value == 0)
 						return;
-					StartExtrudeMode();
+                    var camera = Camera.current;
+					StartExtrudeMode(camera);
 				}
 				
 				Undo.RecordObject(this, "Modified Shape Height");
@@ -133,9 +134,9 @@ namespace RealtimeCSG
             forceDragSource = null;
         }
 
-		protected override bool StartEditMode()
+		protected override bool StartEditMode(Camera camera)
 		{
-			if (!base.StartEditMode())
+			if (!base.StartEditMode(camera))
 				return false;
 
 			extrusionPoints = new ExtrusionPoint[2];
@@ -154,15 +155,15 @@ namespace RealtimeCSG
 			}
 		}
 
-		public override bool Commit()
+		public override bool Commit(Camera camera)
 		{
 			isFinished  = true;
 			CleanupGrid();
 								
-			return Commit(useDefaultHeight: true);
+			return Commit(camera, useDefaultHeight: true);
 		}
 
-		bool Commit(bool useDefaultHeight)
+		bool Commit(Camera camera, bool useDefaultHeight)
 		{
 			if (polygons == null || polygons.Length == 0)
 			{
@@ -173,7 +174,7 @@ namespace RealtimeCSG
 			{
 				if (editMode != EditMode.ExtrudeShape)
 				{
-					if (!StartExtrudeMode())
+					if (!StartExtrudeMode(camera))
 					{
 						Cancel();
 						return false;
@@ -414,16 +415,15 @@ namespace RealtimeCSG
 			return !failures;
 		}
 		
-		protected void PaintHeightMessage(Vector3 start, Vector3 end, Vector3 normal, float distance)
+		protected void PaintHeightMessage(Camera camera, Vector3 start, Vector3 end, Vector3 normal, float distance)
 		{
 			if (Mathf.Abs(distance) <= MathConstants.EqualityEpsilon)
 				return;
 
-			Vector3 middlePoint = (end + start) * 0.5f;
-
-            var camera = Camera.current;
 			if (camera == null)
 				return;
+
+			Vector3 middlePoint = (end + start) * 0.5f;
 
 			var screenPoint = camera.WorldToScreenPoint(middlePoint);
 			if (screenPoint.z < 0)
@@ -437,7 +437,7 @@ namespace RealtimeCSG
 			textCenter2D += normal2D * (hover_text_distance * 2);
 					
 			var textCenterRay	= HandleUtility.GUIPointToWorldRay(textCenter2D);
-			var textCenter		= textCenterRay.origin + textCenterRay.direction * ((Camera.current.farClipPlane + Camera.current.nearClipPlane) * 0.5f);
+			var textCenter		= textCenterRay.origin + textCenterRay.direction * ((camera.farClipPlane + camera.nearClipPlane) * 0.5f);
 			
 			PaintUtility.DrawLine(middlePoint, textCenter, Color.black);
 			PaintUtility.DrawDottedLine(middlePoint, textCenter, ColorSettings.SnappedEdges);
@@ -461,10 +461,10 @@ namespace RealtimeCSG
 			return bounds;
 		}
 
-		Vector3 GetHeightHandlePosition(Vector3 point)
+		Vector3 GetHeightHandlePosition(SceneView sceneView, Vector3 point)
 		{
 			var mouseRay		= HandleUtility.GUIPointToWorldRay(heightPosition);
-			var alignedPlane	= new CSGPlane(Camera.current.transform.forward, point);
+			var alignedPlane	= new CSGPlane(sceneView.camera.transform.forward, point);
 			var planePosition	= alignedPlane.RayIntersection(mouseRay);// buildPlane.Project() - grabOffset;
 			var worldPosition	= GeometryUtility.ProjectPointOnInfiniteLine(planePosition, brushPosition, movePolygonDirection);
 			return worldPosition;
@@ -488,10 +488,10 @@ namespace RealtimeCSG
 			return false;
 		}
 
-		protected void GrabHeightHandle(int index, bool ignoreFirstMouseUp = false)
+		protected void GrabHeightHandle(SceneView sceneView, int index, bool ignoreFirstMouseUp = false)
 		{
-            var camera = Camera.current;
-			if (camera == null)
+            var camera = sceneView.camera;
+            if (camera == null)
 				return;
 
 			var assume2DView = CSGSettings.Assume2DView(camera);
@@ -570,13 +570,13 @@ namespace RealtimeCSG
 
 			if (!isFinished)
 			{
-				RealtimeCSG.CSGGrid.SetForcedGrid(movePlane);
+				RealtimeCSG.CSGGrid.SetForcedGrid(camera, movePlane);
 			}
 
 			var plane = new CSGPlane(buildPlane.normal, extrusionPoints[index].Position);
 			heightPosition = Event.current.mousePosition;
             
-			heightHandleOffset = (plane.Distance(GetHeightHandlePosition(extrusionPoints[index].Position)) * movePolygonDirection);
+			heightHandleOffset = (plane.Distance(GetHeightHandlePosition(sceneView, extrusionPoints[index].Position)) * movePolygonDirection);
 
 			if (float.IsInfinity(heightHandleOffset.x) || float.IsNaN(heightHandleOffset.x) ||
 				float.IsInfinity(heightHandleOffset.y) || float.IsNaN(heightHandleOffset.y) ||
@@ -598,8 +598,9 @@ namespace RealtimeCSG
 			extrusionPoints[1].Position = brushPosition + (buildPlane.normal * height1);
 		}
 
-		protected void HandleHeightHandles(Rect sceneRect, bool showHeightValue)
+		protected void HandleHeightHandles(SceneView sceneView, Rect sceneRect, bool showHeightValue)
 		{
+            var camera = sceneView.camera;
 			for (int p = 0; p < extrusionPoints.Length; p++)
 			{
 			    var type = Event.current.GetTypeForControl(extrusionPoints[p].ID);
@@ -615,7 +616,7 @@ namespace RealtimeCSG
 						var origMatrix	= Handles.matrix;
 
 						Handles.matrix = MathConstants.identityMatrix;
-						var rotation = Camera.current.transform.rotation;
+						var rotation = camera.transform.rotation;
 						
 
 						var state = SelectState.None;
@@ -708,7 +709,7 @@ namespace RealtimeCSG
 						if (p > 0 && showHeightValue)
 						{							
 							var length = GetSegmentLength(extrusionPoints[p].Position, extrusionPoints[p - 1].Position, direction);
-							PaintHeightMessage(extrusionPoints[p-1].Position, extrusionPoints[p].Position, gridTangent, length);
+							PaintHeightMessage(camera, extrusionPoints[p-1].Position, extrusionPoints[p].Position, gridTangent, length);
 						}
 						break;
 					}
@@ -768,14 +769,14 @@ namespace RealtimeCSG
 							HandleUtility.nearestControl == extrusionPoints[p].ID && Event.current.button == 0)
 						{
 							if (editMode != EditMode.ExtrudeShape &&
-								!StartExtrudeMode())
+								!StartExtrudeMode(camera))
 							{
 								Cancel();
 							} else
 							{
 								UpdateBaseShape(registerUndo: false);
 							    dragPositionStart   = extrusionPoints[p].Position;
-								GrabHeightHandle(p);
+								GrabHeightHandle(sceneView, p);
 							    BeginExtrusion();
 								Event.current.Use();
 							}
@@ -792,7 +793,7 @@ namespace RealtimeCSG
 						{
 							Undo.RecordObject(this, "Extrude shape");
 							heightPosition += Event.current.delta;
-							Vector3 worldPosition = GetHeightHandlePosition(extrusionPoints[p].Position) - heightHandleOffset;
+							Vector3 worldPosition = GetHeightHandlePosition(sceneView, extrusionPoints[p].Position) - heightHandleOffset;
 							if (float.IsInfinity(worldPosition.x) || float.IsNaN(worldPosition.x) ||
 								float.IsInfinity(worldPosition.y) || float.IsNaN(worldPosition.y) ||
 								float.IsInfinity(worldPosition.z) || float.IsNaN(worldPosition.z))
@@ -802,11 +803,11 @@ namespace RealtimeCSG
 							if (raySnapFunction != null)
 							{
 								CSGBrush snappedOnBrush = null;
-                                worldPosition = raySnapFunction(worldPosition, new Ray(brushPosition, movePolygonDirection), ref visualSnappedEdges, out snappedOnBrush);
+                                worldPosition = raySnapFunction(camera, worldPosition, new Ray(brushPosition, movePolygonDirection), ref visualSnappedEdges, out snappedOnBrush);
 								visualSnappedBrush = snappedOnBrush;
 							}
 
-							visualSnappedGrid = RealtimeCSG.CSGGrid.FindAllGridEdgesThatTouchPoint(worldPosition);
+							visualSnappedGrid = RealtimeCSG.CSGGrid.FindAllGridEdgesThatTouchPoint(camera, worldPosition);
 
 							extrusionPoints[p].Position = GeometryUtility.ProjectPointOnInfiniteLine(worldPosition, brushPosition, movePolygonDirection);
 
@@ -856,7 +857,7 @@ namespace RealtimeCSG
 							if (commitExtrusionAfterRelease)
 							{
 								var prevGeneratedBrushes = generatedBrushes;
-								Commit();
+								Commit(camera);
 								// did we switch to edit mode?
 								if (EditModeManager.EditMode == ToolEditMode.Edit &&
 									prevGeneratedBrushes != null)
@@ -900,7 +901,8 @@ namespace RealtimeCSG
 				Event.current.Use();
 				if (editMode == EditMode.ExtrudeShape)
 				{
-					Commit(useDefaultHeight: false);
+                    var camera = sceneView.camera;
+					Commit(camera, useDefaultHeight: false);
 				} else
 				{
 					PerformDeselectAll();
@@ -910,7 +912,7 @@ namespace RealtimeCSG
 
 	    internal virtual void BeginExtrusion() {}
         internal virtual void EndExtrusion() {}
-        internal abstract bool StartExtrudeMode(bool showErrorMessage = true);
+        internal abstract bool StartExtrudeMode(Camera camera, bool showErrorMessage = true);
 		internal abstract bool CreateControlMeshForBrushIndex(CSGModel parentModel, CSGBrush brush, ShapePolygon polygon, Matrix4x4 localToWorld, float height, out ControlMesh newControlMesh, out Shape newShape);
 	}
 }

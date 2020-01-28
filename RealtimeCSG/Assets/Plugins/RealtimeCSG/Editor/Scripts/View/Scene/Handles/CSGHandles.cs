@@ -280,20 +280,20 @@ namespace RealtimeCSG.Helpers
 			}
 		}
 
-		public static Vector3 Slider (Vector3 position, Vector3 direction, float size, CapFunction capFunction, SnapMode snapMode, Vector3[] snapVertices, InitFunction initFunction, InitFunction shutdownFunction) 
+		public static Vector3 Slider (Camera camera, Vector3 position, Vector3 direction, float size, CapFunction capFunction, SnapMode snapMode, Vector3[] snapVertices, InitFunction initFunction, InitFunction shutdownFunction) 
 		{
 			var id = GUIUtility.GetControlID (s_SliderHash, FocusType.Keyboard);
-			return CSGSlider1D.Do(id, position, direction, size, capFunction, snapMode, snapVertices, initFunction, shutdownFunction);
+			return CSGSlider1D.Do(camera, id, position, direction, size, capFunction, snapMode, snapVertices, initFunction, shutdownFunction);
 		}
 		
-		public static Vector3 Slider2D(int id, Vector3 handlePos, Vector3 offset, Vector3 handleDir, Vector3 slideDir1, Vector3 slideDir2, float handleSize, CapFunction capFunction, SnapMode snapMode, Vector3[] snapVertices, InitFunction initFunction, InitFunction shutdownFunction)
+		public static Vector3 Slider2D(Camera camera, int id, Vector3 handlePos, Vector3 offset, Vector3 handleDir, Vector3 slideDir1, Vector3 slideDir2, float handleSize, CapFunction capFunction, SnapMode snapMode, Vector3[] snapVertices, InitFunction initFunction, InitFunction shutdownFunction)
 		{
-			return CSGSlider2D.Do(id, handlePos, offset, handleDir, slideDir1, slideDir2, handleSize, capFunction, snapMode, snapVertices, initFunction, shutdownFunction);
+			return CSGSlider2D.Do(camera, id, handlePos, offset, handleDir, slideDir1, slideDir2, handleSize, capFunction, snapMode, snapVertices, initFunction, shutdownFunction);
 		}
 		
-		internal static AABB Box(AABB bounds, Quaternion rotation, bool showEdgePoints = true)
+		internal static AABB Box(Camera camera, AABB bounds, Quaternion rotation, bool showEdgePoints = true)
 		{
-			return CSGBounds.Do(bounds, rotation, showEdgePoints);
+			return CSGBounds.Do(camera, bounds, rotation, showEdgePoints);
 		}
 
 		internal static bool disabled = false;
@@ -326,7 +326,7 @@ namespace RealtimeCSG.Helpers
                                        (isPreSelected) ? preselectionColor : color);
         }
 
-        public static Vector3 PositionHandle(Vector3 position, Quaternion rotation, SnapMode snapMode, Vector3[] snapVertices = null, InitFunction initFunction = null, InitFunction shutdownFunction = null)
+        public static Vector3 PositionHandle(Camera camera, Vector3 position, Quaternion rotation, SnapMode snapMode, Vector3[] snapVertices = null, InitFunction initFunction = null, InitFunction shutdownFunction = null)
 		{	
             GUI.SetNextControlName("xAxis");   var xAxisSlider   = GUIUtility.GetControlID (s_xAxisMoveHandleHash, FocusType.Passive);
             GUI.SetNextControlName("yAxis");   var yAxisSlider   = GUIUtility.GetControlID (s_yAxisMoveHandleHash, FocusType.Passive);
@@ -395,21 +395,21 @@ namespace RealtimeCSG.Helpers
             {
                 Handles.color = xAxisColor;
 
-                position = CSGSlider1D.Do(xAxisSlider, position, rotation * Vector3.right, size, ArrowHandleCap, snapMode, snapVertices, initFunction, shutdownFunction);
+                position = CSGSlider1D.Do(camera, xAxisSlider, position, rotation * Vector3.right, size, ArrowHandleCap, snapMode, snapVertices, initFunction, shutdownFunction);
             }
 
             CSGHandles.disabled = yAxisDisabled;
             { 
                 Handles.color = yAxisColor;
 
-                position = CSGSlider1D.Do(yAxisSlider, position, rotation * Vector3.up, size, ArrowHandleCap, snapMode, snapVertices, initFunction, shutdownFunction);
+                position = CSGSlider1D.Do(camera, yAxisSlider, position, rotation * Vector3.up, size, ArrowHandleCap, snapMode, snapVertices, initFunction, shutdownFunction);
             }
 
             CSGHandles.disabled = zAxisDisabled;
             {
                 Handles.color = zAxisColor;
 
-                position = CSGSlider1D.Do(zAxisSlider, position, rotation * Vector3.forward, size, ArrowHandleCap, snapMode, snapVertices, initFunction, shutdownFunction);
+                position = CSGSlider1D.Do(camera, zAxisSlider, position, rotation * Vector3.forward, size, ArrowHandleCap, snapMode, snapVertices, initFunction, shutdownFunction);
             }
 
 
@@ -417,21 +417,21 @@ namespace RealtimeCSG.Helpers
             if (!CSGHandles.disabled)
             {
                 Handles.color = xzPlaneColor;
-                position = DoPlanarHandle(xzPlaneSlider, PrincipleAxis2.XZ, position, rotation, size * 0.25f, snapMode, snapVertices, initFunction, shutdownFunction);
+                position = DoPlanarHandle(camera, xzPlaneSlider, PrincipleAxis2.XZ, position, rotation, size * 0.25f, snapMode, snapVertices, initFunction, shutdownFunction);
             }
 
             CSGHandles.disabled = xyPlaneDisabled;
             if (!CSGHandles.disabled)
             {
                 Handles.color = xyPlaneColor;
-                position = DoPlanarHandle(xyPlaneSlider, PrincipleAxis2.XY, position, rotation, size * 0.25f, snapMode, snapVertices, initFunction, shutdownFunction);
+                position = DoPlanarHandle(camera, xyPlaneSlider, PrincipleAxis2.XY, position, rotation, size * 0.25f, snapMode, snapVertices, initFunction, shutdownFunction);
             }
 
             CSGHandles.disabled = yzPlaneDisabled;
             if (!CSGHandles.disabled)
             {
                 Handles.color = yzPlaneColor;
-                position = DoPlanarHandle(yzPlaneSlider, PrincipleAxis2.YZ, position, rotation, size * 0.25f, snapMode, snapVertices, initFunction, shutdownFunction);
+                position = DoPlanarHandle(camera, yzPlaneSlider, PrincipleAxis2.YZ, position, rotation, size * 0.25f, snapMode, snapVertices, initFunction, shutdownFunction);
             }
 
 
@@ -497,19 +497,19 @@ namespace RealtimeCSG.Helpers
 			return scale;
 		}
 
-		public static Quaternion Disc(Quaternion rotation, Vector3 position, Vector3 axis, float size, bool cutoffPlane, bool snapping, float snap, CSGHandles.InitFunction initFunction, CSGHandles.InitFunction shutdownFunction = null)
+		public static Quaternion Disc(Camera camera, Quaternion rotation, Vector3 position, Vector3 axis, float size, bool cutoffPlane, bool snapping, float snap, CSGHandles.InitFunction initFunction, CSGHandles.InitFunction shutdownFunction = null)
 		{
 			int id = GUIUtility.GetControlID(s_DiscHash, FocusType.Keyboard);
-			return CSGDisc.Do(id, null, rotation, position, axis, size, cutoffPlane, snapping, snap, initFunction, shutdownFunction);
+			return CSGDisc.Do(camera, id, null, rotation, position, axis, size, cutoffPlane, snapping, snap, initFunction, shutdownFunction);
 		}
 
-		public static Quaternion FreeRotateHandle(Quaternion rotation, Vector3 position, float size, bool snapping, CSGHandles.InitFunction initFunction, CSGHandles.InitFunction shutdownFunction = null)
+		public static Quaternion FreeRotateHandle(Camera camera, Quaternion rotation, Vector3 position, float size, bool snapping, CSGHandles.InitFunction initFunction, CSGHandles.InitFunction shutdownFunction = null)
 		{
 			int id = GUIUtility.GetControlID(s_FreeRotateHandleHash, FocusType.Keyboard);
-			return CSGFreeRotate.Do(id, rotation, position, size, snapping, initFunction, shutdownFunction);
+			return CSGFreeRotate.Do(camera, id, rotation, position, size, snapping, initFunction, shutdownFunction);
 		}
 
-		public static Quaternion DoRotationHandle(Quaternion rotation, Vector3 position, bool snapping, CSGHandles.InitFunction initFunction, CSGHandles.InitFunction shutdownFunction = null)
+		public static Quaternion DoRotationHandle(Camera camera, Quaternion rotation, Vector3 position, bool snapping, CSGHandles.InitFunction initFunction, CSGHandles.InitFunction shutdownFunction = null)
 		{
 			int hotControl = EditorGUIUtility.hotControl;
 			int xAxisDiscID = GUIUtility.GetControlID(s_DiscHash, FocusType.Keyboard);
@@ -531,31 +531,31 @@ namespace RealtimeCSG.Helpers
 			var isStatic = (!Tools.hidden && EditorApplication.isPlaying && ContainsStatic(Selection.gameObjects));
 			Handles.color = isStatic ? Color.Lerp(Handles.xAxisColor, staticColor, staticBlend) : Handles.xAxisColor;
 			if (!haveControl || hotControl == xAxisDiscID)
-				rotation = CSGDisc.Do(xAxisDiscID, "X", rotation, position, rotation * Vector3.right, size, true, snapping, RealtimeCSG.CSGSettings.SnapRotation, initFunction, shutdownFunction);
+				rotation = CSGDisc.Do(camera, xAxisDiscID, "X", rotation, position, rotation * Vector3.right, size, true, snapping, RealtimeCSG.CSGSettings.SnapRotation, initFunction, shutdownFunction);
 			
 			Handles.color = isStatic ? Color.Lerp(Handles.yAxisColor, staticColor, staticBlend) : Handles.yAxisColor;
 			if (!haveControl || hotControl == yAxisDiscID)
-				rotation = CSGDisc.Do(yAxisDiscID, "Y", rotation, position, rotation * Vector3.up, size, true, snapping, RealtimeCSG.CSGSettings.SnapRotation, initFunction, shutdownFunction);
+				rotation = CSGDisc.Do(camera, yAxisDiscID, "Y", rotation, position, rotation * Vector3.up, size, true, snapping, RealtimeCSG.CSGSettings.SnapRotation, initFunction, shutdownFunction);
 			
 			Handles.color = isStatic ? Color.Lerp(Handles.zAxisColor, staticColor, staticBlend) : Handles.zAxisColor;
 			if (!haveControl || hotControl == zAxisDiscID)
-				rotation = CSGDisc.Do(zAxisDiscID, "Z", rotation, position, rotation * Vector3.forward, size, true, snapping, RealtimeCSG.CSGSettings.SnapRotation, initFunction, shutdownFunction);
+				rotation = CSGDisc.Do(camera, zAxisDiscID, "Z", rotation, position, rotation * Vector3.forward, size, true, snapping, RealtimeCSG.CSGSettings.SnapRotation, initFunction, shutdownFunction);
 			
 			if (!isStatic)
 			{
 				Handles.color = Handles.centerColor;
 				if (!haveControl || hotControl == freeDiscID)
-					rotation = CSGDisc.Do(freeDiscID, null, rotation, position, Camera.current.transform.forward, size * 1.1f, false, snapping, 0, initFunction, shutdownFunction);
+					rotation = CSGDisc.Do(camera, freeDiscID, null, rotation, position, camera.transform.forward, size * 1.1f, false, snapping, 0, initFunction, shutdownFunction);
 		
 				if (!haveControl || hotControl == freeRotateID)
-					rotation = CSGFreeRotate.Do(freeRotateID, rotation, position, size, snapping, initFunction, shutdownFunction);
+					rotation = CSGFreeRotate.Do(camera, freeRotateID, rotation, position, size, snapping, initFunction, shutdownFunction);
 			}
 
 			Handles.color = temp;
 			return rotation;
 		}
 
-		internal static Vector3 DoPlanarHandle(PrincipleAxis2 planeID, Vector3 position, Quaternion rotation, float handleSize, SnapMode snapMode, Vector3[] snapVertices, CSGHandles.InitFunction initFunction, InitFunction shutdownFunction = null)
+		internal static Vector3 DoPlanarHandle(Camera camera, PrincipleAxis2 planeID, Vector3 position, Quaternion rotation, float handleSize, SnapMode snapMode, Vector3[] snapVertices, CSGHandles.InitFunction initFunction, InitFunction shutdownFunction = null)
 		{
 			int moveHandleHash = 0;
 			switch (planeID)
@@ -577,10 +577,10 @@ namespace RealtimeCSG.Helpers
 				}
 			}
 			int id = GUIUtility.GetControlID (moveHandleHash, FocusType.Keyboard);
-			return DoPlanarHandle(id, planeID, position, rotation, handleSize, snapMode, snapVertices, initFunction, shutdownFunction);
+			return DoPlanarHandle(camera, id, planeID, position, rotation, handleSize, snapMode, snapVertices, initFunction, shutdownFunction);
 		}
 
-		internal static Vector3 DoPlanarHandle(int id, PrincipleAxis2 planeID, Vector3 position, Quaternion rotation, float handleSize, SnapMode snapMode, Vector3[] snapVertices, CSGHandles.InitFunction initFunction, InitFunction shutdownFunction = null)
+		internal static Vector3 DoPlanarHandle(Camera camera, int id, PrincipleAxis2 planeID, Vector3 position, Quaternion rotation, float handleSize, SnapMode snapMode, Vector3[] snapVertices, CSGHandles.InitFunction initFunction, InitFunction shutdownFunction = null)
 		{
 			int axis1index = 0;
 			int axis2index = 0;
@@ -614,7 +614,6 @@ namespace RealtimeCSG.Helpers
 			var prevColor = Handles.color;
 
 			var handleTransform = Matrix4x4.TRS(position, rotation, Vector3.one);
-			var camera = Camera.current;
 			var cameraToTransformToolVector = handleTransform.inverse.MultiplyPoint(camera.transform.position).normalized;
 						
 			if (Mathf.Abs (cameraToTransformToolVector[axisNormalIndex]) < 0.05f && GUIUtility.hotControl != id)
@@ -657,7 +656,7 @@ namespace RealtimeCSG.Helpers
 			}
 			Handles.DrawSolidRectangleWithOutline(s_Vertices, innerColor, outerColor);
 			
-			position = Slider2D(id, position, handleOffset, axisNormal, axis1, axis2, handleSize * 0.5f, RectangleHandleCap, snapMode, snapVertices, initFunction, shutdownFunction);
+			position = Slider2D(camera, id, position, handleOffset, axisNormal, axis1, axis2, handleSize * 0.5f, RectangleHandleCap, snapMode, snapVertices, initFunction, shutdownFunction);
 			
 			Handles.color = prevColor;
 

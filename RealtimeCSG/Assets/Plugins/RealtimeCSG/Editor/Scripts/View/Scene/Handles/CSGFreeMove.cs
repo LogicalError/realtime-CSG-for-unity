@@ -9,9 +9,9 @@ namespace RealtimeCSG.Helpers
 		private static Vector3 s_StartPosition;
 		private static Vector3[] s_SnapVertices;
 
-		public static Vector3 Do(int id, Vector3 position, Quaternion rotation, float size, CSGHandles.CapFunction handleFunction, bool snapping, Vector3[] snapVertices)
+		public static Vector3 Do(Camera camera, int id, Vector3 position, Quaternion rotation, float size, CSGHandles.CapFunction handleFunction, bool snapping, Vector3[] snapVertices)
 		{
-			var worldPosition	= Handles.matrix.MultiplyPoint(position);
+            var worldPosition	= Handles.matrix.MultiplyPoint(position);
 			var origMatrix		= Handles.matrix;
 			
 			var evt = Event.current;
@@ -46,12 +46,12 @@ namespace RealtimeCSG.Helpers
 					if (GUIUtility.hotControl == id)
 					{
 						s_CurrentMousePosition += new Vector2(evt.delta.x, -evt.delta.y);
-						var screenPos = Camera.current.WorldToScreenPoint(Handles.matrix.MultiplyPoint(s_StartPosition));
+						var screenPos = camera.WorldToScreenPoint(Handles.matrix.MultiplyPoint(s_StartPosition));
 						screenPos += (Vector3)(s_CurrentMousePosition - s_StartMousePosition);
-						position = Handles.inverseMatrix.MultiplyPoint(Camera.current.ScreenToWorldPoint(screenPos));
+						position = Handles.inverseMatrix.MultiplyPoint(camera.ScreenToWorldPoint(screenPos));
 
 						if (snapping)
-							position = RealtimeCSG.CSGGrid.SnapDeltaToGrid(position - s_StartPosition, s_SnapVertices, snapToGridPlane: false, snapToSelf: true) + s_StartPosition; 
+							position = RealtimeCSG.CSGGrid.SnapDeltaToGrid(camera, position - s_StartPosition, s_SnapVertices, snapToGridPlane: false, snapToSelf: true) + s_StartPosition; 
 						else
 							position = RealtimeCSG.CSGGrid.HandleLockedAxi(position - s_StartPosition) + s_StartPosition;
 						GUI.changed = true;
@@ -79,7 +79,7 @@ namespace RealtimeCSG.Helpers
 					}
 					
 					Handles.matrix = Matrix4x4.identity;
-					handleFunction(id, worldPosition, Camera.current.transform.rotation, size, EventType.Repaint);
+					handleFunction(id, worldPosition, camera.transform.rotation, size, EventType.Repaint);
 					Handles.matrix = origMatrix;
 
 					if (id == GUIUtility.keyboardControl)

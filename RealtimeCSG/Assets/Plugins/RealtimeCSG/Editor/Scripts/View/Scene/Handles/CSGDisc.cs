@@ -19,9 +19,9 @@ namespace RealtimeCSG.Helpers
 			return val;
 		}
 
-		public static Quaternion Do(int id, string name, Quaternion rotation, Vector3 position, Vector3 axis, float size, bool cutoffPlane, bool snapping, float snap, CSGHandles.InitFunction initFunction, CSGHandles.InitFunction shutdownFunction)
+		public static Quaternion Do(Camera camera, int id, string name, Quaternion rotation, Vector3 position, Vector3 axis, float size, bool cutoffPlane, bool snapping, float snap, CSGHandles.InitFunction initFunction, CSGHandles.InitFunction shutdownFunction)
 		{
-			if (Mathf.Abs(Vector3.Dot(Camera.current.transform.forward, axis)) > .999f)
+            if (Mathf.Abs(Vector3.Dot(camera.transform.forward, axis)) > .999f)
 				cutoffPlane = false;
 
 			var evt = Event.current;
@@ -32,7 +32,7 @@ namespace RealtimeCSG.Helpers
 					float d;
 					if (cutoffPlane)
 					{
-						var from = Vector3.Cross(axis, Camera.current.transform.forward).normalized;
+						var from = Vector3.Cross(axis, camera.transform.forward).normalized;
 						d = HandleUtility.DistanceToArc(position, axis, from, 180, size) / 2;
 					} else
 					{
@@ -55,7 +55,7 @@ namespace RealtimeCSG.Helpers
 						//Tools.LockHandlePosition();
 						if (cutoffPlane)
 						{
-							Vector3 from = Vector3.Cross(axis, Camera.current.transform.forward).normalized;
+							Vector3 from = Vector3.Cross(axis, camera.transform.forward).normalized;
 							s_StartPosition = HandleUtility.ClosestPointToArc(position, axis, from, 180, size);
 						} else
 						{
@@ -122,7 +122,7 @@ namespace RealtimeCSG.Helpers
 						float radius = size * 1.1f;
 						float endAngle = s_RotationDist;
 
-						PaintUtility.DrawRotateCircle(position, axis, from, radius, 0, 0, endAngle, Handles.color, name, true);						
+						PaintUtility.DrawRotateCircle(camera, position, axis, from, radius, 0, 0, endAngle, Handles.color, name, true);						
 						PaintUtility.DrawRotateCirclePie(position, axis, from, radius, 0, 0, endAngle, Handles.color);
 						/*
 						Color t = Handles.color;
@@ -143,7 +143,7 @@ namespace RealtimeCSG.Helpers
 
 					if (cutoffPlane)
 					{
-						Vector3 from = Vector3.Cross(axis, Camera.current.transform.forward).normalized;
+						Vector3 from = Vector3.Cross(axis, camera.transform.forward).normalized;
 						Handles.DrawWireArc(position, axis, from, 180, size);
 					} else
 					{

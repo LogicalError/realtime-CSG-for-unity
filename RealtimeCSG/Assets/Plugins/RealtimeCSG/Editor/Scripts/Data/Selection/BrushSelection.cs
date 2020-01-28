@@ -269,11 +269,11 @@ namespace InternalRealtimeCSG
             return true;
         }
 
-        public void FindClosestIntersection(out int closestBrushNodeIndex, out int closestSurfaceIndex)
+        public void FindClosestIntersection(SceneView sceneView, out int closestBrushNodeIndex, out int closestSurfaceIndex)
         {
             var mouseWorldRay = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
             var rayStart = mouseWorldRay.origin;
-            var rayVector = (mouseWorldRay.direction * (Camera.current.farClipPlane - Camera.current.nearClipPlane));
+            var rayVector = (mouseWorldRay.direction * (sceneView.camera.farClipPlane - sceneView.camera.nearClipPlane));
             var rayEnd = rayStart + rayVector;
 
             var minDistance = float.PositiveInfinity;

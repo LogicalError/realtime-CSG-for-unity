@@ -23,15 +23,18 @@ namespace RealtimeCSG
 		internal static void SetOutlineDirty() { forceOutlineUpdate = false; }
 		
 		internal static void OnPaint(SceneView sceneView)
-		{
-			SceneDragToolManager.OnPaint();
+        {
+            if (!sceneView)
+                return;
 
-			if (sceneView == null ||
-				Event.current.type != EventType.Repaint)
+            var camera = sceneView.camera;
+			SceneDragToolManager.OnPaint(camera);
+
+			if (Event.current.type != EventType.Repaint)
 				return;
 
-			if (RealtimeCSG.CSGSettings.GridVisible)
-				RealtimeCSG.CSGGrid.RenderGrid();
+            if (RealtimeCSG.CSGSettings.GridVisible)
+				RealtimeCSG.CSGGrid.RenderGrid(camera);
 			
 			if (RealtimeCSG.CSGSettings.IsWireframeShown(sceneView))
 			{

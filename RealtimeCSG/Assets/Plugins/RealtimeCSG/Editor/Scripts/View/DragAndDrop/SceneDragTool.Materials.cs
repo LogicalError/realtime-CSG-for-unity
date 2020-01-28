@@ -18,7 +18,7 @@ namespace RealtimeCSG
 		bool			selectAllSurfaces	= false;
 		
 		#region ValidateDrop
-		public bool ValidateDrop(bool inSceneView)
+		public bool ValidateDrop(SceneView sceneView)
 		{
 			Reset();
 			if (DragAndDrop.objectReferences == null ||
@@ -47,10 +47,12 @@ namespace RealtimeCSG
 
 		
 		#region ValidateDropPoint
-		public bool ValidateDropPoint(bool inSceneView)
+		public bool ValidateDropPoint(SceneView sceneView)
 		{
+            var camera = sceneView.camera;
+
 			GameObject foundObject;
-			if (!SceneQueryUtility.FindClickWorldIntersection(Event.current.mousePosition, out foundObject))
+			if (!SceneQueryUtility.FindClickWorldIntersection(camera, Event.current.mousePosition, out foundObject))
 				return false;
 			
 			if (!foundObject.GetComponent<CSGBrush>())
@@ -219,12 +221,13 @@ namespace RealtimeCSG
 			return needUpdate;
 		}
 
-		public bool DragUpdated()
+		public bool DragUpdated(SceneView sceneView)
 		{
+            var camera = sceneView.camera;
 			LegacyBrushIntersection intersection;
 			int		 highlight_surface	= -1;
 			CSGBrush highlight_brush	= null;	
-			if (!SceneQueryUtility.FindWorldIntersection(Event.current.mousePosition, out intersection))
+			if (!SceneQueryUtility.FindWorldIntersection(camera, Event.current.mousePosition, out intersection))
 			{
 				highlight_brush		= null;
 				highlight_surface	= -1;
@@ -471,7 +474,7 @@ namespace RealtimeCSG
 		#endregion
 
 		#region DragPerform
-		public void DragPerform(bool inSceneView)
+		public void DragPerform(SceneView sceneView)
 		{
 			if (hoverBrushSurfaces == null)
 				return;
@@ -513,7 +516,7 @@ namespace RealtimeCSG
 		#endregion
 
 		#region DragExited
-		public void DragExited(bool inSceneView)
+		public void DragExited(SceneView sceneView)
 		{
 			Undo.RevertAllInCurrentGroup();
 			if (hoverBrushSurfaces != null)
@@ -530,7 +533,7 @@ namespace RealtimeCSG
 		#endregion
 
 		#region Paint
-		public void OnPaint()
+		public void OnPaint(Camera camera)
 		{
 			if (!hoverOnSelectedSurfaces)
 			{ 

@@ -27,9 +27,9 @@ namespace RealtimeCSG
 		Quaternion		prevForcedGridRotation	= MathConstants.identityQuaternion;
 
 		#region ValidateDrop
-		public bool ValidateDrop(bool inSceneView)
+		public bool ValidateDrop(SceneView sceneView)
 		{
-			if (!inSceneView)
+			if (!sceneView)
 				return false;
 
 			Reset();
@@ -84,13 +84,13 @@ namespace RealtimeCSG
 			haveNoParent = false;
 			return true;
 		}
-#endregion
+        #endregion
 
 		#region ValidateDropPoint
-				public bool ValidateDropPoint(bool inSceneView)
-				{
-					return true;
-				}
+		public bool ValidateDropPoint(SceneView sceneView)
+		{
+			return true;
+		}
 		#endregion
 
 		#region Reset
@@ -249,7 +249,7 @@ namespace RealtimeCSG
 			}
 		}
 
-#region DragUpdated
+        #region DragUpdated
 		public bool DragUpdated(Transform transformInInspector, Rect selectionRect)
 		{
 			InternalCSGModelManager.skipCheckForChanges = true;
@@ -277,24 +277,25 @@ namespace RealtimeCSG
 			}
 		}
 
-		public bool DragUpdated()
+		public bool DragUpdated(SceneView sceneView)
 		{
 			InternalCSGModelManager.skipCheckForChanges = true;
 			try
 			{
 				DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
 				
-				var intersection		= SceneQueryUtility.FindMeshIntersection(Event.current.mousePosition, ignoreBrushes, ignoreTransforms);
+                var camera              = sceneView.camera;
+				var intersection		= SceneQueryUtility.FindMeshIntersection(camera, Event.current.mousePosition, ignoreBrushes, ignoreTransforms);
 				var normal				= intersection.worldPlane.normal;
 
 				hoverPosition			= intersection.worldIntersection;
 				hoverParent				= SelectionUtility.FindParentToAssignTo(intersection);
 				hoverBrushSurface		= intersection.brush ? new SelectedBrushSurface(intersection.brush, intersection.surfaceIndex) : null;
-				hoverRotation			= SelectionUtility.FindDragOrientation(normal, sourceSurfaceAlignment, destinationSurfaceAlignment);
+				hoverRotation			= SelectionUtility.FindDragOrientation(sceneView, normal, sourceSurfaceAlignment, destinationSurfaceAlignment);
 				haveNoParent			= !hoverParent;
 				hoverSiblingIndex		= int.MaxValue;
 
-				RealtimeCSG.CSGGrid.SetForcedGrid(intersection.worldPlane);
+				RealtimeCSG.CSGGrid.SetForcedGrid(camera, intersection.worldPlane);
 
                 // Since we're snapping points to grid and do not have a relative distance, relative snapping makes no sense
 				var doGridSnapping	= RealtimeCSG.CSGSettings.ActiveSnappingMode != SnapMode.None;
@@ -305,7 +306,7 @@ namespace RealtimeCSG
 					for (var i = 0; i < localPoints.Length; i++)
 						localPoints[i] = GeometryUtility.ProjectPointOnPlane(localPlane, (hoverRotation * projectedBounds[i]) + hoverPosition);
 
-					hoverPosition += RealtimeCSG.CSGGrid.SnapDeltaToGrid(MathConstants.zeroVector3, localPoints);
+					hoverPosition += RealtimeCSG.CSGGrid.SnapDeltaToGrid(camera, MathConstants.zeroVector3, localPoints);
 				}
                 hoverPosition   = GeometryUtility.ProjectPointOnPlane(intersection.worldPlane, hoverPosition);// + (normal * 0.01f);
 
@@ -318,20 +319,20 @@ namespace RealtimeCSG
 					UpdateLoop.ResetUpdateRoutine();
 			}
 		}
-#endregion
+        #endregion
 		
-#region DragPerform
-		public void DragPerform(bool inSceneView)
+        #region DragPerform
+		public void DragPerform(SceneView sceneView)
 		{
 			try
 			{
 				InternalCSGModelManager.skipCheckForChanges = true;
 				if (visualDragGameObject == null)
 				{
-					CreateVisualObjects(inSceneView);
+					CreateVisualObjects(sceneView != null);
 				}
 
-				if (inSceneView && haveNoParent && !containsModel)
+				if (sceneView && haveNoParent && !containsModel)
 				{					
 					var model = SelectionUtility.LastUsedModel;
 					if (!model)
@@ -381,7 +382,7 @@ namespace RealtimeCSG
 					}
 				}
 
-				if (inSceneView)
+				if (sceneView)
 				{
 					for (int i = 0; i < SceneView.sceneViews.Count; i++)
 					{
@@ -405,10 +406,10 @@ namespace RealtimeCSG
 				RealtimeCSG.CSGGrid.ForceGrid			= false;
 			}
 		}
-#endregion
+        #endregion
 
-#region DragExited
-		public void DragExited(bool inSceneView)
+        #region DragExited
+		public void DragExited(SceneView sceneView)
 		{
 			try
 			{
@@ -428,12 +429,12 @@ namespace RealtimeCSG
 				RealtimeCSG.CSGGrid.ForceGrid			= false;
 			}
 		}
-#endregion
+        #endregion
 
-#region Paint
-		public void OnPaint()
-		{
-			RealtimeCSG.CSGGrid.RenderGrid();
+        #region Paint
+		public void OnPaint(Camera camera)
+        {
+            RealtimeCSG.CSGGrid.RenderGrid(camera);
 			if (hoverBrushSurface == null)
 				return;
 			
@@ -449,6 +450,6 @@ namespace RealtimeCSG
 											highlight_surface, 
 											false, GUIConstants.oldLineScale);
 		}
-#endregion
+        #endregion
 	}
 }

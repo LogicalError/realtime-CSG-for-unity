@@ -8,10 +8,10 @@ namespace RealtimeCSG.Helpers
 		private static Vector2 s_CurrentMousePosition;
 		internal const float kPickDistance = 5.0f;
 
-		public static Quaternion Do(int id, Quaternion rotation, Vector3 position, float size, bool snapping, CSGHandles.InitFunction initFunction, CSGHandles.InitFunction shutdownFunction)
-		{
-			var worldPosition = Handles.matrix.MultiplyPoint(position);
-			var origMatrix = Handles.matrix;
+		public static Quaternion Do(Camera camera, int id, Quaternion rotation, Vector3 position, float size, bool snapping, CSGHandles.InitFunction initFunction, CSGHandles.InitFunction shutdownFunction)
+        {
+            var worldPosition   = Handles.matrix.MultiplyPoint(position);
+			var origMatrix      = Handles.matrix;
 
 			var evt = Event.current;
 			switch (evt.GetTypeForControl(id))
@@ -45,7 +45,7 @@ namespace RealtimeCSG.Helpers
 					if (GUIUtility.hotControl == id)
 					{
 						s_CurrentMousePosition += evt.delta;
-						var rotDir = Camera.current.transform.TransformDirection(new Vector3(-evt.delta.y, -evt.delta.x, 0));
+						var rotDir = camera.transform.TransformDirection(new Vector3(-evt.delta.y, -evt.delta.x, 0));
 						rotation = Quaternion.AngleAxis(evt.delta.magnitude, rotDir.normalized) * rotation;
 
 						GUI.changed = true;
@@ -87,7 +87,7 @@ namespace RealtimeCSG.Helpers
 
 					// We only want the position to be affected by the Handles.matrix.
 					Handles.matrix = Matrix4x4.identity;
-					Handles.DrawWireDisc(worldPosition, Camera.current.transform.forward, size);
+					Handles.DrawWireDisc(worldPosition, camera.transform.forward, size);
 					Handles.matrix = origMatrix;
 
 					Handles.color = originalColor;

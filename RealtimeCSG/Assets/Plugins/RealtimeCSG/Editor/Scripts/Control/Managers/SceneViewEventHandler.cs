@@ -45,7 +45,7 @@ namespace RealtimeCSG
 			else if (Event.current.type == EventType.MouseUp ||
 				Event.current.type == EventType.MouseMove) { mousePressed = false; }
 
-			SceneDragToolManager.OnHandleDragAndDrop(inSceneView: true);
+			SceneDragToolManager.OnHandleDragAndDrop(sceneView);
 			RectangleSelectionManager.Update(sceneView);
 			EditModeManager.InitSceneGUI(sceneView);
 

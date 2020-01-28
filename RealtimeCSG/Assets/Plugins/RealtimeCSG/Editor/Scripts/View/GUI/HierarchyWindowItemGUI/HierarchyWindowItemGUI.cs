@@ -17,7 +17,7 @@ namespace RealtimeCSG
 			if (selectionRect.Contains(Event.current.mousePosition))
 			{
 				Transform t = (o == null) ? null : o.transform;
-				SceneDragToolManager.OnHandleDragAndDrop(inSceneView: false, transformInInspector: t, selectionRect: selectionRect);
+				SceneDragToolManager.OnHandleDragAndDrop(sceneView: null, transformInInspector: t, selectionRect: selectionRect);
 			}
 
 			if (o == null)

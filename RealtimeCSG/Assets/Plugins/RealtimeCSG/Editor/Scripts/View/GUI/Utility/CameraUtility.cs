@@ -120,7 +120,7 @@ namespace RealtimeCSG
 
 		public static Vector2 PhysicalOffset(SceneView sceneview)
 		{
-			var slow = WorldToGUIPointSlow(Vector3.zero);
+			var slow = WorldToGUIPointSlow(sceneview.camera, Vector3.zero);
 			var fast = HandleUtility.WorldToGUIPoint(Vector3.zero);
 			return slow - fast;
 		} 
@@ -328,9 +328,9 @@ namespace RealtimeCSG
 			}
 		}
 		
-		static Vector2 WorldToGUIPointSlow(Vector3 world)
+		static Vector2 WorldToGUIPointSlow(Camera camera, Vector3 world)
         {
-			var pos = Camera.current.WorldToScreenPoint(handleMatrix.MultiplyPoint(world));
+			var pos = camera.WorldToScreenPoint(handleMatrix.MultiplyPoint(world));
 
 			pos.y = screenHeight - pos.y;
 			pos.x *= pixelsPerPoint;
@@ -341,53 +341,5 @@ namespace RealtimeCSG
 
 			return transformedPoint - physicalOffset;
         }
-        /*
-		// Convert world space point to a 2D GUI position.
-        static Vector2 WorldToGUIPointSlow2(Vector3 world)
-		{
-			var currentCamera = Camera.current;
-			if (prevCamera != currentCamera)
-			{
-				UpdateCameraValues(currentCamera, SceneView.currentDrawingSceneView);
-				prevCamera = currentCamera;
-			}
-			
-			var pos = WorldToScreenPoint2D(handleMatrix.MultiplyPoint(world));
-
-            pos.y = screenHeight - pos.y;
-            pos.x *= pixelsPerPoint;
-            pos.y *= pixelsPerPoint;
-
-			Vector2 transformedPoint;
-			PerspectiveMultiplyPoint2(guiInverseMatrix, new Vector3(pos.x, pos.y, 0.0F), out transformedPoint);
-			
-			return transformedPoint - physicalOffset;
-        }
-
-		static bool PerspectiveMultiplyPoint3(Matrix4x4 m, Vector3 v, out Vector3 output)
-		{
-			Vector3 res;
-			float w;
-			res.x = m.m00 * v.x + m.m01 * v.y + m.m02 * v.z + m.m03;
-			res.y = m.m10 * v.x + m.m11 * v.y + m.m12 * v.z + m.m13;
-			res.z = m.m20 * v.x + m.m21 * v.y + m.m22 * v.z + m.m23;
-			w     = m.m30 * v.x + m.m31 * v.y + m.m32 * v.z + m.m33;
-			if (Mathf.Abs(w) > 1.0e-7f)
-			{
-				float invW = 1.0f / w;
-				output.x = res.x * invW;
-				output.y = res.y * invW;
-				output.z = res.z * invW;
-				return true;
-			}
-			else
-			{
-				output.x = 0.0f;
-				output.y = 0.0f;
-				output.z = 0.0f;
-				return false;
-			}
-		}
-        */
 	}
 }

@@ -483,14 +483,14 @@ namespace RealtimeCSG
 
 		#region Actions
 
-		public void SnapToGrid()
+		public void SnapToGrid(Camera camera)
 		{
 			try
 			{
 				if (HavePointSelection)
 				{
 					Undo.RecordObjects(_undoAbleBrushes, "Snap points to grid");
-					_brushSelection.PointSnapToGrid();
+					_brushSelection.PointSnapToGrid(camera);
 					UpdateWorkControlMesh(forceUpdate: true);
 				} else
 				{
@@ -498,7 +498,7 @@ namespace RealtimeCSG
 					var groupIndex = Undo.GetCurrentGroup();
 					Undo.RecordObjects(_undoAbleTransforms, "Snap brushes to grid");
 					Undo.RecordObjects(_undoAbleBrushes, "Snap points to grid");
-					BrushOperations.SnapToGrid(_brushSelection.Brushes);
+					BrushOperations.SnapToGrid(camera, _brushSelection.Brushes);
 					_brushSelection.CleanPoints();
 					Undo.CollapseUndoOperations(groupIndex);
 				}
@@ -526,7 +526,7 @@ namespace RealtimeCSG
 		}
 
 
-		private void ExtrudeSurface(bool drag)
+		private void ExtrudeSurface(Camera camera, bool drag)
 		{
 			EditModeGenerate.ShapeCancelled += ShapeCancelled;
 			EditModeGenerate.ShapeCommitted += ShapeCommitted;
@@ -578,7 +578,7 @@ namespace RealtimeCSG
             }
 
             var forceDragSource = brush.OperationType;
-            EditModeManager.GenerateFromSurface(brush, polygonPlane, worldNormal, points, pointIndices, smoothingGroups, drag, forceDragSource, CSGSettings.AutoCommitExtrusion);
+            EditModeManager.GenerateFromSurface(camera, brush, polygonPlane, worldNormal, points, pointIndices, smoothingGroups, drag, forceDragSource, CSGSettings.AutoCommitExtrusion);
 		}
 
 		private void MergeDuplicatePoints()
@@ -820,7 +820,7 @@ namespace RealtimeCSG
 			_activeSpaceMatrices = SpaceMatrices.Create(Selection.activeTransform);
 		}
 
-		private bool UpdateRotationCircle()
+		private bool UpdateRotationCircle(SceneView sceneView)
 		{
 			switch (_editMode)
 			{
@@ -845,9 +845,9 @@ namespace RealtimeCSG
 					var vertex1 = meshState.WorldPoints[pointIndex1];
 					var vertex2 = meshState.WorldPoints[pointIndex2];
 
-					var camera = Camera.current;
+					var camera = sceneView.camera;
 
-					_rotateNormal = camera.orthographic ? camera.transform.forward.normalized : (vertex2 - vertex1).normalized;
+                    _rotateNormal = camera.orthographic ? camera.transform.forward.normalized : (vertex2 - vertex1).normalized;
 
 					if (Tools.pivotRotation == PivotRotation.Global)
 					{
@@ -892,7 +892,7 @@ namespace RealtimeCSG
 											targetMeshState.PolygonCenterPlanes[_hoverOnPolygonIndex].normal).normalized;
 				if (Tools.pivotRotation == PivotRotation.Global)
 					worldDirection = GeometryUtility.SnapToClosestAxis(worldDirection);
-				RealtimeCSG.CSGGrid.SetupRayWorkPlane(worldOrigin, worldDirection, ref _movePlane);
+				RealtimeCSG.CSGGrid.SetupRayWorkPlane(camera, worldOrigin, worldDirection, ref _movePlane);
 							
 				_movePlaneInNormalDirection = true;
 				_movePolygonOrigin		= worldOrigin;
@@ -919,14 +919,14 @@ namespace RealtimeCSG
 
 				if (Tools.pivotRotation == PivotRotation.Global)
 					worldDirection = GeometryUtility.SnapToClosestAxis(worldDirection);
-				RealtimeCSG.CSGGrid.SetupWorkPlane(worldOrigin, worldDirection, ref _movePlane);
+				RealtimeCSG.CSGGrid.SetupWorkPlane(camera, worldOrigin, worldDirection, ref _movePlane);
 							
 				_movePlaneInNormalDirection = true;
 				_movePolygonOrigin		= worldOrigin;
 				_movePolygonDirection	= worldDirection;
 			} else
 			{ 	
-				RealtimeCSG.CSGGrid.SetupWorkPlane(_originalPoint, ref _movePlane);
+				RealtimeCSG.CSGGrid.SetupWorkPlane(camera, _originalPoint, ref _movePlane);
 				
 				_movePlaneInNormalDirection = false;
 			}
@@ -1016,10 +1016,10 @@ namespace RealtimeCSG
 			}
 		}
 
-		private void UpdatePointSizes()
+		private void UpdatePointSizes(SceneView sceneView)
 		{
-            var camera = Camera.current;
-			if (!camera)
+            var camera = sceneView.camera;
+            if (!camera)
 				return;
 
 			for (var t = 0; t < _brushSelection.Brushes.Length; t++)
@@ -1028,10 +1028,10 @@ namespace RealtimeCSG
 		
 		[NonSerialized] private ViewTool _preViewTool = ViewTool.None;
 		[NonSerialized] private Tool _prevTool = Tool.None;
-		private void UpdateLineMeshes()
+		private void UpdateLineMeshes(SceneView sceneView)
 		{
-            var camera = Camera.current;
-			if (!camera)
+            var camera = sceneView.camera;
+            if (!camera)
 				return;
 
 			var brushOutlineInfo = GetBrushOutLineInfo(camera);
@@ -1067,7 +1067,7 @@ namespace RealtimeCSG
 				{
 					_preViewTool = Tools.viewTool;
 					_prevTool = Tools.current;
-					UpdatePointSizes();
+					UpdatePointSizes(sceneView);
 				}
 				return;
 			}
@@ -1078,12 +1078,12 @@ namespace RealtimeCSG
 			brushOutlineInfo.LastLineMeshGeneration = currentMeshGeneration;
 
 			UpdateMeshStates();
-			UpdatePointSizes();
+			UpdatePointSizes(sceneView);
 
 			brushOutlineRenderer.Update(camera, _brushSelection.Brushes, _brushSelection.ControlMeshes, _brushSelection.States);
 		}
 
-		private void DrawPointText(Vector3 brushCenter, Vector3 vertex, string text)
+		private void DrawPointText(SceneView sceneView, Vector3 brushCenter, Vector3 vertex, string text)
 		{
 			var brushCenter2D	= HandleUtility.WorldToGUIPoint(brushCenter);
 
@@ -1099,7 +1099,7 @@ namespace RealtimeCSG
 			textCenter2D.y -= centerDelta.x;
 
 			var textCenterRay = HandleUtility.GUIPointToWorldRay(textCenter2D);
-			var textCenter = textCenterRay.origin + textCenterRay.direction * ((Camera.current.farClipPlane + Camera.current.nearClipPlane) * 0.5f);
+			var textCenter = textCenterRay.origin + textCenterRay.direction * ((sceneView.camera.farClipPlane + sceneView.camera.nearClipPlane) * 0.5f);
 
 			Handles.color = Color.black;
 			Handles.DrawLine(vertex, textCenter);
@@ -1107,7 +1107,7 @@ namespace RealtimeCSG
 			PaintUtility.DrawScreenText(textCenter2D, text);
 		}
 
-		private void DrawEdgeText(Vector3 brushCenter, Vector3 vertexA, Vector3 vertexB, string text)
+		private void DrawEdgeText(SceneView sceneView, Vector3 brushCenter, Vector3 vertexA, Vector3 vertexB, string text)
 		{
 			var lineCenter		= (vertexB + vertexA) * 0.5f;
 			var textCenter2D	= HandleUtility.WorldToGUIPoint(lineCenter);
@@ -1132,7 +1132,7 @@ namespace RealtimeCSG
 			textCenter2D.y -= line2DDelta.x;
 
 			var textCenterRay = HandleUtility.GUIPointToWorldRay(textCenter2D);
-			var textCenter = textCenterRay.origin + textCenterRay.direction * ((Camera.current.farClipPlane + Camera.current.nearClipPlane) * 0.5f);
+			var textCenter = textCenterRay.origin + textCenterRay.direction * ((sceneView.camera.farClipPlane + sceneView.camera.nearClipPlane) * 0.5f);
 
 			Handles.color = Color.black;
 			Handles.DrawLine(lineCenter, textCenter);
@@ -1140,47 +1140,42 @@ namespace RealtimeCSG
 			PaintUtility.DrawScreenText(textCenter2D, text);
 		}
 
-		bool DrawBrushPoints
+		bool ShouldDrawBrushPoints()
 		{
-			get
+			if (_showMarquee)
+				return false;
+			if (_editMode == EditMode.MovingPoint || _editMode == EditMode.MovingEdge)
 			{
-				if (_showMarquee)
-					return false;
-				if (_editMode == EditMode.MovingPoint || _editMode == EditMode.MovingEdge)
-				{
-					if (_mouseIsDragging && _nonZeroMouseIsDown)
-						return false;
-					return true;
-				}
-				if (_mouseIsDragging || _nonZeroMouseIsDown)
+				if (_mouseIsDragging && _nonZeroMouseIsDown)
 					return false;
 				return true;
 			}
+			if (_mouseIsDragging || _nonZeroMouseIsDown)
+				return false;
+			return true;
 		}
-		bool DrawPolygonPoints
+
+        bool ShouldDrawPolygonPoints(Camera camera)
 		{
-			get
+			if (_showMarquee || !camera || camera.orthographic)
+				return false;
+			if (_editMode == EditMode.MovingPolygon)
 			{
-				if (_showMarquee || Camera.current.orthographic)
-					return false;
-				if (_editMode == EditMode.MovingPolygon)
-				{
-					if (_mouseIsDragging && _nonZeroMouseIsDown) 
-						return false;
-					return true;
-				}
-				if (_mouseIsDragging || _nonZeroMouseIsDown)
+				if (_mouseIsDragging && _nonZeroMouseIsDown) 
 					return false;
 				return true;
 			}
+			if (_mouseIsDragging || _nonZeroMouseIsDown)
+				return false;
+			return true;
 		}
-		bool DrawAnyPoints		{ get { return DrawBrushPoints || DrawPolygonPoints; } }
+		bool ShouldDrawAnyPoints(Camera camera) { return ShouldDrawBrushPoints() || ShouldDrawPolygonPoints(camera); }
 			 
 
 		private void OnPaint(SceneView sceneView)
 		{
-            var camera = Camera.current;
-			if (!camera)
+            var camera = sceneView.camera;
+            if (!camera)
 				return;
 
 			var brushOutlineInfo = GetBrushOutLineInfo(camera);
@@ -1210,10 +1205,10 @@ namespace RealtimeCSG
 			{
 				brushOutlineInfo.BrushOutlineRenderer.RenderOutlines();
 
-				if (DrawAnyPoints)
+				if (ShouldDrawAnyPoints(camera))
 				{ 
 					pointMeshManager.Begin();				
-					if (DrawBrushPoints && CSGSettings.SelectionVertex)
+					if (ShouldDrawBrushPoints() && CSGSettings.SelectionVertex)
 					{
 						for (var t = 0; t < _brushSelection.Brushes.Length; t++)
 						{
@@ -1228,7 +1223,7 @@ namespace RealtimeCSG
 							if (CameraState == null)
 								continue;
 						
-							pointMeshManager.DrawPoints(meshState.WorldPoints, 
+							pointMeshManager.DrawPoints(camera, meshState.WorldPoints, 
 														CameraState.WorldPointSizes, 
 														CameraState.WorldPointColors);
                             //PaintUtility.DrawDoubleDots(meshState.WorldPoints, 
@@ -1238,7 +1233,7 @@ namespace RealtimeCSG
                         }
                     }
 
-					if (DrawPolygonPoints && CSGSettings.SelectionSurface)
+					if (ShouldDrawPolygonPoints(camera) && CSGSettings.SelectionSurface)
 					{
 						for (var t = 0; t < _brushSelection.Brushes.Length; t++)
 						{
@@ -1251,7 +1246,7 @@ namespace RealtimeCSG
 							if (cameraState == null)
 								continue;
 						
-							pointMeshManager.DrawPoints(meshState.PolygonCenterPoints, 
+							pointMeshManager.DrawPoints(camera, meshState.PolygonCenterPoints, 
 														cameraState.PolygonCenterPointSizes, 
 														meshState.PolygonCenterColors);
                             //PaintUtility.DrawDoubleDots(meshState.PolygonCenterPoints, 
@@ -1270,16 +1265,16 @@ namespace RealtimeCSG
 					{
 						if (_mouseIsDragging)
 						{
-							PaintUtility.DrawRotateCircle(_rotateCenter, _rotateNormal, _rotateTangent, _rotateRadius, 0, _rotateStartAngle, _rotateCurrentSnappedAngle, 
+							PaintUtility.DrawRotateCircle(camera, _rotateCenter, _rotateNormal, _rotateTangent, _rotateRadius, 0, _rotateStartAngle, _rotateCurrentSnappedAngle, 
 															ColorSettings.RotateCircleOutline);
 							PaintUtility.DrawRotateCirclePie(_rotateCenter, _rotateNormal, _rotateTangent, _rotateRadius, 0, _rotateStartAngle, _rotateCurrentSnappedAngle, 
 															ColorSettings.RotateCircleOutline);
 						} else
 						{
 							var inCamera = camera.pixelRect.Contains(Event.current.mousePosition);
-							if (inCamera && UpdateRotationCircle())
+							if (inCamera && UpdateRotationCircle(sceneView))
 							{
-								PaintUtility.DrawRotateCircle(_rotateCenter, _rotateNormal, _rotateTangent, _rotateRadius, 0, _rotateStartAngle, _rotateStartAngle, 
+								PaintUtility.DrawRotateCircle(camera, _rotateCenter, _rotateNormal, _rotateTangent, _rotateRadius, 0, _rotateStartAngle, _rotateStartAngle, 
 																ColorSettings.RotateCircleOutline);
 							}
 						}
@@ -1327,7 +1322,7 @@ namespace RealtimeCSG
 
 
 				if ((SelectionUtility.CurrentModifiers == EventModifiers.Shift) &&
-					Camera.current.pixelRect.Contains(Event.current.mousePosition) && 
+					camera.pixelRect.Contains(Event.current.mousePosition) && 
 					_hoverOnTarget > -1 && _hoverOnTarget < _brushSelection.States.Length)
 				{
 					var meshState		= _brushSelection.States[_hoverOnTarget];
@@ -1342,7 +1337,7 @@ namespace RealtimeCSG
 							textCenter2D.y += HoverTextDistance * 2;
 
 							var textCenterRay = HandleUtility.GUIPointToWorldRay(textCenter2D);
-							var textCenter = textCenterRay.origin + textCenterRay.direction * ((Camera.current.farClipPlane + Camera.current.nearClipPlane) * 0.5f);
+							var textCenter = textCenterRay.origin + textCenterRay.direction * ((camera.farClipPlane + camera.nearClipPlane) * 0.5f);
 
 							Handles.color = Color.black;
 								
@@ -1360,13 +1355,13 @@ namespace RealtimeCSG
 							var vertexA = meshState.WorldPoints[pointIndex1];
 							var vertexB = meshState.WorldPoints[pointIndex2];
 
-							DrawEdgeText(meshState.BrushCenter, vertexA, vertexB, "Chamfer");
+							DrawEdgeText(sceneView, meshState.BrushCenter, vertexA, vertexB, "Chamfer");
 						} else
 						if (_hoverOnPointIndex != -1)
 						{
 							var vertex = meshState.WorldPoints[_hoverOnPointIndex];
 
-							DrawPointText(meshState.BrushCenter, vertex, "Chamfer");
+							DrawPointText(sceneView, meshState.BrushCenter, vertex, "Chamfer");
 						}
 					}
 				}
@@ -1389,7 +1384,7 @@ namespace RealtimeCSG
 							var lineDelta = (vertexB - vertexA);
 							var length = lineDelta.magnitude;
 
-							DrawEdgeText(meshState.BrushCenter, vertexA, vertexB, Units.ToRoundedDistanceString(length));
+							DrawEdgeText(sceneView, meshState.BrushCenter, vertexA, vertexB, Units.ToRoundedDistanceString(length));
 
 							Handles.matrix = MathConstants.identityMatrix;
 						}
@@ -1521,7 +1516,7 @@ namespace RealtimeCSG
 			var lockZ	= ((Mathf.Abs(scale.z) - 1) < MathConstants.ConsideredZero) && (CSGSettings.LockAxisZ || (Mathf.Abs(_movePlane.c) >= 1 - MathConstants.EqualityEpsilon));
 			
 			var text	= Units.ToRoundedScaleString(scale, lockX, lockY, lockZ);
-			PaintUtility.DrawScreenText(_handleCenter, HoverTextDistance * 3, text);
+			PaintUtility.DrawScreenText(camera, _handleCenter, HoverTextDistance * 3, text);
 
 			var bounds = BoundsUtilities.GetBounds(worldPoints, rotation, scale, center);
 			var outputVertices = new Vector3[8];
@@ -1549,7 +1544,7 @@ namespace RealtimeCSG
 		//Vector3[]	chamferTangents		= new Vector3[2];
 		//Vector3[]	chamferLines		= new Vector3[0];
 
-		bool StartChamfer()
+		bool StartChamfer(SceneView sceneView)
 		{
 			if (_hoverOnTarget <= -1 ||
 				_hoverOnTarget >= _brushSelection.States.Length)
@@ -1627,12 +1622,13 @@ namespace RealtimeCSG
 				chamferSelection  [b] = _brushSelection.States[b].Selection.Clone();
 			}
 
-			UpdateChamferIntersectionPoint();
+			UpdateChamferIntersectionPoint(sceneView);
 			return true;
 		}
 		
-		void UpdateChamferIntersectionPoint()
+		void UpdateChamferIntersectionPoint(SceneView sceneView)
 		{
+            var camera = sceneView.camera;
 			var mouseRay		= HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
 			
 			var intersection	= Vector3.zero;
@@ -1655,7 +1651,7 @@ namespace RealtimeCSG
 				if (!tryFound)
 					continue;
 
-				RealtimeCSG.CSGGrid.SetForcedGrid(chamferPlanes[p0]);
+				RealtimeCSG.CSGGrid.SetForcedGrid(camera, chamferPlanes[p0]);
 				intersection = tryIntersection;
 				found = true;
 				break;
@@ -1680,12 +1676,12 @@ namespace RealtimeCSG
                     {
                         case SnapMode.GridSnapping:
                         {
-                            chamferIntersectionPoint = intersection + RealtimeCSG.CSGGrid.SnapDeltaToGrid(intersection - projectedPoint, new Vector3[] { intersection });//, snapToSelf: true);
+                            chamferIntersectionPoint = intersection + RealtimeCSG.CSGGrid.SnapDeltaToGrid(camera, intersection - projectedPoint, new Vector3[] { intersection });//, snapToSelf: true);
                             break;
                         }
                         case SnapMode.RelativeSnapping:
                         {
-                            chamferIntersectionPoint = intersection + RealtimeCSG.CSGGrid.SnapDeltaRelative(intersection - projectedPoint);
+                            chamferIntersectionPoint = intersection + RealtimeCSG.CSGGrid.SnapDeltaRelative(camera, intersection - projectedPoint);
                             break;
                         }
                         default:
@@ -1705,12 +1701,12 @@ namespace RealtimeCSG
                     {
                         case SnapMode.GridSnapping:
                         {
-                            chamferIntersectionPoint = intersection + RealtimeCSG.CSGGrid.SnapDeltaToGrid(intersection - projectedPoint, new Vector3[] { intersection });//, snapToSelf: true);
+                            chamferIntersectionPoint = intersection + RealtimeCSG.CSGGrid.SnapDeltaToGrid(camera, intersection - projectedPoint, new Vector3[] { intersection });//, snapToSelf: true);
                             break;
                         }
                         case SnapMode.RelativeSnapping:
                         {
-                            chamferIntersectionPoint = intersection + RealtimeCSG.CSGGrid.SnapDeltaRelative(intersection - projectedPoint);
+                            chamferIntersectionPoint = intersection + RealtimeCSG.CSGGrid.SnapDeltaRelative(camera, intersection - projectedPoint);
                             break;
                         }
                         default:
@@ -1916,12 +1912,12 @@ namespace RealtimeCSG
 
 			if (anyBrushModified)
 			{
-				UpdateLineMeshes();
+				UpdateLineMeshes(sceneView);
 				InternalCSGModelManager.CheckForChanges(true);
 			}
 		}
 
-		void HandleChamfering()
+		void HandleChamfering(SceneView sceneView)
 		{
 			var type = Event.current.GetTypeForControl(_chamferId);
 			switch (type)
@@ -1932,8 +1928,8 @@ namespace RealtimeCSG
 					_brushSelection.UpdateTargets();
 					UpdateWorkControlMesh();
 
-                    var camera = Camera.current;
-					if (camera)
+                    var camera = sceneView.camera;
+                    if (camera)
 					{
 						var brushOutlineInfo = GetBrushOutLineInfo(camera);
 						if (brushOutlineInfo != null)
@@ -1942,7 +1938,7 @@ namespace RealtimeCSG
 						}
 					}
 
-					UpdateLineMeshes();
+					UpdateLineMeshes(sceneView);
 					RealtimeCSG.CSGGrid.ForceGrid = false;
 					GUIUtility.hotControl = 0;
 					GUIUtility.keyboardControl = 0;
@@ -1952,7 +1948,7 @@ namespace RealtimeCSG
 				}
 				case EventType.MouseDrag:
 				{
-					UpdateChamferIntersectionPoint();
+					UpdateChamferIntersectionPoint(sceneView);
 
 					Event.current.Use();
 					break;
@@ -1961,8 +1957,8 @@ namespace RealtimeCSG
 				{
 					Handles.color = ColorSettings.HoverOutlines;
 					
-					var camera = Camera.current;
-					if (camera)
+					var camera = sceneView.camera;
+                    if (camera)
 					{
 						var brushOutlineInfo = GetBrushOutLineInfo(camera);
 						if (brushOutlineInfo != null)
@@ -2018,7 +2014,7 @@ namespace RealtimeCSG
 			}
 			
 			if (Event.current.type == EventType.Repaint)
-				UpdateLineMeshes();
+				UpdateLineMeshes(sceneView);
 			
 			var currentHotControl = GUIUtility.hotControl;
 
@@ -2033,9 +2029,9 @@ namespace RealtimeCSG
 				CreateControlIDs();
 
 
-			var camera = Camera.current;
+			var camera = sceneView.camera;
 
-			if (SelectionUtility.CurrentModifiers == EventModifiers.None &&
+            if (SelectionUtility.CurrentModifiers == EventModifiers.None &&
 				currentHotControl != _chamferId &&
 				_useHandleCenter)
 			{
@@ -2076,7 +2072,7 @@ namespace RealtimeCSG
 						};
 						
 						var handleRotation = GetRealHandleRotation();
-						var newRotation = PaintUtility.HandleRotation(_handleCenter, handleRotation, init, shutdown);
+						var newRotation = PaintUtility.HandleRotation(camera, _handleCenter, handleRotation, init, shutdown);
 						if (GUI.changed)
 						{
 							ForceLineUpdate();
@@ -2142,7 +2138,7 @@ namespace RealtimeCSG
 							InternalCSGModelManager.CheckSurfaceModifications(_brushSelection.Brushes, true);
 							_usingControl = false;
 						};
-						var newHandleCenter = PaintUtility.HandlePosition(_handleCenter, rotation, _handleWorldPoints, init, shutdown);
+						var newHandleCenter = PaintUtility.HandlePosition(camera, _handleCenter, rotation, _handleWorldPoints, init, shutdown);
 						if (GUI.changed)
 						{
 							ForceLineUpdate();
@@ -2160,7 +2156,7 @@ namespace RealtimeCSG
 							var lockZ	= (Mathf.Abs(_worldDeltaMovement.z) < MathConstants.ConsideredZero) && (CSGSettings.LockAxisZ || (Mathf.Abs(_movePlane.c) >= 1 - MathConstants.EqualityEpsilon));
 					
 							var text	= Units.ToRoundedDistanceString(_worldDeltaMovement, lockX, lockY, lockZ);
-							PaintUtility.DrawScreenText(_handleCenter, HoverTextDistance * 3, text);
+							PaintUtility.DrawScreenText(camera, _handleCenter, HoverTextDistance * 3, text);
 						}
 						break;
 					}
@@ -2222,7 +2218,7 @@ namespace RealtimeCSG
 								case EditMode.RotateEdge:
 								{
 									newControlId = _brushSelection.States[_hoverOnTarget].EdgeControlId[_hoverOnEdgeIndex];
-									if (!UpdateRotationCircle())
+									if (!UpdateRotationCircle(sceneView))
 									{
 										break;
 									}
@@ -2297,7 +2293,7 @@ namespace RealtimeCSG
 						{
 							case EditMode.MovingPolygon:
 							{
-								ExtrudeSurface(drag: true);
+								ExtrudeSurface(camera, drag: true);
 								Event.current.Use();
 								break;
 							}
@@ -2306,7 +2302,7 @@ namespace RealtimeCSG
 							{
 								if (GUIUtility.hotControl != 0)
 									break;
-								if (!StartChamfer())
+								if (!StartChamfer(sceneView))
 								{
 									GUIUtility.hotControl = 0;
 									GUIUtility.keyboardControl = 0;
@@ -2342,7 +2338,7 @@ namespace RealtimeCSG
 							{
 								DeselectAll();
 							} else
-								SelectionUtility.DoSelectionClick();
+								SelectionUtility.DoSelectionClick(sceneView);
 						} else
 							CSG_EditorGUIUtility.RepaintAll();
 						break;
@@ -2368,7 +2364,7 @@ namespace RealtimeCSG
 						if (GUIUtility.hotControl != 0)
 							break;
 						if (HavePointSelection && Keys.DeleteSelectionKey.IsKeyPressed()) { Event.current.Use(); DeleteSelectedPoints(); break; }
-						if (Keys.SnapToGridKey.IsKeyPressed()) { SnapToGrid(); Event.current.Use(); break; }
+						if (Keys.SnapToGridKey.IsKeyPressed()) { SnapToGrid(camera); Event.current.Use(); break; }
 						if (Keys.MergeEdgePoints.IsKeyPressed() && HaveEdgeSelection) { MergeSelected(); Event.current.Use(); break; }
 						if (Keys.HandleSceneKeyUp(EditModeManager.CurrentTool, false)) { Event.current.Use(); break; }
 						if (Keys.FlipSelectionX.IsKeyPressed()) { FlipX(); Event.current.Use(); break; }
@@ -2431,7 +2427,7 @@ namespace RealtimeCSG
 							if (!inCamera || _mouseIsDragging || GUIUtility.hotControl != 0)
 								break;
 
-							if (_mouseIsDown || !DrawAnyPoints)
+							if (_mouseIsDown || !ShouldDrawAnyPoints(camera))
 								break;
 							 
 							_hoverOnEdgeIndex		= -1;
@@ -2502,7 +2498,7 @@ namespace RealtimeCSG
 							{
 								var closestBrushIndex = -1;
 								var closestSurfaceIndex = -1;
-								_brushSelection.FindClosestIntersection(out closestBrushIndex, out closestSurfaceIndex);
+								_brushSelection.FindClosestIntersection(sceneView, out closestBrushIndex, out closestSurfaceIndex);
 								if (closestBrushIndex != -1)
 								{
 									var meshState	 = _brushSelection.States[closestBrushIndex];
@@ -2677,7 +2673,7 @@ namespace RealtimeCSG
 				} else
 				if (currentHotControl == _chamferId)
 				{
-					HandleChamfering();
+					HandleChamfering(sceneView);
 				} else
 				if (_brushSelection.States != null)
 				{
@@ -2798,12 +2794,12 @@ namespace RealtimeCSG
                                                 var worldPoints = _brushSelection.GetSelectedWorldPoints(useBackupPoints: true);
                                                 //for (int i = 0; i < worldPoints.Length; i++)
                                                 //	worldPoints[i] = GeometryUtility.ProjectPointOnPlane(movePlane, worldPoints[i]);// - center));
-                                                _worldDeltaMovement = RealtimeCSG.CSGGrid.SnapDeltaToGrid(_worldDeltaMovement, worldPoints, snapToSelf: true);
+                                                _worldDeltaMovement = RealtimeCSG.CSGGrid.SnapDeltaToGrid(camera, _worldDeltaMovement, worldPoints, snapToSelf: true);
                                                 break;
                                             }
                                             case SnapMode.RelativeSnapping:
                                             {
-                                                _worldDeltaMovement = RealtimeCSG.CSGGrid.SnapDeltaRelative(_worldDeltaMovement);
+                                                _worldDeltaMovement = RealtimeCSG.CSGGrid.SnapDeltaRelative(camera, _worldDeltaMovement);
                                                 break;
                                             }
                                             default:
@@ -3021,12 +3017,12 @@ namespace RealtimeCSG
                                                 var worldPoints = _handleWorldPoints;
                                                 //for (int i = 0; i < worldPoints.Length; i++)
                                                 //	worldPoints[i] = GeometryUtility.ProjectPointOnPlane(movePlane, worldPoints[i]);// - center));
-                                                _worldDeltaMovement = RealtimeCSG.CSGGrid.SnapDeltaToGrid(_worldDeltaMovement, worldPoints, snapToSelf: true);
+                                                _worldDeltaMovement = RealtimeCSG.CSGGrid.SnapDeltaToGrid(camera, _worldDeltaMovement, worldPoints, snapToSelf: true);
                                                 break;
                                             }
                                             case SnapMode.RelativeSnapping:
                                             {
-                                                _worldDeltaMovement = RealtimeCSG.CSGGrid.SnapDeltaRelative(_worldDeltaMovement);
+                                                _worldDeltaMovement = RealtimeCSG.CSGGrid.SnapDeltaRelative(camera, _worldDeltaMovement);
                                                 break;
                                             }
                                             default:
@@ -3254,12 +3250,12 @@ namespace RealtimeCSG
                                                 {
                                                     var worldLineOrg = _movePolygonOrigin;
                                                     var worldLineDir = _movePolygonDirection;
-                                                    _worldDeltaMovement = RealtimeCSG.CSGGrid.SnapDeltaToRayGrid(new Ray(worldLineOrg, worldLineDir), _worldDeltaMovement, worldPoints);
+                                                    _worldDeltaMovement = RealtimeCSG.CSGGrid.SnapDeltaToRayGrid(camera, new Ray(worldLineOrg, worldLineDir), _worldDeltaMovement, worldPoints);
                                                 } else
                                                 {
                                                     //for (int i = 0; i < worldPoints.Length; i++)
                                                     //	worldPoints[i] = GeometryUtility.ProjectPointOnPlane(movePlane, worldPoints[i]);// - center));
-                                                    _worldDeltaMovement = RealtimeCSG.CSGGrid.SnapDeltaToGrid(_worldDeltaMovement, worldPoints, snapToSelf: true);
+                                                    _worldDeltaMovement = RealtimeCSG.CSGGrid.SnapDeltaToGrid(camera, _worldDeltaMovement, worldPoints, snapToSelf: true);
                                                 }
                                                 break;
                                             }
@@ -3269,10 +3265,10 @@ namespace RealtimeCSG
                                                 {
                                                     var worldLineOrg = _movePolygonOrigin;
                                                     var worldLineDir = _movePolygonDirection;
-                                                    _worldDeltaMovement = RealtimeCSG.CSGGrid.SnapDeltaToRayRelative(new Ray(worldLineOrg, worldLineDir), _worldDeltaMovement);
+                                                    _worldDeltaMovement = RealtimeCSG.CSGGrid.SnapDeltaToRayRelative(camera, new Ray(worldLineOrg, worldLineDir), _worldDeltaMovement);
                                                 } else
                                                 {
-                                                    _worldDeltaMovement = RealtimeCSG.CSGGrid.SnapDeltaRelative(_worldDeltaMovement);
+                                                    _worldDeltaMovement = RealtimeCSG.CSGGrid.SnapDeltaRelative(camera, _worldDeltaMovement);
                                                 }
                                                 break;
                                             }

@@ -487,7 +487,7 @@ namespace RealtimeCSG
             }
         }
 
-        bool UpdateGrid()
+        bool UpdateGrid(Camera camera)
         {
             var brush			= brushTargets[hoverOnTarget];
 
@@ -508,14 +508,15 @@ namespace RealtimeCSG
             movePlane = GeometryUtility.InverseTransformPlane(brush_transform.worldToLocalMatrix, movePlane);
             movePlane = new CSGPlane(movePlane.normal, zero_point);
             
-            RealtimeCSG.CSGGrid.SetForcedGrid(movePlane);
+            RealtimeCSG.CSGGrid.SetForcedGrid(camera, movePlane);
             return true;
         }
 
-        bool DragTextureCopy()
+        bool DragTextureCopy(SceneView sceneView)
         {
+            var camera = sceneView.camera;
             LegacyBrushIntersection intersection;
-            if (SceneQueryUtility.FindWorldIntersection(Event.current.mousePosition, out intersection))
+            if (SceneQueryUtility.FindWorldIntersection(camera, Event.current.mousePosition, out intersection))
             {
                 if (lastSelectedSurface != null && (lastSelectedSurface.brush != intersection.brush || lastSelectedSurface.surfaceIndex != intersection.surfaceIndex))
                 {
@@ -533,10 +534,11 @@ namespace RealtimeCSG
             return true;
         }
 
-        bool DragSurfaceSelect()
+        bool DragSurfaceSelect(SceneView sceneView)
         {
+            var camera = sceneView.camera;
             LegacyBrushIntersection intersection;
-            if (SceneQueryUtility.FindWorldIntersection(Event.current.mousePosition, out intersection))
+            if (SceneQueryUtility.FindWorldIntersection(camera, Event.current.mousePosition, out intersection))
             {
                 if (IsSelected(intersection))
                 {
@@ -564,7 +566,7 @@ namespace RealtimeCSG
             return true;
         }
 
-        bool DragTranslateTextureCoordinates()
+        bool DragTranslateTextureCoordinates(SceneView sceneView)
         {
             if (hoverOnTarget == -1 || hoverOnSurfaceIndex == -1)
             {
@@ -603,7 +605,8 @@ namespace RealtimeCSG
                 return true;
             }
 
-            if (!SceneQueryUtility.FindSurfaceIntersection(brush, modelTransformation, hoverOnSurfaceIndex, Event.current.mousePosition,
+            var camera = sceneView.camera;
+            if (!SceneQueryUtility.FindSurfaceIntersection(camera, brush, modelTransformation, hoverOnSurfaceIndex, Event.current.mousePosition,
                                                             out surfaceIntersection))
             {
                 return true;
@@ -631,7 +634,7 @@ namespace RealtimeCSG
             return true;
         }
 
-        bool DragRotateTextureCoordinates()
+        bool DragRotateTextureCoordinates(SceneView sceneView)
         {
             if (hoverOnTarget == -1 || hoverOnSurfaceIndex == -1)
                 return false;
@@ -656,10 +659,11 @@ namespace RealtimeCSG
             var hoverSurfaceState	= this.surfaceStates[this.hoverOnTarget];
             var backupTexGen		= hoverSurfaceState.backupTexGens[hoverOnTexGenIndex];
 
+            var camera = sceneView.camera;
             LegacySurfaceIntersection surfaceIntersection;
             var selectedSurfaces = GetSelectedSurfaces();
             if (selectedSurfaces.Length == 0 ||
-                !SceneQueryUtility.FindSurfaceIntersection(brush, modelTransformation, hoverOnSurfaceIndex, Event.current.mousePosition, 
+                !SceneQueryUtility.FindSurfaceIntersection(camera, brush, modelTransformation, hoverOnSurfaceIndex, Event.current.mousePosition, 
                                                             out surfaceIntersection) ||
                 !rotationCircle.UpdateRadius(backupTexGen, surfaceIntersection.worldIntersection))
                 return true;
@@ -946,6 +950,8 @@ namespace RealtimeCSG
 
         public void HandleEvents(SceneView sceneView, Rect sceneRect)
         {
+            var camera = sceneView.camera;
+
             var originalEventType = Event.current.type;
             if      (originalEventType == EventType.MouseMove) { mouseIsDragging = false; }
             else if (originalEventType == EventType.MouseDown) { mouseIsDragging = false; mouseIsDown = true; prevMousePos = Event.current.mousePosition; }
@@ -979,14 +985,14 @@ namespace RealtimeCSG
                         if (guiArea.Contains(Event.current.mousePosition))
                             break;
 
-                        if (SceneQueryUtility.FindUnityWorldIntersection(Event.current.mousePosition, out gameObject))
+                        if (SceneQueryUtility.FindUnityWorldIntersection(camera, Event.current.mousePosition, out gameObject))
                         {
                             if (gameObject == null &&
                                 Event.current.type == EventType.MouseUp)
                             {
                                 SelectionUtility.DeselectAll();
                             } else
-                                SelectionUtility.DoSelectionClick();
+                                SelectionUtility.DoSelectionClick(sceneView);
                             break;
                         }
 
@@ -1125,15 +1131,14 @@ namespace RealtimeCSG
                     case EventType.MouseMove:
                     {
                         if (currentControl != -1 ||
-                            Camera.current == null || !Camera.current.pixelRect.Contains(Event.current.mousePosition))
+                            camera == null || !camera.pixelRect.Contains(Event.current.mousePosition))
                             return;
                          
                         var world_ray		= HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
                         var ray_start		= world_ray.origin;
-                        var ray_vector		= world_ray.direction * Camera.current.farClipPlane;
+                        var ray_vector		= world_ray.direction * camera.farClipPlane;
                         var ray_end			= ray_start + ray_vector;
                             
-                        var sceneView		= SceneView.currentDrawingSceneView;
                         var wireframeShown	= RealtimeCSG.CSGSettings.IsWireframeShown(sceneView);
 
                         BrushIntersection intersection = null;
@@ -1153,7 +1158,7 @@ namespace RealtimeCSG
                         UpdateMouseCursor();
 
                         if (currentControl != -1 ||
-                            Camera.current == null || !Camera.current.pixelRect.Contains(Event.current.mousePosition))
+                            camera == null || !camera.pixelRect.Contains(Event.current.mousePosition))
                             return;
                         
                         var repaint = false;
@@ -1193,11 +1198,10 @@ namespace RealtimeCSG
 
                             var world_ray		= HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
                             var ray_start		= world_ray.origin;
-                            var ray_vector		= world_ray.direction * Camera.current.farClipPlane;
+                            var ray_vector		= world_ray.direction * camera.farClipPlane;
                             var ray_end			= ray_start + ray_vector;
                             
                             var guiArea			= GetLastSceneGUIRect();
-                            var camera		    = Camera.current;
                             var wireframeShown	= RealtimeCSG.CSGSettings.IsWireframeShown(camera);
                             LegacyBrushIntersection intersection = null;
                             if (!mouseIsDragging &&
@@ -1376,11 +1380,11 @@ namespace RealtimeCSG
 
                                     if (Tools.current == Tool.Move)
                                     {
-                                        DragTranslateTextureCoordinates();
+                                        DragTranslateTextureCoordinates(sceneView);
                                     } else
                                     if (Tools.current == Tool.Rotate)
                                     {
-                                        DragRotateTextureCoordinates();
+                                        DragRotateTextureCoordinates(sceneView);
                                     } else
                                     {
                                         Debug.LogWarning("Please change the Unity Tool to Move or Rotate");
@@ -1430,7 +1434,7 @@ namespace RealtimeCSG
                                                 hoverOnTarget != -1 &&
                                                 hoverOnSurfaceIndex != -1)
                                             {
-                                                rotationCircle.Render();
+                                                rotationCircle.Render(camera);
                                             }
                                         }
                                     } else
@@ -1473,7 +1477,7 @@ namespace RealtimeCSG
                                 firstDrag = false;
                             }
 
-                            DragTextureCopy();
+                            DragTextureCopy(sceneView);
                         }
                         Event.current.Use();
                         break;
@@ -1490,7 +1494,7 @@ namespace RealtimeCSG
                             {							
                                 lastSelectedSurface = null;
                             } else
-                                DragTextureCopy();
+                                DragTextureCopy(sceneView);
                         }
                     
                         if (!mouseIsDragging)
@@ -1529,7 +1533,7 @@ namespace RealtimeCSG
                         if (dragMode == DragMode.SurfaceSelectAdd ||
                             dragMode == DragMode.SurfaceSelectRemove ||
                             dragMode == DragMode.SurfaceSelectToggle)
-                            DragSurfaceSelect();
+                            DragSurfaceSelect(sceneView);
                         Event.current.Use();
                         break;
                     }

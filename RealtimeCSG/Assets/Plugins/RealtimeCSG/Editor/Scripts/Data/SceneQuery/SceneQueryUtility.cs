@@ -525,9 +525,9 @@ namespace InternalRealtimeCSG
             return null;
         }
 
-        static GameObject FindFirstWorldIntersection(Vector2 screenPos, Vector3 worldRayStart, Vector3 worldRayEnd, List<GameObject> ignoreGameObjects = null, List<CSGBrush> ignoreBrushes = null)
+        static GameObject FindFirstWorldIntersection(Camera camera, Vector2 screenPos, Vector3 worldRayStart, Vector3 worldRayEnd, List<GameObject> ignoreGameObjects = null, List<CSGBrush> ignoreBrushes = null)
         {
-            var wireframeShown = CSGSettings.IsWireframeShown(Camera.current);
+            var wireframeShown = CSGSettings.IsWireframeShown(camera);
             return FindFirstWorldIntersection(screenPos, worldRayStart, worldRayEnd, ignoreGameObjects, ignoreBrushes, wireframeShown);
         }
 
@@ -603,10 +603,8 @@ namespace InternalRealtimeCSG
         }
 
 
-        public static bool FindClickWorldIntersection(Vector2 screenPos, out GameObject foundObject)
+        public static bool FindClickWorldIntersection(Camera camera, Vector2 screenPos, out GameObject foundObject)
 		{
-            var camera = Camera.current;
-
 			foundObject = null;
 			if (!camera)
 				return false;
@@ -625,7 +623,7 @@ namespace InternalRealtimeCSG
             _prevCamera = camera;
 
             // Get the first click that is not in our ignore list
-            foundObject = FindFirstWorldIntersection(screenPos, worldRayStart, worldRayEnd, deepClickIgnoreGameObjectList, deepClickIgnoreBrushList);
+            foundObject = FindFirstWorldIntersection(camera, screenPos, worldRayStart, worldRayEnd, deepClickIgnoreGameObjectList, deepClickIgnoreBrushList);
 
             // If we haven't found anything, try getting the first item in our list that's either a brush or a regular gameobject (loop around)
             if (object.Equals(foundObject, null))
@@ -671,7 +669,7 @@ namespace InternalRealtimeCSG
         #endregion
 
         #region FindMeshIntersection
-		public static LegacyBrushIntersection FindMeshIntersection(Vector2 screenPos, CSGBrush[] ignoreBrushes = null, HashSet<Transform> ignoreTransforms = null)
+		public static LegacyBrushIntersection FindMeshIntersection(Camera camera, Vector2 screenPos, CSGBrush[] ignoreBrushes = null, HashSet<Transform> ignoreTransforms = null)
 		{
 			var worldRay = HandleUtility.GUIPointToWorldRay(screenPos);
 			var hit = HandleUtility.RaySnap(worldRay);
@@ -703,7 +701,7 @@ namespace InternalRealtimeCSG
 			}
 
 			LegacyBrushIntersection intersection;
-			if (FindWorldIntersection(worldRay, out intersection, ignoreBrushes: ignoreBrushes))
+			if (FindWorldIntersection(camera, worldRay, out intersection, ignoreBrushes: ignoreBrushes))
 				return intersection;
 
 			var gridPlane = RealtimeCSG.CSGGrid.CurrentGridPlane;
@@ -736,10 +734,8 @@ namespace InternalRealtimeCSG
         #endregion
 
         #region FindUnityWorldIntersection
-		public static bool FindUnityWorldIntersection(Vector2 screenPos, out GameObject foundObject)
+		public static bool FindUnityWorldIntersection(Camera camera, Vector2 screenPos, out GameObject foundObject)
 		{
-			var camera = Camera.current;
-
 			foundObject = null;
 			if (!camera)
 				return false;
@@ -813,16 +809,16 @@ namespace InternalRealtimeCSG
         #endregion
 
         #region FindWorldIntersection
-		public static bool FindWorldIntersection(Vector2 screenPos, out LegacyBrushIntersection intersection, bool ignoreInvisibleSurfaces = true, bool ignoreUnrenderables = true, CSGBrush[] ignoreBrushes = null)
+		public static bool FindWorldIntersection(Camera camera, Vector2 screenPos, out LegacyBrushIntersection intersection, bool ignoreInvisibleSurfaces = true, bool ignoreUnrenderables = true, CSGBrush[] ignoreBrushes = null)
 		{
 			var worldRay = HandleUtility.GUIPointToWorldRay(screenPos);
-			return FindWorldIntersection(worldRay, out intersection, ignoreInvisibleSurfaces, ignoreUnrenderables, ignoreBrushes);
+			return FindWorldIntersection(camera, worldRay, out intersection, ignoreInvisibleSurfaces, ignoreUnrenderables, ignoreBrushes);
 		}
 
-		public static bool FindWorldIntersection(Ray worldRay, out LegacyBrushIntersection intersection, bool ignoreInvisibleSurfaces = true, bool ignoreUnrenderables = true, CSGBrush[] ignoreBrushes = null)
+		public static bool FindWorldIntersection(Camera camera, Ray worldRay, out LegacyBrushIntersection intersection, bool ignoreInvisibleSurfaces = true, bool ignoreUnrenderables = true, CSGBrush[] ignoreBrushes = null)
 		{
 			var rayStart = worldRay.origin;
-			var rayVector = (worldRay.direction * (Camera.current.farClipPlane - Camera.current.nearClipPlane));
+			var rayVector = (worldRay.direction * (camera.farClipPlane - camera.nearClipPlane));
 			var rayEnd = rayStart + rayVector;
 
 			return FindWorldIntersection(rayStart, rayEnd, out intersection, ignoreInvisibleSurfaces, ignoreUnrenderables, ignoreBrushes);
@@ -1038,11 +1034,11 @@ namespace InternalRealtimeCSG
         #endregion
 
         #region FindSurfaceIntersection
-		public static bool FindSurfaceIntersection(CSGBrush brush, Matrix4x4 modelTransformation, Int32 surfaceIndex, Vector2 screenPos, out LegacySurfaceIntersection intersection)
+		public static bool FindSurfaceIntersection(Camera camera, CSGBrush brush, Matrix4x4 modelTransformation, Int32 surfaceIndex, Vector2 screenPos, out LegacySurfaceIntersection intersection)
 		{
 			var worldRay = HandleUtility.GUIPointToWorldRay(screenPos);
 			var rayStart = worldRay.origin;
-			var rayVector = (worldRay.direction * (Camera.current.farClipPlane - Camera.current.nearClipPlane));
+			var rayVector = (worldRay.direction * (camera.farClipPlane - camera.nearClipPlane));
 			var rayEnd = rayStart + rayVector;
 
 			return FindSurfaceIntersection(brush, modelTransformation, surfaceIndex, rayStart, rayEnd, out intersection);
