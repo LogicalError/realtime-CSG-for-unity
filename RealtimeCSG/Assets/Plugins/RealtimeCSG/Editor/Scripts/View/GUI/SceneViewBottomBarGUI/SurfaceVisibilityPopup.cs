@@ -142,7 +142,7 @@ namespace RealtimeCSG
 			}
 		}
 
-		public static void Button(Rect currentRect)
+		public static void Button(SceneView sceneView, Rect currentRect)
 		{
 			if (s_Flags == null)
 				s_Flags = new Flags();
@@ -177,7 +177,7 @@ namespace RealtimeCSG
 			 
 			if (GUI.Button(currentRect, buttonContent, style))
 			{
-				PopupWindow.Show(currentRect, new SurfaceVisibilityPopup(Camera.current));
+				PopupWindow.Show(currentRect, new SurfaceVisibilityPopup(sceneView.camera));
 			}
 		}
 	}

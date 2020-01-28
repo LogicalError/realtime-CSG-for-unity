@@ -646,7 +646,7 @@ namespace RealtimeCSG
 					layoutX -= currentRect.width;
 					currentRect.x		= layoutX;
 
-					SurfaceVisibilityPopup.Button(currentRect);
+					SurfaceVisibilityPopup.Button(sceneView, currentRect);
 					
 					//(x:1267.00, y:2.00, width:165.00, height:16.00)
 					TooltipUtility.SetToolTip(helperSurfacesTooltip, currentRect);
