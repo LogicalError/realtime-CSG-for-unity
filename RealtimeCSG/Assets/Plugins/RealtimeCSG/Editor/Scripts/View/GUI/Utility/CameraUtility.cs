@@ -135,7 +135,7 @@ namespace RealtimeCSG
 		static float		screenHeight;
 		static Matrix4x4	worldToScreenPointMatrix;
 		static Matrix4x4	localToGUIPointMatrix;
-		static Camera       prevCamera;
+		//static Camera       prevCamera;
 
 		static void UpdateCameraValues(Camera camera, SceneView sceneview)
 		{
@@ -177,7 +177,7 @@ namespace RealtimeCSG
 		{
 			var camera		= sceneview.camera;
 			UpdateCameraValues(camera, sceneview);
-			prevCamera = camera;
+			//prevCamera = camera;
 		}
 
 		public static float DistanceToLine(CSGPlane cameraPlane, Vector2 mousePoint, Vector3 point1, Vector3 point2)

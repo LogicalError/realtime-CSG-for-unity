@@ -352,7 +352,7 @@ namespace RealtimeCSG
 			}
 		}
 
-#if !UNITY_2018_4_OR_NEWER
+#if !UNITY_2018_4_OR_NEWER && !UNITY_2019_1_OR_NEWER
         [PreferenceItem("CSG Keys")]
 #endif
         public static void PreferenceWindow()

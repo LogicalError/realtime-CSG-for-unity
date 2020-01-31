@@ -8,7 +8,7 @@ namespace RealtimeCSG
 {
     internal class CSGOptionsPreferenceWindow
     {
-#if !UNITY_2018_4_OR_NEWER
+#if !UNITY_2018_4_OR_NEWER && !UNITY_2019_1_OR_NEWER
         [PreferenceItem("CSG Options")]
 #endif
         public static void PreferenceWindow()
@@ -43,7 +43,7 @@ namespace RealtimeCSG
         }
     }
 
-#if UNITY_2018_4_OR_NEWER
+#if !UNITY_2018_4_OR_NEWER && !UNITY_2019_1_OR_NEWER
     // Register a SettingsProvider using IMGUI for the drawing framework:
     static class RealtimeCSGOptionsIMGUIRegister
     {

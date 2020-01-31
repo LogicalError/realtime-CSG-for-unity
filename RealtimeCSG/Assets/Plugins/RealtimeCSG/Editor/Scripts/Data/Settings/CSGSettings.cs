@@ -70,7 +70,7 @@ namespace RealtimeCSG
 
         internal static bool IsWireframeShown(SceneView sceneView)
         {
-            return IsWireframeShown(sceneView?.camera);
+            return IsWireframeShown(sceneView ? null : sceneView.camera);
         }
 
         internal static bool IsWireframeShown(Camera camera)
@@ -353,7 +353,7 @@ namespace RealtimeCSG
             for (int i = 0; i < SceneView.sceneViews.Count; i++)
             {
                 var sceneView = SceneView.sceneViews[i] as SceneView;
-                var camera = sceneView?.camera;
+                var camera = sceneView ? null : sceneView.camera;
                 if (!camera || string.IsNullOrEmpty(camera.name))
                     continue;
                 knownNames.Add(camera.name);
@@ -378,7 +378,7 @@ namespace RealtimeCSG
             for (int i = 0; i < sceneViews.Count; i++)
             {
                 var sceneView = sceneViews[i];
-                var camera = sceneView?.camera;
+                var camera = sceneView ? null : sceneView.camera;
                 if (!camera)
                     continue;
 
@@ -395,7 +395,7 @@ namespace RealtimeCSG
             for (int i = 0; i < sceneViews.Count; i++)
             {
                 var sceneView = sceneViews[i];
-                var camera = sceneView?.camera;
+                var camera = sceneView ? null : sceneView.camera;
                 if (!camera)
                     continue;
                 if (string.IsNullOrEmpty(camera.name) || foundNames.Contains(camera.name))
