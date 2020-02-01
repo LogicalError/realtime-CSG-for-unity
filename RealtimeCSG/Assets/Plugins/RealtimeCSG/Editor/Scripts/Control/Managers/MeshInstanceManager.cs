@@ -510,8 +510,13 @@ namespace InternalRealtimeCSG
 
 				var meshInstances = SceneQueryUtility.GetAllComponentsInScene<GeneratedMeshInstance>(scene);
 				for (int m = 0; m < meshInstances.Count; m++)
-				{
-					meshInstances[m].hideFlags = HideFlags.None;
+                {
+                    var meshInstanceTransform = meshInstances[m].transform;
+                    var modelTransform = meshInstanceTransform ? meshInstanceTransform.parent ? meshInstanceTransform.parent.parent : null : null;
+                    var model = modelTransform ? modelTransform.GetComponent<CSGModel>() : null;
+                    if (model && !ModelTraits.IsModelEditable(model))
+                        continue;
+                    meshInstances[m].hideFlags = HideFlags.None;
 					var gameObject = meshInstances[m].gameObject;
                     GameObjectExtensions.SanitizeGameObject(gameObject);
                     GameObjectExtensions.TryDestroy(gameObject);

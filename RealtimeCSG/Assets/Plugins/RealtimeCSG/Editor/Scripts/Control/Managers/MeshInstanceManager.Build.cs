@@ -213,6 +213,8 @@ namespace InternalRealtimeCSG
                 var sceneModels = SceneQueryUtility.GetAllComponentsInScene<CSGModel>(scene);
                 for (int i = 0; i < sceneModels.Count; i++)
                 {
+                    if (!ModelTraits.IsModelEditable(sceneModels[i]))
+                        continue;
                     var selfTransform = sceneModels[i].transform;
                     var transforms = selfTransform.GetComponentsInChildren<Transform>();
                     foreach (var generateMeshesTransform in transforms)
