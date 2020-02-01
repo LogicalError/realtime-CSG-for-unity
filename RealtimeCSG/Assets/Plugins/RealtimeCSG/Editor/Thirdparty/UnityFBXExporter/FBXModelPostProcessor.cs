@@ -41,7 +41,7 @@ namespace UnityFBXExporter
 			modelImporter.generateSecondaryUV = true;
 			modelImporter.addCollider = false;
 #if UNITY_2019_3_OR_NEWER
-            modelImporter.materialImportMode = ModelImporterMaterialImportMode.LegacyImport;
+            modelImporter.materialImportMode = ModelImporterMaterialImportMode.ImportStandard;
 #else
             modelImporter.importMaterials = hasMaterials;
 #endif

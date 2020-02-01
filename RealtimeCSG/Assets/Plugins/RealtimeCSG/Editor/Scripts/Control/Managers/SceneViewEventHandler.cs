@@ -19,7 +19,8 @@ namespace RealtimeCSG
 
 		internal static void OnScene(SceneView sceneView)
 		{
-			if (!RealtimeCSG.CSGSettings.EnableRealtimeCSG)
+            CSGSettings.RegisterSceneView(sceneView);
+            if (!RealtimeCSG.CSGSettings.EnableRealtimeCSG)
 				return;
 
 			if (EditorApplication.isPlayingOrWillChangePlaymode)
