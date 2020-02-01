@@ -9,7 +9,7 @@ namespace RealtimeCSG.Foundation
 {
 	sealed partial class CSGManager
 	{
-		internal const string NativePluginName = "RealtimeCSG[" + Versioning.PluginVersion + "]";
+		internal const string NativePluginName = "RealtimeCSG[" + Versioning.PluginDLLVersion + "]";
 
 		[DllImport(CSGManager.NativePluginName, CallingConvention = CallingConvention.Cdecl)] private static extern bool HasBeenCompiledInDebugMode();
 
