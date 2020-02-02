@@ -15,14 +15,6 @@ namespace RealtimeCSG
 		{
 			MeshInstanceManager.Reset();
 
-			for (var i = 0; i < Models.Length; i++)
-            {
-                if (!ModelTraits.IsModelEditable(Models[i]))
-                    continue;
-                var model = Models[i];
-				model.generatedMeshes = null;
-			}
-
 			MeshInstanceManager.DestroyAllMeshInstances();
 		}
 		#endregion
