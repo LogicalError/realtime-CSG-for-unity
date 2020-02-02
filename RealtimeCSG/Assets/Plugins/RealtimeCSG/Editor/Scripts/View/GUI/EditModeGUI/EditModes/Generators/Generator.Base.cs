@@ -749,7 +749,8 @@ namespace RealtimeCSG
 				SurfaceUtility.TranslateSurfacesInWorldSpace(generatedBrushes, -center);
                 operationGameObject.transform.position += center;*/
 				ControlMeshUtility.RebuildShapes(generatedBrushes);
-                var model = operationGameObject.GetComponentInParent<CSGModel>();
+                var models = operationGameObject.GetComponentsInParent<CSGModel>(includeInactive: true);
+                var model = models.Length == 0 ? null : models[0];
                 model.forceUpdate = true;
 
                 InternalCSGModelManager.CheckForChanges(forceHierarchyUpdate: true);

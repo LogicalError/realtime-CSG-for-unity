@@ -215,7 +215,8 @@ namespace RealtimeCSG
 
 
 								// Remove models that we may have selected when we should be selecting it's brushes
-								var model = obj.GetComponentInParent<CSGModel>();
+								var models = obj.GetComponentsInParent<CSGModel>(includeInactive: true);
+                                var model = models.Length == 0 ? null : models[0];
 								if (model != null)
 								{
 									var modelObj = model.gameObject;
