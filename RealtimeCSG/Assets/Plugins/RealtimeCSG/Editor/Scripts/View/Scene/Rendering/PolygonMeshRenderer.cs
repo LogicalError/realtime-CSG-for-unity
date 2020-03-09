@@ -162,7 +162,7 @@ namespace RealtimeCSG
 				mesh.colors = newColors;
 				mesh.SetIndices(newIndices, MeshTopology.Triangles, 0, calculateBounds: false);
 				mesh.RecalculateBounds();
-				mesh.UploadMeshData(true);
+				mesh.UploadMeshData(false);
 			}
 			
 			public void Draw()

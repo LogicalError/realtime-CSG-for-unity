@@ -100,7 +100,7 @@ namespace RealtimeCSG
 					pointMesh.colors   = newPointColors;
 					pointMesh.SetIndices(newPointIndices, MeshTopology.Triangles, 0, calculateBounds: false);
 					pointMesh.RecalculateBounds();
-					pointMesh.UploadMeshData(true);
+					pointMesh.UploadMeshData(false);
 				}
 				
 				if (lineIndexCount > 0)
@@ -109,7 +109,7 @@ namespace RealtimeCSG
 					lineMesh.colors   = newLineColors;
 					lineMesh.SetIndices(newLineIndices, MeshTopology.Lines, 0, calculateBounds: false);
 					lineMesh.RecalculateBounds();
-					lineMesh.UploadMeshData(true);
+					lineMesh.UploadMeshData(false);
 				}
 			}
 			
