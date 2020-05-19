@@ -11,3 +11,7 @@ https://www.realtimecsg.com/
 
 
 If you use the source code, especially when it comes to finished projects, please let us know!
+
+
+Note:
+Copy the Plugins directory in your Assets folder
