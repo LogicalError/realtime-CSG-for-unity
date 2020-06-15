@@ -400,18 +400,8 @@ namespace InternalRealtimeCSG
                     meshInstance.RenderSurfaceType != RenderSurfaceType.Hidden;
 		}
 
-		public static void RenderHelperSurfaces(SceneView sceneView)
+		public static void UpdateHelperSurfaces()
 		{
-			var allHelperSurfaces = (CSGSettings.VisibleHelperSurfaces & ~HelperSurfaceFlags.ShowVisibleSurfaces);
-			if (allHelperSurfaces == (HelperSurfaceFlags)0)
-			{
-				CSGSettings.VisibleHelperSurfaces = CSGSettings.DefaultHelperSurfaceFlags;
-				return;
-			}
-
-			var camera			= sceneView.camera;			
-			var showWireframe	= RealtimeCSG.CSGSettings.IsWireframeShown(sceneView);
-				
 			var models			= InternalCSGModelManager.Models;
 			for (var i = 0; i < models.Length; i++)
 			{
@@ -420,7 +410,8 @@ namespace InternalRealtimeCSG
 					continue;
 
 				var container = model.generatedMeshes;
-                if (container.owner != model)
+                if (container.owner != model ||
+					!container.gameObject)
                     continue;
 
 				if (!model.generatedMeshes)
@@ -443,28 +434,31 @@ namespace InternalRealtimeCSG
 				}
 
 
-				//var modelDoesNotRender = !model.IsRenderable;
-				
-				var matrix = container.transform.localToWorldMatrix;
-				foreach (var meshInstance in container.HelperSurfaces)
+				foreach (var helperSurface in container.HelperSurfaces)
 				{
-					var renderSurfaceType = meshInstance.RenderSurfaceType;
+					var renderSurfaceType = helperSurface.RenderSurfaceType;
 
-					if (!ShouldRenderHelperSurface(renderSurfaceType))
-						continue;
-
-					var material = MaterialUtility.GetSurfaceMaterial(renderSurfaceType);
-					if (!material)
-						continue;
-
-                    if (!meshInstance.SharedMesh)
-                        continue;
-
-                    if (!meshInstance.HasGeneratedNormals)
+					if (!helperSurface.SharedMesh ||
+						helperSurface.SharedMesh.vertexCount == 0 ||
+						!ShouldRenderHelperSurface(renderSurfaceType))
 					{
-						meshInstance.SharedMesh.RecalculateNormals();
-						meshInstance.HasGeneratedNormals = true;
+						if (helperSurface.GameObject)
+							helperSurface.GameObject.SetActive(false);
+						continue;
 					}
+
+					if (!helperSurface.GameObject || !helperSurface.MeshFilter || !helperSurface.MeshRenderer ||
+						helperSurface.MeshFilter.sharedMesh != helperSurface.SharedMesh)
+						MeshInstanceManager.UpdateHelperSurfaceGameObject(container, helperSurface);
+
+                    if (!helperSurface.HasGeneratedNormals)
+					{
+						helperSurface.SharedMesh.RecalculateNormals();
+						helperSurface.HasGeneratedNormals = true;
+					}
+
+					helperSurface.GameObject.SetActive(true);
+					/*
 
 					if (!showWireframe)
 					{
@@ -483,7 +477,7 @@ namespace InternalRealtimeCSG
 										  properties: null,
 										  castShadows: false,
 										  receiveShadows: false);
-					}
+					}*/
 				}
 			}
 		}
@@ -730,6 +724,32 @@ namespace InternalRealtimeCSG
 
 			Initialize(generatedMeshes, meshInstance);
             return meshInstance;
+		}
+
+		public static void UpdateHelperSurfaceGameObject(GeneratedMeshes container, HelperSurfaceDescription helperSurfaceDescription)
+        {
+			if (!helperSurfaceDescription.GameObject ||
+				!helperSurfaceDescription.MeshFilter ||
+				!helperSurfaceDescription.MeshRenderer)
+			{ 
+				if (helperSurfaceDescription.GameObject) GameObjectExtensions.Destroy(helperSurfaceDescription.GameObject);
+
+				helperSurfaceDescription.GameObject = new GameObject(HelperMeshInstanceName);
+				helperSurfaceDescription.GameObject.SetActive(false);
+				helperSurfaceDescription.GameObject.transform.SetParent(container.transform, true);
+				helperSurfaceDescription.GameObject.transform.localPosition = Vector3.zero;
+				helperSurfaceDescription.GameObject.transform.localRotation = Quaternion.identity;
+				helperSurfaceDescription.GameObject.transform.localScale = Vector3.one;
+				helperSurfaceDescription.GameObject.hideFlags = HideFlags.DontSave;
+				helperSurfaceDescription.MeshFilter		= helperSurfaceDescription.GameObject.AddComponent<MeshFilter>();
+				helperSurfaceDescription.MeshRenderer	= helperSurfaceDescription.GameObject.AddComponent<MeshRenderer>();
+			}
+			if (helperSurfaceDescription.MeshFilter.sharedMesh != helperSurfaceDescription.SharedMesh)
+				helperSurfaceDescription.MeshFilter.sharedMesh = helperSurfaceDescription.SharedMesh;
+
+			var sharedMaterial = MaterialUtility.GetSurfaceMaterial(helperSurfaceDescription.RenderSurfaceType);
+			if (helperSurfaceDescription.MeshRenderer.sharedMaterial != sharedMaterial)
+				helperSurfaceDescription.MeshRenderer.sharedMaterial = sharedMaterial;
 		}
 
 		public static HelperSurfaceDescription CreateHelperSurfaceDescription(GeneratedMeshes container, ModelSettingsFlags modelSettings, GeneratedMeshDescription meshDescription, RenderSurfaceType renderSurfaceType)
@@ -1510,6 +1530,8 @@ namespace InternalRealtimeCSG
 				RefreshModelCounter++;
 			else
 				RefreshModelCounter = 0;
+
+			UpdateHelperSurfaces();
 		}
 
 		private static void AssignLayerToChildren(GameObject gameObject)
@@ -1669,7 +1691,8 @@ namespace InternalRealtimeCSG
 				var meshInstance			= meshInstanceTransform.GetComponent<GeneratedMeshInstance>();
 				if (!meshInstance)
 				{
-                    if (meshInstanceTransform.gameObject)
+                    if (meshInstanceTransform.gameObject &&
+						meshInstanceTransform.hideFlags != HideFlags.DontSave)
                         GameObjectExtensions.Destroy(meshInstanceTransform.gameObject);
                     continue;
 				}
@@ -1749,7 +1772,10 @@ namespace InternalRealtimeCSG
 			var key = MeshInstanceKey.GenerateKey(meshDescription);
 			HelperSurfaceDescription instance = container.GetHelperSurface(key);
 			if (instance != null)
+			{
+				instance.RenderSurfaceType = renderSurfaceType;
 				return instance;
+			}
 
 			return CreateHelperSurfaceDescription(container, modelSettings, meshDescription, renderSurfaceType);
 		}
@@ -1815,8 +1841,7 @@ namespace InternalRealtimeCSG
 #region UpdateContainerComponents
 		static readonly List<GameObject> __notfoundGameObjects		= new List<GameObject>();
 		public static List<GameObject> FindUnusedMeshInstances(GeneratedMeshes                    container, 
-													           HashSet<GeneratedMeshInstance>     foundInstances,
-													           HashSet<HelperSurfaceDescription>  foundHelperSurfaces)
+													           HashSet<GeneratedMeshInstance>     foundInstances)
 		{
 			if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
                 return null;

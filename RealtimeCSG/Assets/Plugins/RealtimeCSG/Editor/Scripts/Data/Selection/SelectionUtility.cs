@@ -379,11 +379,11 @@ namespace RealtimeCSG
 
 
 #region DoSelectionClick
-		public static void DoSelectionClick(SceneView sceneView)
+		public static void DoSelectionClick(SceneView sceneView, bool ignoreInvisibleSurfaces = true)
 		{
             var camera = sceneView.camera;
 			GameObject gameobject;
-			SceneQueryUtility.FindClickWorldIntersection(camera, Event.current.mousePosition, out gameobject);
+			SceneQueryUtility.FindClickWorldIntersection(camera, Event.current.mousePosition, out gameobject, ignoreInvisibleSurfaces);
             
 			gameobject = SceneQueryUtility.FindSelectionBase(gameobject);
 

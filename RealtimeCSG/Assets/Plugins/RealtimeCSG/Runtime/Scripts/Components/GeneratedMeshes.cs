@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using System.Collections.Generic;
 using RealtimeCSG.Components;
@@ -30,8 +30,11 @@ namespace InternalRealtimeCSG
 		public RenderSurfaceType		RenderSurfaceType = (RenderSurfaceType)999;
 		public bool						HasGeneratedNormals;
 		public GeneratedMeshDescription MeshDescription;
+        public GameObject   GameObject;
+        public MeshFilter   MeshFilter;
+        public MeshRenderer MeshRenderer; 
 
-		public MeshInstanceKey GenerateKey()
+		public MeshInstanceKey GenerateKey() 
 		{
 			return MeshInstanceKey.GenerateKey(MeshDescription);
 		}
@@ -47,7 +50,15 @@ namespace InternalRealtimeCSG
 				return false;
 			return true;
 		}
-	}
+
+        public void Destroy()
+        {
+            GameObjectExtensions.Destroy(GameObject);
+            GameObject = null;
+            MeshFilter = null;
+            MeshRenderer = null;
+        }
+    }
 #endif
 
     [DisallowMultipleComponent]
@@ -98,6 +109,7 @@ namespace InternalRealtimeCSG
                 if (helperSurfaces[i].SharedMesh &&
                     helperSurfaces[i].GenerateKey() == key)
                 {
+                    helperSurfaces[i].Destroy();
                     helperSurfaces[i] = instance;
                     return;
                 }
@@ -157,6 +169,11 @@ namespace InternalRealtimeCSG
                 }
                 if (!differenceFound)
                     return;
+            }
+            if (helperSurfaces != null)
+            {
+                foreach (var helperSurface in helperSurfaces)
+                    helperSurface.Destroy();
             }
             if (foundInstances.Count == 0)
             {

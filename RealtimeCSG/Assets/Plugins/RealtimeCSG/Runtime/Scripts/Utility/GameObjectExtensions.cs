@@ -20,6 +20,14 @@ public static class GameObjectExtensions
 
     const string kUnableToDelete = "<unable to delete>";
 
+    public static void Destroy(UnityEngine.Object obj)
+    {
+        if (!obj)
+            return;
+
+        UnityEngine.Object.DestroyImmediate(obj);
+    }
+
     public static void Destroy(GameObject gameObject)
     {
         if (!gameObject)
