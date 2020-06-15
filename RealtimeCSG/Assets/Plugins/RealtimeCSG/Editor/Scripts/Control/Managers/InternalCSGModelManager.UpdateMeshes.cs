@@ -104,9 +104,12 @@ namespace RealtimeCSG
 				else query = renderOnlyTypes;
 			} else
 			{
-				if      ( model.IsTrigger	) query = triggerMeshTypes;
-				else if (!model.IsRenderable) query = colliderMeshTypes;
-				else                          query = renderAndColliderMeshTypes;
+				if (!model.IsRenderable)
+				{
+					if (model.IsTrigger) query = triggerMeshTypes;
+					else			    query = colliderMeshTypes;
+				} else 
+					query = renderAndColliderMeshTypes;
 			}
 			return query;
 		}
