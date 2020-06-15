@@ -370,8 +370,8 @@ namespace RealtimeCSG
             if (!IsModelEditable(model))
                 return false;
 
-            var collidable			= (model.Settings & ModelSettingsFlags.NoCollider) != ModelSettingsFlags.NoCollider;
-			var isTrigger			= collidable && (model.Settings & ModelSettingsFlags.IsTrigger) == ModelSettingsFlags.IsTrigger;
+            var collidable			= model.HaveCollider;
+			var isTrigger			= collidable && model.IsTrigger;
 			var ownerStaticFlags	= GameObjectUtility.GetStaticEditorFlags(model.gameObject);
 			var batchingstatic		= (ownerStaticFlags & StaticEditorFlags.BatchingStatic) == StaticEditorFlags.BatchingStatic;
 

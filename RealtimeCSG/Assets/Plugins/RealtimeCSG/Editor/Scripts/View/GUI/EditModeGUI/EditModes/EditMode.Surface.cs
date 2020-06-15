@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -1207,7 +1207,7 @@ namespace RealtimeCSG
                             if (!mouseIsDragging &&
                                 !guiArea.Contains(Event.current.mousePosition) &&
                                 SceneQueryUtility.FindWorldIntersection(ray_start, ray_end, 
-                                                                        out intersection, ignoreInvisibleSurfaces: true, 
+                                                                        out intersection, ignoreInvisibleSurfaces: false, 
                                                                         ignoreUnrenderables: !wireframeShown))
                             {
                                 var targets = brushTargets;

@@ -51,7 +51,7 @@ namespace RealtimeCSG
 			EditModeManager.InitSceneGUI(sceneView);
 
 			if (Event.current.type == EventType.Repaint)
-				MeshInstanceManager.RenderHelperSurfaces(sceneView);
+				MeshInstanceManager.UpdateHelperSurfaces();
 
 			if (Event.current.type == EventType.Repaint)
 			{

@@ -128,10 +128,10 @@ namespace RealtimeCSG.Components
 		public const float	MaxAreaError     = 1.000f;
 
 		// Note: contents of UnityEditor.UnwrapParam, which is not marked serializable :(
-		public float			angleError				= 0.08f;
-		public float			areaError				= 0.15f;
-		public float			hardAngle				= 88.0f;
-		public float			packMargin				= 4.0f / 1024.0f;
+		public float			angleError				= 1.00f;//0.08f;
+		public float			areaError				= 1.00f;//0.15f;
+		public float			hardAngle				= 60.0f;//88.0f;
+		public float			packMargin				= 20.0f;//4.0f / 1024.0f;
 		
 		public float			scaleInLightmap			= 1.0f;
 		public float			autoUVMaxDistance		= 0.5f;
