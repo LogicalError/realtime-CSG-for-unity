@@ -867,7 +867,7 @@ namespace RealtimeCSG
                                         EditorGUI.BeginChangeCheck();
                                         {
                                             EditorGUI.showMixedValue = !PackMargin.HasValue;
-                                            packMargin = EditorGUILayout.FloatField(PackMarginContent, packMargin * 1024.0f) / 1024.0f;
+                                            packMargin = EditorGUILayout.FloatField(PackMarginContent, packMargin);
                                         }
                                         if (EditorGUI.EndChangeCheck())
                                         {
@@ -881,7 +881,12 @@ namespace RealtimeCSG
                                         }
                                     }
                                     UnityEditor.UnwrapParam uvGenerationSettings;
-                                    UnityEditor.UnwrapParam.SetDefaults(out uvGenerationSettings);
+                                    //UnityEditor.UnwrapParam.SetDefaults(out uvGenerationSettings);
+                                    // Unity defaults are horrible - Stolen from ComponentUpgrader.cs
+                                    uvGenerationSettings.angleError = 1;    //uvGenerationSettings.angleError;
+                                    uvGenerationSettings.areaError = 1;     //uvGenerationSettings.areaError;
+                                    uvGenerationSettings.hardAngle = 60;    //uvGenerationSettings.hardAngle;
+                                    uvGenerationSettings.packMargin = 20;   //uvGenerationSettings.packMargin;
 
                                     if (!AngleError.HasValue || AngleError.Value	!= uvGenerationSettings.angleError ||
                                         !AreaError .HasValue || AreaError .Value	!= uvGenerationSettings.areaError ||
