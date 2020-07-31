@@ -117,7 +117,17 @@ namespace InternalRealtimeCSG
                     child.gameObject.hideFlags = HideFlags.None;
                     child.transform.hideFlags = HideFlags.None;
                     if (child.SharedMesh && !UsesLightmapUVs(model))
+                    {
                         MeshUtility.Optimize(child.SharedMesh);
+#if UNITY_EDITOR
+                        var currentMeshCollider = child.gameObject.GetComponent<MeshCollider>();
+                        if (currentMeshCollider && currentMeshCollider.enabled)
+                        {
+                            currentMeshCollider.enabled = false;
+                            currentMeshCollider.enabled = true;
+                        }
+#endif
+                    }
                 }
 
                 UnityEngine.Object.DestroyImmediate(meshContainer);
