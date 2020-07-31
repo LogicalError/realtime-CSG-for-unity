@@ -867,7 +867,7 @@ namespace RealtimeCSG
                                         EditorGUI.BeginChangeCheck();
                                         {
                                             EditorGUI.showMixedValue = !PackMargin.HasValue;
-                                            packMargin = EditorGUILayout.FloatField(PackMarginContent, packMargin * 1024.0f) / 1024.0f;
+                                            packMargin = EditorGUILayout.FloatField(PackMarginContent, (int)(packMargin * 8192.0f) / 8192.0f);
                                         }
                                         if (EditorGUI.EndChangeCheck())
                                         {
