@@ -39,25 +39,29 @@ namespace RealtimeCSG
 				return true;
 			}
 
-			if (!ignoreSurfaceFlags)
+			if (ignoreSurfaceFlags)
 			{
-				var isRenderable = (texGenFlags[texGenIndex] & TexGenFlags.NoRender) != TexGenFlags.NoRender;
-				if (!isRenderable && !CSGSettings.ShowHiddenSurfaces)
-					return true;
+				var isNotRenderable = (texGenFlags[texGenIndex] & TexGenFlags.NoRender) == TexGenFlags.NoRender;
+				if (!isNotRenderable)
+					return false;
+
+				if (isNotRenderable && CSGSettings.ShowHiddenSurfaces)
+					return false;
 
 				var isCollidable = (texGenFlags[texGenIndex] & TexGenFlags.NoCollision) != TexGenFlags.NoCollision;
-				if (!isCollidable)
+				if (isCollidable)
 				{
 					if (isTrigger)
 					{
-						if (!CSGSettings.ShowTriggerSurfaces)
-							return true;
+						if (CSGSettings.ShowTriggerSurfaces)
+							return false;
 					} else
 					{
-						if (!CSGSettings.ShowColliderSurfaces)
-							return true;
+						if (CSGSettings.ShowColliderSurfaces)
+							return false;
 					}
 				}
+				return true;
 			}			
 			return false;
 		}
