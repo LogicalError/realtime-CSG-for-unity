@@ -886,7 +886,7 @@ namespace InternalRealtimeCSG
 					continue;
 
 				var brush = modelIntersection.gameObject.GetComponent<CSGBrush>();
-				if (BrushTraits.IsSurfaceUnselectable(brush, modelIntersection.surfaceIndex, brush.ChildData.Model.IsTrigger, !ignoreInvisibleSurfaces))
+				if (BrushTraits.IsSurfaceUnselectable(brush, modelIntersection.surfaceIndex, brush.ChildData.Model.IsTrigger, ignoreInvisibleSurfaces))
 					continue;
 
 				modelIntersection.brush = brush;
@@ -904,7 +904,7 @@ namespace InternalRealtimeCSG
         #region FindWorldIntersection
         static bool FindWorldIntersection(CSGModel model, Vector3 worldRayStart, Vector3 worldRayEnd, out LegacyBrushIntersection[] intersections, bool ignoreInvisibleSurfaces = true, bool ignoreUnrenderables = true, CSGBrush[] ignoreBrushes = null)
         {
-            intersections = null;
+			intersections = null;
             if (InternalCSGModelManager.External == null ||
                 InternalCSGModelManager.External.RayCastIntoModelMulti == null)
                 return false;
@@ -933,7 +933,7 @@ namespace InternalRealtimeCSG
             {
                 var intersection = modelIntersections[i];
                 var brush = intersection.gameObject.GetComponent<CSGBrush>();
-                if (BrushTraits.IsSurfaceUnselectable(brush, intersection.surfaceIndex, brush.ChildData.Model.IsTrigger, ignoreSurfaceFlags: !ignoreInvisibleSurfaces))
+                if (BrushTraits.IsSurfaceUnselectable(brush, intersection.surfaceIndex, brush.ChildData.Model.IsTrigger, ignoreSurfaceFlags: ignoreInvisibleSurfaces))
                     continue;
 
 				var currentNode = GetTopMostGroupForNode(brush);
@@ -994,7 +994,7 @@ namespace InternalRealtimeCSG
 				{
 					var intersection	= modelIntersections[i];
 					var brush			= intersection.gameObject.GetComponent<CSGBrush>();
-					if (BrushTraits.IsSurfaceUnselectable(brush, intersection.surfaceIndex, brush.ChildData.Model.IsTrigger, ignoreSurfaceFlags: !ignoreInvisibleSurfaces))
+					if (BrushTraits.IsSurfaceUnselectable(brush, intersection.surfaceIndex, brush.ChildData.Model.IsTrigger, ignoreSurfaceFlags: ignoreInvisibleSurfaces))
 						continue;
 					
 					var currentNode = GetTopMostGroupForNode(brush);

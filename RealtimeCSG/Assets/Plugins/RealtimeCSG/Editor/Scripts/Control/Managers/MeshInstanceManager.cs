@@ -850,7 +850,7 @@ namespace InternalRealtimeCSG
 				angleError = Mathf.Clamp(model.angleError, CSGModel.MinAngleError, CSGModel.MaxAngleError),
 				areaError  = Mathf.Clamp(model.areaError, CSGModel.MinAreaError, CSGModel.MaxAreaError),
 				hardAngle  = model.hardAngle,
-				packMargin = model.packMargin
+				packMargin = model.packMargin / 1024.0f
 			};
 
             foreach (var instance in container.MeshInstances)

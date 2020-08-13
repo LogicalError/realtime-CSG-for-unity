@@ -867,7 +867,7 @@ namespace RealtimeCSG
                                         EditorGUI.BeginChangeCheck();
                                         {
                                             EditorGUI.showMixedValue = !PackMargin.HasValue;
-                                            packMargin = EditorGUILayout.FloatField(PackMarginContent, (int)(packMargin * 8192.0f) / 8192.0f);
+                                            packMargin = EditorGUILayout.FloatField(PackMarginContent, (int)(packMargin * 1024.0f) / 1024.0f);
                                         }
                                         if (EditorGUI.EndChangeCheck())
                                         {
@@ -895,7 +895,7 @@ namespace RealtimeCSG
                                                 models[i].angleError	= uvGenerationSettings.angleError;
                                                 models[i].areaError		= uvGenerationSettings.areaError;
                                                 models[i].hardAngle		= uvGenerationSettings.hardAngle;
-                                                models[i].packMargin	= uvGenerationSettings.packMargin;
+                                                models[i].packMargin	= uvGenerationSettings.packMargin * 1024.0f;
                                                 MeshInstanceManager.Refresh(models[i], onlyFastRefreshes: false);
                                             }
                                             GUI.changed = true;
