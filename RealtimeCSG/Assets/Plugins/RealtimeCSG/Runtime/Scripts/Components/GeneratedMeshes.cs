@@ -99,7 +99,7 @@ namespace InternalRealtimeCSG
 
         public void AddHelperSurface(HelperSurfaceDescription instance)
         {
-            if (instance != null)
+            if (instance == null)
                 return;
             if (helperSurfaces == null)
                 return;
