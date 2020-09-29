@@ -303,14 +303,15 @@ namespace RealtimeCSG
 							layoutX += currentRect.width;
 							layoutX ++;
 
-							moveSnapVector.y = Units.DistanceUnitToUnity(distanceUnit, EditorGUI.DoubleField(currentRect, Units.UnityToDistanceUnit(distanceUnit, moveSnapVector.y), textInputStyle));//, MinSnapWidth, MaxSnapWidth));
+							// NOTE: moveSnapVector.y and moveSnapVector.z have accidentally been reversed relatively to unity's coordinate system, so we swap them here
+							moveSnapVector.z = Units.DistanceUnitToUnity(distanceUnit, EditorGUI.DoubleField(currentRect, Units.UnityToDistanceUnit(distanceUnit, moveSnapVector.z), textInputStyle));//, MinSnapWidth, MaxSnapWidth));
 							//(x:247.00, y:3.00, width:70.00, height:16.00)
 								
 
 							currentRect.x		= layoutX;
 							layoutX += currentRect.width;
 
-							moveSnapVector.z = Units.DistanceUnitToUnity(distanceUnit, EditorGUI.DoubleField(currentRect, Units.UnityToDistanceUnit(distanceUnit, moveSnapVector.z), textInputStyle));//, MinSnapWidth, MaxSnapWidth));
+							moveSnapVector.y = Units.DistanceUnitToUnity(distanceUnit, EditorGUI.DoubleField(currentRect, Units.UnityToDistanceUnit(distanceUnit, moveSnapVector.y), textInputStyle));//, MinSnapWidth, MaxSnapWidth));
 							//(x:319.00, y:3.00, width:70.00, height:16.00)
 						}
 						modified = GUI.changed || modified;
