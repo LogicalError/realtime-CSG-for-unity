@@ -17,6 +17,7 @@ namespace RealtimeCSG
             {
                 CSGSettings.ShowTooltips		= EditorGUILayout.ToggleLeft("Show Tool-Tips",						CSGSettings.ShowTooltips);
                 CSGSettings.SnapNonCSGObjects	= EditorGUILayout.ToggleLeft("Snap Non-CSG Objects to the grid",	CSGSettings.SnapNonCSGObjects);
+                CSGSettings.AutoRigidbody       = EditorGUILayout.ToggleLeft("Disable auto add rigidbodies",      CSGSettings.AutoRigidbody);
                 CSGSettings.DefaultPreserveUVs  = EditorGUILayout.ToggleLeft("Preserve UVs (Default)",              CSGSettings.DefaultPreserveUVs);
                 EditorGUILayout.Space();
                 CSGSettings.MaxCircleSides		= EditorGUILayout.IntField("Max Circle Sides",  CSGSettings.MaxCircleSides);
