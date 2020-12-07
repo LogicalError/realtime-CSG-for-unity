@@ -1090,6 +1090,9 @@ namespace RealtimeCSG
 			
 			stairsDepth = Math.Max(0, stairsDepth);
 
+			var parentScale = parentTransform.lossyScale;
+			var parentInverted = (Math.Sign(parentScale.x) * Math.Sign(parentScale.y) * Math.Sign(parentScale.z)) < 0;
+
 			bool success = true;
 			for (int stepIndex = 0; stepIndex < totalSteps; stepIndex++)
 			{
@@ -1137,7 +1140,8 @@ namespace RealtimeCSG
 								
 				var size		= widthSize + heightSize + lengthSize;
 				var position	= (totalSteps == 1) ? (heightPos + lengthPos + brushPosition) : (heightPos + lengthPos);
-
+				if (parentInverted)
+					size *= -1;
 				
 				ControlMesh newControlMesh;
 				Shape		newShape;
@@ -1151,7 +1155,7 @@ namespace RealtimeCSG
 
 				if (!brush.gameObject.activeSelf)
 					brush.gameObject.SetActive(true);
-				
+
 				brush.Shape			= newShape;
 				newControlMesh.Generation = brush.ControlMesh.Generation + 1;
 				brush.ControlMesh	= newControlMesh;

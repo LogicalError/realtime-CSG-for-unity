@@ -1149,8 +1149,8 @@ namespace RealtimeCSG
                         {
                             modifiedHierarchy = true;
                             brush.gameObject.SetActive(true);
-                        }
-						
+						}
+
 						brush.Shape = newShape;
 						brush.ControlMesh = newControlMesh;
 						if (registerUndo)

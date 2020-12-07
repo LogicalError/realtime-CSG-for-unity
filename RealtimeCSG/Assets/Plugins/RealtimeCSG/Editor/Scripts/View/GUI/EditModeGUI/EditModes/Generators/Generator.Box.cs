@@ -293,9 +293,18 @@ namespace RealtimeCSG
 			{
 				return false;
 			}
-						
+
+			var parentScale = parentTransform.lossyScale;
+			var parentInverted = (Math.Sign(parentScale.x) * Math.Sign(parentScale.y) * Math.Sign(parentScale.z)) < 0;
+			if (parentInverted)
+			{
+				ControlMeshUtility.InvertControlMesh(newControlMesh);
+				ControlMeshUtility.InvertShape(newShape);
+			}
+
 			brush.Shape = newShape;
 			brush.ControlMesh = newControlMesh;
+
 			InternalCSGModelManager.ValidateBrush(brush, true);
 			ControlMeshUtility.RebuildShape(brush);
 			return true;
