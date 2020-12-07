@@ -301,7 +301,8 @@ namespace RealtimeCSG
 			{
 				case EventType.ValidateCommand:
 				case EventType.KeyDown:
-				{					
+				{
+					SceneQueryUtility.ClearDeepClick();
 					if (Keys.PerformActionKey.IsKeyPressed() ||
 						Keys.DeleteSelectionKey.IsKeyPressed() ||
 						Keys.CancelActionKey.IsKeyPressed())

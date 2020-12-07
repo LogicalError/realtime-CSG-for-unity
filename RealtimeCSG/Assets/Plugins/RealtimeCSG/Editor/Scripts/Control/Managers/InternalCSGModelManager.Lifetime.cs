@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
@@ -65,11 +65,35 @@ namespace RealtimeCSG
 		#endregion
 
 		#region UndoRedoPerformed
+		internal static bool IgnoreMaterials = false;
 		public static void UndoRedoPerformed()
 		{
 			BrushOutlineManager.ClearOutlines();
 			
 			CheckForChanges(forceHierarchyUpdate: true);
+
+			if (!IgnoreMaterials)
+			{
+				foreach (var brush in Brushes)
+				{
+					try
+					{
+						//brush.EnsureInitialized();
+						if (brush.Shape != null)
+							ShapeUtility.CheckMaterials(brush.Shape);
+					}
+					finally { }
+				}
+				foreach (var brush in Brushes)
+				{
+					try
+					{
+						InternalCSGModelManager.CheckSurfaceModifications(brush, true);
+						//InternalCSGModelManager.ValidateBrush(brush);
+					}
+					finally { }
+				}
+			}
 		}
 		#endregion
 		

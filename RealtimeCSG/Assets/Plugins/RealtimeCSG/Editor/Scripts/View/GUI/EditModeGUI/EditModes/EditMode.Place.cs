@@ -190,8 +190,8 @@ namespace RealtimeCSG
 		[SerializeField] ControlMesh[]	backupControlMeshes			= null;             // brush
 		#endregion
 		
-		public void OnEnableTool()	{ toolIsEnabled		= true;  Tools.hidden = shouldHideTool; ResetTool(); }
-		public void OnDisableTool()	{ toolIsEnabled		= false; Tools.hidden = false; ResetTool(); }		
+		public void OnEnableTool()	{ toolIsEnabled = true;  Tools.hidden = shouldHideTool; ResetTool(); }
+		public void OnDisableTool()	{ toolIsEnabled = false; Tools.hidden = false; ResetTool(); }		
 
 		public void SetTargets(FilteredSelection filteredSelection)
 		{
@@ -424,7 +424,7 @@ namespace RealtimeCSG
 			renderLocalCenterPoints[4] = new Vector3(centerX, centerY, minZ);
 			renderLocalCenterPoints[5] = new Vector3(centerX, centerY, maxZ);
 
-			for (int i=0;i< BoundsUtilities.AABBEdgeIndices.Length; i++)
+			for (int i = 0; i < BoundsUtilities.AABBEdgeIndices.Length; i++)
 			{
 				var index1 = BoundsUtilities.AABBEdgeIndices[i][0];
 				var index2 = BoundsUtilities.AABBEdgeIndices[i][1];
@@ -609,7 +609,13 @@ namespace RealtimeCSG
 			//CSGModelManager.Refresh(forceHierarchyUpdate: true);
 			return false;
 		}
-		public bool DeselectAll() { Selection.activeTransform = null; return false; }
+
+		public bool DeselectAll()
+		{
+			SceneQueryUtility.ClearDeepClick();
+			Selection.activeTransform = null; 
+			return false; 
+		}
 		
 		public void RecenterPivot()
 		{
@@ -1695,6 +1701,7 @@ namespace RealtimeCSG
 
 					case EventType.KeyDown:
 					{
+						SceneQueryUtility.ClearDeepClick();
 						if (Tools.viewTool != ViewTool.FPS && Keys.CloneDragActivate.IsKeyPressed()) { cloneDragKeyPressed = true; Event.current.Use(); break; }
 						if (Keys.HandleSceneKeyDown(EditModeManager.CurrentTool, false)) { Event.current.Use(); break; }
 						if (Keys.FlipSelectionX.IsKeyPressed()) { Event.current.Use(); break; }

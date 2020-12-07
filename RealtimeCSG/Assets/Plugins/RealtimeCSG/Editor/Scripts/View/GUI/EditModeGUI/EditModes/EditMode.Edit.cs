@@ -2377,6 +2377,7 @@ namespace RealtimeCSG
 					{
 						if (GUIUtility.hotControl != 0)
 							break;
+						SceneQueryUtility.ClearDeepClick();
 						if (HavePointSelection && (Event.current.commandName == "SoftDelete" || Event.current.commandName == "Delete")) { Event.current.Use(); break; }
 						if (Keys.CancelActionKey.IsKeyPressed()) { Event.current.Use(); break; }
 						if (Keys.SnapToGridKey.IsKeyPressed()) { Event.current.Use(); break; }

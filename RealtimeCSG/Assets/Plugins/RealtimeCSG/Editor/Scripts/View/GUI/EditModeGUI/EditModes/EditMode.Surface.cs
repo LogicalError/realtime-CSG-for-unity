@@ -459,7 +459,7 @@ namespace RealtimeCSG
         
         EditMode SetHoverOn(EditMode editModeType, int target, int index = -1)
         {
-            hoverOnTarget	= target;
+            hoverOnTarget	= target; 
             if (target == -1)
             {
                 hoverOnSurfaceIndex = -1;
@@ -1088,6 +1088,7 @@ namespace RealtimeCSG
                     
                     case EventType.KeyDown:
                     {
+                        SceneQueryUtility.ClearDeepClick();
                         if (Keys.CancelActionKey.IsKeyPressed()) { Event.current.Use(); break; }
                         if (Keys.CopyMaterialTexGen.IsKeyPressed()) { if (dragMode == DragMode.None) dragMode = DragMode.TextureCopy; Event.current.Use(); break; }
                         if (Keys.HandleSceneKeyDown(EditModeManager.CurrentTool, false)) { Event.current.Use(); break; }
@@ -1307,7 +1308,7 @@ namespace RealtimeCSG
                             if ( nearestControl != -1)
                             {
                                 surfaceState.UnHoverAll();
-                    
+
                                 if (newEditMode == EditMode.None)
                                 {
                                     for (int s = 0; s < surfaceState.surfaceSelectState.Length; s++)
