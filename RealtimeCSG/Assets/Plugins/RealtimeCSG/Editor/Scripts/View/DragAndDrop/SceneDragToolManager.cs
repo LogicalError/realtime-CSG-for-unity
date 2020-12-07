@@ -82,6 +82,7 @@ namespace RealtimeCSG
 			{
 				case EventType.DragUpdated:
 				{
+					InternalCSGModelManager.IgnoreMaterials = true;
 					if (!draggingInScene)
 					{
 						ValidateDrop(sceneView, transformInInspector);
@@ -96,6 +97,7 @@ namespace RealtimeCSG
 								currentDragTool.DragExited(sceneView);
 							}
 							currentDragToolActive = false;
+							Event.current.Use();
 						} else
 						{
 							currentDragToolActive = true;
@@ -109,7 +111,7 @@ namespace RealtimeCSG
 								}
 							} else
 							{
-								if (currentDragTool.DragUpdated(transformInInspector, selectionRect.Value))
+								if (currentDragTool.DragUpdated(sceneView, transformInInspector, selectionRect.Value))
 								{
 									CSG_EditorGUIUtility.RepaintAll();
 								}
@@ -122,6 +124,7 @@ namespace RealtimeCSG
 				}
 				case EventType.DragPerform:
 				{
+					InternalCSGModelManager.IgnoreMaterials = true;
 					if (currentDragTool != null)
 					{
 						DragAndDrop.visualMode = DragAndDropVisualMode.Generic;
@@ -130,6 +133,7 @@ namespace RealtimeCSG
 							currentDragTool.DragPerform(sceneView);
 							currentDragTool.Reset();
 							Event.current.Use();
+							GUIUtility.ExitGUI();
 						}
 						currentDragTool = null;
 						currentTransformInInspector = null;
@@ -140,6 +144,7 @@ namespace RealtimeCSG
 				case EventType.DragExited:
 				//case EventType.MouseMove:
 				{
+					InternalCSGModelManager.IgnoreMaterials = true;
 					if (currentDragTool != null)
 					{
 						currentDragTool.DragExited(sceneView);
@@ -149,7 +154,15 @@ namespace RealtimeCSG
 						currentTransformInInspector = null;
 						draggingInScene = false;
 						CSG_EditorGUIUtility.RepaintAll();
+						GUIUtility.ExitGUI();
 					}
+					break;
+				}
+				case EventType.MouseUp:
+				case EventType.MouseMove:
+				case EventType.MouseDrag:
+                {
+					InternalCSGModelManager.IgnoreMaterials = false;
 					break;
 				}
 			}

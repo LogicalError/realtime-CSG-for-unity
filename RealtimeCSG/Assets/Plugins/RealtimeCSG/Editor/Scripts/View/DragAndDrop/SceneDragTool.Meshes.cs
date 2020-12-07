@@ -206,7 +206,7 @@ namespace RealtimeCSG
 		}
 
         #region DragUpdated
-		public bool DragUpdated(Transform transformInInspector, Rect selectionRect)
+		public bool DragUpdated(SceneView sceneView, Transform transformInInspector, Rect selectionRect)
 		{
 			try
 			{

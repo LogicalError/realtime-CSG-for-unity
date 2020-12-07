@@ -1,4 +1,4 @@
-﻿using UnityEditor;
+using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
 using InternalRealtimeCSG;
@@ -11,11 +11,16 @@ namespace RealtimeCSG
 	{
 		SelectedBrushSurface[]	hoverBrushSurfaces		= null;
 		bool                    hoverOnSelectedSurfaces = false;
-		Material[][]			previousMaterials		= null;
 
 		List<Material>	dragMaterials		= null;
 	
 		bool			selectAllSurfaces	= false;
+		GameObject		hoverOverObject;
+		MeshRenderer	hoverOverMeshRenderer;
+		int				hoverMaterialIndex;
+		GameObject		prevHoverOverObject;
+		
+		int dragGroup = -1;
 		
 		#region ValidateDrop
 		public bool ValidateDrop(SceneView sceneView)
@@ -41,6 +46,7 @@ namespace RealtimeCSG
 				return false;
 			}
 
+			dragGroup = -1;
 			return true;
 		}
 		#endregion
@@ -49,15 +55,19 @@ namespace RealtimeCSG
 		#region ValidateDropPoint
 		public bool ValidateDropPoint(SceneView sceneView)
 		{
-            var camera = sceneView.camera;
+			if (!sceneView)
+				return false;
 
+			hoverOverObject = null;
+			var camera = sceneView.camera;
 			GameObject foundObject;
-			if (!SceneQueryUtility.FindClickWorldIntersection(camera, Event.current.mousePosition, out foundObject))
+			if (!SceneQueryUtility.FindClickWorldIntersection(camera, Event.current.mousePosition, out foundObject, out hoverOverMeshRenderer, out hoverMaterialIndex, ignoreDeepClick: true))
 				return false;
 			
-			if (!foundObject.GetComponent<CSGBrush>())
-				return false;
+			if (foundObject.GetComponent<CSGBrush>())
+				return true;
 			
+			hoverOverObject = foundObject;
 			return true;
 		}
 		#endregion
@@ -65,80 +75,76 @@ namespace RealtimeCSG
 		#region Reset
 		public void Reset()
 		{
+			dragGroup = -1;
+			hoverOverObject		= null;
+			prevHoverOverObject = null;
 			hoverBrushSurfaces	= null;
 			selectAllSurfaces	= false;
-			previousMaterials	= null;
 			hoverOnSelectedSurfaces = false;
 		}
 		#endregion
 
-		SelectedBrushSurface[] GetCombinedBrushes(SelectedBrushSurface[] hoverBrushSurfaces)
+		public bool DragUpdated(SceneView sceneView, Transform transformInInspector, Rect selectionRect)
 		{
-			var highlight_surfaces = new List<SelectedBrushSurface>();
-			var highlight_brushes = new HashSet<CSGBrush>();
-			for (int i = 0; i < hoverBrushSurfaces.Length; i++)
-			{
-				highlight_surfaces.Add(hoverBrushSurfaces[i]);
-			}
-			for (int i = 0; i < hoverBrushSurfaces.Length; i++)
-			{
-				var brush = hoverBrushSurfaces[i].brush;
-				var top_node = SceneQueryUtility.GetTopMostGroupForNode(brush);
-				if (top_node.transform != brush.transform)
-				{
-					foreach (var childBrush in top_node.GetComponentsInChildren<CSGBrush>())
-					{
-						if (highlight_brushes.Add(childBrush))
-							highlight_surfaces.Add(new SelectedBrushSurface(childBrush, -1));
-					}
-				}
-			}
-			return highlight_surfaces.ToArray();
+			if (hoverOverMeshRenderer != null)
+				return DragUpdated(sceneView);
+			return BrushDragUpdated(sceneView, transformInInspector, selectionRect);
 		}
 
-		
-
-		#region HoverOnBrush
-		public SelectedBrushSurface[] HoverOnBrush(CSGBrush[] hoverBrushes, int surfaceIndex)
+		void ApplyMeshMaterial()
 		{
-			hoverOnSelectedSurfaces = false;
-			if (hoverBrushes == null ||
-				hoverBrushes.Length == 0 ||
-				hoverBrushes[0] == null)
-				return null;
-
-			var activetool = EditModeManager.ActiveTool as EditModeSurface;
-			if (activetool != null)
+			if (hoverOverMeshRenderer != null)
 			{
-				var selectedBrushSurfaces = activetool.GetSelectedSurfaces();
-				for (int i = 0; i < selectedBrushSurfaces.Length; i++)
+				var sharedMaterials = hoverOverMeshRenderer.sharedMaterials;
+				var material = GetMaterial();
+				if (sharedMaterials[hoverMaterialIndex] != material)
 				{
-					if (selectedBrushSurfaces[i].surfaceIndex == surfaceIndex &&
-						ArrayUtility.Contains(hoverBrushes, selectedBrushSurfaces[i].brush))
+					//if (UndoRevert())
 					{
-						if (i != 0 && selectedBrushSurfaces.Length > 1)
-						{
-							var temp = selectedBrushSurfaces[0];
-							selectedBrushSurfaces[0] = selectedBrushSurfaces[i];
-							selectedBrushSurfaces[i] = temp;
-						}
-						hoverOnSelectedSurfaces = true;
-						return selectedBrushSurfaces;
+						InternalCSGModelManager.UpdateMeshes();
+						MeshInstanceManager.UpdateHelperSurfaceVisibility();
 					}
+					UndoInit();
+
+					Undo.RecordObject(hoverOverMeshRenderer, "Modified material");
+					sharedMaterials[hoverMaterialIndex] = material;
+					hoverOverMeshRenderer.sharedMaterials = sharedMaterials.ToArray(); // ToArray forces Undo to recognize the change
 				}
 			}
-
-			var surfaces = new SelectedBrushSurface[hoverBrushes.Length];
-			for (int i = 0; i < hoverBrushes.Length; i++)
-			{
-				surfaces[i] = new SelectedBrushSurface(hoverBrushes[i], surfaceIndex);
-			}
-			return surfaces;
 		}
-		#endregion
+
+		public bool DragUpdated(SceneView sceneView)
+		{
+			if (prevHoverOverObject != hoverOverObject)
+			{
+				BrushDragExited(sceneView);
+				prevHoverOverObject = hoverOverObject;
+			}
+			if (hoverOverMeshRenderer != null)
+			{
+				ApplyMeshMaterial();
+				return true;
+			}
+
+			if (hoverOverMeshRenderer == null)
+				return BrushDragUpdated(sceneView);
+			return true;
+		}
+
+		public void DragPerform(SceneView sceneView)
+        {
+			if (hoverOverMeshRenderer == null) BrushDragPerform(sceneView);
+			else
+				ApplyMeshMaterial();
+		}
+			
+		public void DragExited(SceneView sceneView)
+        {
+			if (hoverOverMeshRenderer == null) BrushDragExited(sceneView);
+		}
 
 		#region DragUpdated
-		public bool DragUpdated(Transform transformInInspector, Rect selectionRect)
+		public bool BrushDragUpdated(SceneView sceneView, Transform transformInInspector, Rect selectionRect)
 		{
 			var highlight_brushes = transformInInspector.GetComponentsInChildren<CSGBrush>();
 
@@ -192,11 +198,7 @@ namespace RealtimeCSG
 				{
 					hoverBrushSurfaces = GetCombinedBrushes(hoverBrushSurfaces);
 					needUpdate = true;
-					using (new UndoGroup(hoverBrushSurfaces, "Modified materials"))
-					{
-						RememberMaterials(hoverBrushSurfaces);
-						ApplyMaterial(hoverBrushSurfaces);
-					}
+					ApplyMaterial(hoverBrushSurfaces);
 				}
 			} else
 			{
@@ -205,10 +207,7 @@ namespace RealtimeCSG
 					if (hoverBrushSurfaces != null)
 					{
 						needUpdate = true;
-						using (new UndoGroup(hoverBrushSurfaces, "Modified materials"))
-						{
-							ApplyMaterial(hoverBrushSurfaces);
-						}
+						ApplyMaterial(hoverBrushSurfaces);
 					}
 				}
 			}
@@ -221,12 +220,13 @@ namespace RealtimeCSG
 			return needUpdate;
 		}
 
-		public bool DragUpdated(SceneView sceneView)
+		public bool BrushDragUpdated(SceneView sceneView)
 		{
             var camera = sceneView.camera;
 			LegacyBrushIntersection intersection;
-			int		 highlight_surface	= -1;
-			CSGBrush highlight_brush	= null;	
+			
+			int		 highlight_surface;
+			CSGBrush highlight_brush;	
 			if (!SceneQueryUtility.FindWorldIntersection(camera, Event.current.mousePosition, out intersection))
 			{
 				highlight_brush		= null;
@@ -251,6 +251,7 @@ namespace RealtimeCSG
 				}
 			}
 
+
 			bool needUpdate = false;
 			if (modified)
 			{
@@ -267,27 +268,20 @@ namespace RealtimeCSG
 				{
 					hoverBrushSurfaces = GetCombinedBrushes(hoverBrushSurfaces);
 					needUpdate = true;
-					using (new UndoGroup(hoverBrushSurfaces, "Modified materials"))
-					{
-						RememberMaterials(hoverBrushSurfaces);
-						ApplyMaterial(hoverBrushSurfaces);
-					}
+					ApplyMaterial(hoverBrushSurfaces);
 				}
 			} else
 			{
 				bool prevSelectAllSurfaces	= selectAllSurfaces;
 				selectAllSurfaces			= Event.current.shift;
 
-				if (prevSelectAllSurfaces != selectAllSurfaces)
+				//if (prevSelectAllSurfaces != selectAllSurfaces)
 				{
 					if (hoverBrushSurfaces != null)
 					{
-						needUpdate = true;
+						needUpdate = (prevSelectAllSurfaces != selectAllSurfaces);
 
-						using (new UndoGroup(hoverBrushSurfaces, "Modified materials"))
-						{
-							ApplyMaterial(hoverBrushSurfaces);
-						}
+						ApplyMaterial(hoverBrushSurfaces);
 					}
 				}
 			}
@@ -301,47 +295,164 @@ namespace RealtimeCSG
 		}
 		#endregion
 
-		#region RememberMaterials
-		void RememberMaterials(SelectedBrushSurface[] hoverBrushSurfaces)
+		#region DragPerform
+		public void BrushDragPerform(SceneView sceneView)
 		{
 			if (hoverBrushSurfaces == null)
-			{
-				previousMaterials = null;
 				return;
-			}
-			if (previousMaterials == null ||
-				previousMaterials.Length != hoverBrushSurfaces.Length)
-				previousMaterials = new Material[hoverBrushSurfaces.Length][];
+
+			RestoreMaterials(hoverBrushSurfaces);
+
+			ApplyMaterial(hoverBrushSurfaces);
+
+			var gameObjects = new HashSet<GameObject>();
 			for (int i = 0; i < hoverBrushSurfaces.Length; i++)
+				gameObjects.Add(hoverBrushSurfaces[i].brush.gameObject);
+
+			var surfaceTool = EditModeManager.ActiveTool as EditModeSurface;
+			if (surfaceTool != null)
 			{
-				var brush			= hoverBrushSurfaces[i].brush;
-				var shape			= brush.Shape;
+				surfaceTool.SelectSurfaces(hoverBrushSurfaces, gameObjects, selectAllSurfaces);
+			} else
+				Selection.objects = gameObjects.ToArray();
 
-				if (previousMaterials[i] == null ||
-					previousMaterials[i].Length != shape.TexGens.Length)
-					previousMaterials[i] = new Material[shape.TexGens.Length];
+			for (int i = 0; i < SceneView.sceneViews.Count; i++)
+			{
+				var sceneview = SceneView.sceneViews[i] as SceneView;
+				if (sceneview == null ||
+					sceneview.camera == null)
+					continue;
 
-				for (int t = 0; t < shape.TexGens.Length; t++)
+				var rect = sceneview.camera.pixelRect;
+				if (rect.Contains(Event.current.mousePosition))
 				{
-					previousMaterials[i][t] = shape.TexGens[t].RenderMaterial;
+					sceneview.Focus();
 				}
 			}
+			hoverBrushSurfaces = null;
 		}
 		#endregion
-		
+
+		#region DragExited
+		public void BrushDragExited(SceneView sceneView)
+		{
+			if (hoverBrushSurfaces != null)
+			{
+				UndoRevert();
+
+				var updateModels = new HashSet<CSGModel>();
+				var updateBrushes = new HashSet<CSGBrush>();
+				for (int i = 0; i < hoverBrushSurfaces.Length; i++)
+				{
+					var brush = hoverBrushSurfaces[i].brush;
+					if (brush.ChildData == null ||
+						brush.ChildData.Model == null)
+						continue;
+
+					try
+					{
+						var model = brush.ChildData.Model;
+						updateModels.Add(model);
+						updateBrushes.Add(brush);
+					}
+					finally { }
+				}
+				UpdateBrushMeshes(updateBrushes, updateModels);
+				RestoreMaterials(hoverBrushSurfaces);
+
+				InternalCSGModelManager.UpdateMeshes();
+				MeshInstanceManager.UpdateHelperSurfaceVisibility();
+				HandleUtility.Repaint();
+			}
+			hoverBrushSurfaces = null;
+		}
+		#endregion
+
+		SelectedBrushSurface[] GetCombinedBrushes(SelectedBrushSurface[] hoverBrushSurfaces)
+		{
+			var highlight_surfaces = new List<SelectedBrushSurface>();
+			var highlight_brushes = new HashSet<CSGBrush>();
+			for (int i = 0; i < hoverBrushSurfaces.Length; i++)
+			{
+				highlight_surfaces.Add(hoverBrushSurfaces[i]);
+			}
+			for (int i = 0; i < hoverBrushSurfaces.Length; i++)
+			{
+				var brush = hoverBrushSurfaces[i].brush;
+				var top_node = SceneQueryUtility.GetTopMostGroupForNode(brush);
+				if (top_node.transform != brush.transform)
+				{
+					foreach (var childBrush in top_node.GetComponentsInChildren<CSGBrush>())
+					{
+						if (highlight_brushes.Add(childBrush))
+							highlight_surfaces.Add(new SelectedBrushSurface(childBrush, -1));
+					}
+				}
+			}
+			return highlight_surfaces.ToArray();
+		}
+
+
+
+		#region HoverOnBrush
+		SelectedBrushSurface[] HoverOnBrush(CSGBrush[] hoverBrushes, int surfaceIndex)
+		{
+			hoverOnSelectedSurfaces = false;
+			if (hoverBrushes == null ||
+				hoverBrushes.Length == 0 ||
+				hoverBrushes[0] == null)
+				return null;
+
+			var activetool = EditModeManager.ActiveTool as EditModeSurface;
+			if (activetool != null)
+			{
+				var selectedBrushSurfaces = activetool.GetSelectedSurfaces();
+				for (int i = 0; i < selectedBrushSurfaces.Length; i++)
+				{
+					if (selectedBrushSurfaces[i].surfaceIndex == surfaceIndex &&
+						ArrayUtility.Contains(hoverBrushes, selectedBrushSurfaces[i].brush))
+					{
+						if (i != 0 && selectedBrushSurfaces.Length > 1)
+						{
+							var temp = selectedBrushSurfaces[0];
+							selectedBrushSurfaces[0] = selectedBrushSurfaces[i];
+							selectedBrushSurfaces[i] = temp;
+						}
+						hoverOnSelectedSurfaces = true;
+						return selectedBrushSurfaces;
+					}
+				}
+			}
+
+			var surfaces = new SelectedBrushSurface[hoverBrushes.Length];
+			for (int i = 0; i < hoverBrushes.Length; i++)
+			{
+				surfaces[i] = new SelectedBrushSurface(hoverBrushes[i], surfaceIndex);
+			}
+			return surfaces;
+		}
+		#endregion
+
 		#region UpdateBrushMeshes
 		void UpdateBrushMeshes(HashSet<CSGBrush> brushes, HashSet<CSGModel> models)
 		{
 			foreach (var brush in brushes)
 			{
-				brush.EnsureInitialized();
-				ShapeUtility.CheckMaterials(brush.Shape);
-//				var brush_cache = InternalCSGModelManager.GetBrushCache(brush);
+				try
+				{
+					brush.EnsureInitialized();
+					ShapeUtility.CheckMaterials(brush.Shape);
+				}
+				finally { }
 			}
 			foreach (var brush in brushes)
 			{
-				InternalCSGModelManager.CheckSurfaceModifications(brush, true);
-				InternalCSGModelManager.ValidateBrush(brush);
+				try
+				{
+					InternalCSGModelManager.CheckSurfaceModifications(brush, true);
+					InternalCSGModelManager.ValidateBrush(brush);
+				}
+				finally { }
 			}
 			MeshInstanceManager.UpdateHelperSurfaceVisibility(force: true);
 		}
@@ -356,12 +467,34 @@ namespace RealtimeCSG
 			return mat.name + " " + mat.GetInstanceID().ToString();
 		}
 
+		bool UndoRevert()
+        {
+			if (dragGroup != -1)
+			{
+				Undo.RevertAllDownToGroup(dragGroup);
+				dragGroup = -1;
+				return true;
+			}
+			return false;
+		}
+
+		void UndoInit()
+		{
+			if (dragGroup == -1)
+			{
+				Undo.IncrementCurrentGroup();
+				dragGroup = Undo.GetCurrentGroup();
+			}
+		}
+
 		#region RestoreMaterials
 		void RestoreMaterials(SelectedBrushSurface[] hoverBrushSurfaces)
 		{
 			if (hoverBrushSurfaces == null)
 				return;
-			
+
+			UndoRevert();
+
 			var updateModels	= new HashSet<CSGModel>();
 			var updateBrushes	= new HashSet<CSGBrush>();
 			for (int i = 0; i < hoverBrushSurfaces.Length; i++)
@@ -375,166 +508,115 @@ namespace RealtimeCSG
 				{
 					var model = brush.ChildData.Model;
 					updateModels.Add(model);
-					if (updateBrushes.Add(brush))
-					{
-						var shape = brush.Shape;
-						if (shape != null &&
-							shape.TexGens != null &&
-							previousMaterials != null)
-						{
-							for (int t = 0; t < shape.TexGens.Length; t++)
-							{
-								shape.TexGens[t].RenderMaterial = previousMaterials[i][t];
-							}
-						}
-					}
+					updateBrushes.Add(brush);
 				}
 				finally { }
 			}
 			UpdateBrushMeshes(updateBrushes, updateModels);
 		}
 		#endregion
+		
+		Material GetMaterial()
+        {
+			if (dragMaterials.Count > 1)
+			{
+				return dragMaterials[Random.Range(0, dragMaterials.Count)];
+			} else
+				return dragMaterials[0];
+		}
 
 		#region ApplyMaterial
 		void ApplyMaterial(SelectedBrushSurface[] hoverBrushSurfaces)
 		{
 			if (hoverBrushSurfaces == null)
 				return;
-			var updateModels	= new HashSet<CSGModel>();
-			var updateBrushes	= new HashSet<CSGBrush>();
-			for (int i = 0; i < hoverBrushSurfaces.Length; i++)
+
+			var updateModels = new HashSet<CSGModel>();
+			var updateBrushes = new HashSet<CSGBrush>();
+			try
 			{
-				var brush			= hoverBrushSurfaces[i].brush;
-				if (brush.ChildData == null ||
-					brush.ChildData.Model == null)
-					continue;
-				try
+				for (int i = 0; i < hoverBrushSurfaces.Length; i++)
 				{
-					var model = brush.ChildData.Model;
-					updateModels.Add(model);
-					if (updateBrushes.Add(brush))
+					var brush = hoverBrushSurfaces[i].brush;
+					if (brush.ChildData == null ||
+						brush.ChildData.Model == null)
+						continue;
+
+					try
 					{
-						// per brush
-						if (!selectAllSurfaces)
+						var shape = brush.Shape;
+						var model = brush.ChildData.Model;
+
+						var texGens = shape.TexGens;
+
+						var modified = false;
+
+						if (selectAllSurfaces)
 						{
-							var shape = brush.Shape;
-							if (previousMaterials != null)
-							{
-								for (int t = 0; t < shape.TexGens.Length; t++)
+							// assign material to all surfaces of selected brushes
+							if (!updateBrushes.Contains(brush)) // but don't duplicate any work if multiple surfaces of same brush are selected
+							{ 
+								for (int m = 0; m < texGens.Length; m++)
 								{
-									var material = previousMaterials[i][t];
-									shape.TexGens[t].RenderMaterial = material;
+									var material = GetMaterial();
+									if (texGens[m].RenderMaterial != material)
+									{
+										if (!modified)
+										{
+											UndoInit();
+											Undo.RecordObject(brush, "Modifying material");
+										}
+										modified = true;
+										texGens[m].RenderMaterial = material;
+									}
 								}
 							}
 						} else
+						// per surface
 						{
-							var shape = brush.Shape;
-							var surfaceTexGens = shape.TexGens.ToArray();
-							if (dragMaterials.Count > 1)
+							// assign material to selected surface
+							var highlight_surface = hoverBrushSurfaces[i].surfaceIndex;
+							if (highlight_surface >= 0)
 							{
-								for (int m = 0; m < surfaceTexGens.Length; m++)
+								var material = GetMaterial();
+								var highlight_texGen = shape.Surfaces[highlight_surface].TexGenIndex;
+								if (texGens[highlight_texGen].RenderMaterial != material)
 								{
-									var material = dragMaterials[Random.Range(0, dragMaterials.Count)];
-									surfaceTexGens[m].RenderMaterial = material;
-								}
-							} else
-							{
-								var materialInstance = dragMaterials[0];
-								for (int m = 0; m < surfaceTexGens.Length; m++)
-								{
-									surfaceTexGens[m].RenderMaterial = materialInstance;
+									if (!modified)
+									{
+										UndoInit();
+										Undo.RecordObject(brush, "Modifying material");
+									}
+									modified = true;
+									texGens[highlight_texGen].RenderMaterial = material;
 								}
 							}
-							shape.TexGens = surfaceTexGens;
+						}
+
+						if (modified)
+						{
+							shape.TexGens = texGens.ToArray();
+							updateModels.Add(model);
+							updateBrushes.Add(brush);
 						}
 					}
-
-					// per surface
-					if (!selectAllSurfaces)
-					{
-						var highlight_surface	= hoverBrushSurfaces[i].surfaceIndex;
-						if (highlight_surface >= 0)
-						{ 
-							var highlight_texGen	= brush.Shape.Surfaces[highlight_surface].TexGenIndex;
-
-							Material dragMaterial;
-							if (dragMaterials.Count > 1)
-								dragMaterial = dragMaterials[Random.Range(0, dragMaterials.Count)];
-							else
-								dragMaterial = dragMaterials[0];
-
-							brush.Shape.TexGens[highlight_texGen].RenderMaterial = dragMaterial;
-						}
-					}
+					finally { }
 				}
-				finally {}
 			}
-			UpdateBrushMeshes(updateBrushes, updateModels);
-		}
-		#endregion
-
-		#region DragPerform
-		public void DragPerform(SceneView sceneView)
-		{
-			if (hoverBrushSurfaces == null)
-				return;
-			
-			RestoreMaterials(hoverBrushSurfaces);
-
-			if (hoverBrushSurfaces != null)
+			finally
 			{
-				//using (new UndoGroup(hoverBrushSurfaces, "Modified materials"))
-				{
-					ApplyMaterial(hoverBrushSurfaces);
-
-					var gameObjects = new HashSet<GameObject>();
-					for (int i = 0; i < hoverBrushSurfaces.Length; i++)
-						gameObjects.Add(hoverBrushSurfaces[i].brush.gameObject);
-
-					var surfaceTool = EditModeManager.ActiveTool as EditModeSurface;
-					if (surfaceTool != null)
-					{
-						surfaceTool.SelectSurfaces(hoverBrushSurfaces, gameObjects, selectAllSurfaces);
-					} else
-						Selection.objects = gameObjects.ToArray();
-
-
-					for (int i = 0; i < SceneView.sceneViews.Count; i++)
-					{
-						var sceneview = SceneView.sceneViews[i] as SceneView;
-						if (sceneview == null)
-							continue;
-
-						if (sceneview.camera.pixelRect.Contains(Event.current.mousePosition))
-							sceneview.Focus();
-					}
-				}
+				UpdateBrushMeshes(updateBrushes, updateModels);
 			}
-			hoverBrushSurfaces = null;
-			previousMaterials = null;
 		}
 		#endregion
 
-		#region DragExited
-		public void DragExited(SceneView sceneView)
-		{
-			Undo.RevertAllInCurrentGroup();
-			if (hoverBrushSurfaces != null)
-			{
-				//using (new UndoGroup(hoverBrushSurfaces, "Modified materials"))
-				{
-					RestoreMaterials(hoverBrushSurfaces);
-					InternalCSGModelManager.UpdateMeshes();
-				}
-			}
-			hoverBrushSurfaces = null;
-			HandleUtility.Repaint();
-		}
-		#endregion
 
 		#region Paint
 		public void OnPaint(Camera camera)
 		{
+			if (hoverOverObject != null)
+				return;
+
 			if (!hoverOnSelectedSurfaces)
 			{ 
 				var activetool = EditModeManager.ActiveTool as EditModeSurface;
