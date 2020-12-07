@@ -580,7 +580,8 @@ namespace RealtimeCSG
 
 			if (RealtimeCSG.CSGSettings.EnableRealtimeCSG)
 			{
-				if (sceneView && sceneWindowType != EventType.Used && !SceneDragToolManager.IsDraggingObjectInScene)
+				if (sceneView && sceneWindowType != EventType.Used && 
+					(!SceneDragToolManager.IsDraggingObjectInScene || EditMode == ToolEditMode.Surfaces))
 				{
 					if (currentEditorWindows.Count == 0)
 					{

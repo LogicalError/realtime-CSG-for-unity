@@ -459,7 +459,7 @@ namespace RealtimeCSG
         
         EditMode SetHoverOn(EditMode editModeType, int target, int index = -1)
         {
-            hoverOnTarget	= target;
+            hoverOnTarget	= target; 
             if (target == -1)
             {
                 hoverOnSurfaceIndex = -1;
@@ -1307,7 +1307,7 @@ namespace RealtimeCSG
                             if ( nearestControl != -1)
                             {
                                 surfaceState.UnHoverAll();
-                    
+
                                 if (newEditMode == EditMode.None)
                                 {
                                     for (int s = 0; s < surfaceState.surfaceSelectState.Length; s++)

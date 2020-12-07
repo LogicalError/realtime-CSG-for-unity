@@ -1011,7 +1011,7 @@ namespace RealtimeCSG
 		
 		static Vector2 scrollbarPosition = Vector2.zero;
 
-
+		 
 		static Rect sceneGUIRect = new Rect(0, 0, 232, 0);
 		public static void OnSceneGUI(Rect windowRect, EditModeSurface tool)
 		{
