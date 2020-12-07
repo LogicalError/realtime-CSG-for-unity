@@ -274,6 +274,20 @@ namespace RealtimeCSG
             }
         }
         static public bool                  SnapNonCSGObjects				= true;
+        static public bool                  AutoRigidbody
+        {
+            get
+            {
+                return (CSGModel.DefaultSettings & ModelSettingsFlags.AutoUpdateRigidBody) == ModelSettingsFlags.AutoUpdateRigidBody;
+            }
+            set
+            {
+                if (value)
+                    CSGModel.DefaultSettings |= ModelSettingsFlags.AutoUpdateRigidBody;
+                else
+                    CSGModel.DefaultSettings &= ~ModelSettingsFlags.AutoUpdateRigidBody;
+            }
+        }
 
         static public Vector3				DefaultMoveOffset		= Vector3.zero;
         static public Vector3				DefaultRotateOffset		= Vector3.zero;
@@ -609,6 +623,7 @@ namespace RealtimeCSG
             HiddenSurfacesNotSelectable		= EditorPrefs.GetBool("HiddenSurfacesNotSelectable", true);
 //			HiddenSurfacesOrthoSelectable	= EditorPrefs.GetBool("HiddenSurfacesOrthoSelectable", true);
             ShowTooltips					= EditorPrefs.GetBool("ShowTooltips", true);
+            AutoRigidbody                   = EditorPrefs.GetBool("AutoRigidbody", (CSGModel.DefaultSettings & ModelSettingsFlags.AutoUpdateRigidBody) == ModelSettingsFlags.AutoUpdateRigidBody);
             DefaultPreserveUVs              = EditorPrefs.GetBool("DefaultPreserveUVs", (CSGModel.DefaultSettings & ModelSettingsFlags.PreserveUVs) == ModelSettingsFlags.PreserveUVs);
             SnapNonCSGObjects				= EditorPrefs.GetBool("SnapNonCSGObjects", true);
 
@@ -696,6 +711,7 @@ namespace RealtimeCSG
 //			EditorPrefs.SetBool("HiddenSurfacesOrthoSelectable", RealtimeCSG.CSGSettings.HiddenSurfacesOrthoSelectable);
 
             EditorPrefs.SetBool("ShowTooltips",				RealtimeCSG.CSGSettings.ShowTooltips);
+            EditorPrefs.SetBool("AutoRigidbody",            (CSGModel.DefaultSettings & ModelSettingsFlags.AutoUpdateRigidBody) == ModelSettingsFlags.AutoUpdateRigidBody);
             EditorPrefs.SetBool("DefaultPreserveUVs",       (CSGModel.DefaultSettings & ModelSettingsFlags.PreserveUVs) == ModelSettingsFlags.PreserveUVs);
             EditorPrefs.SetBool("SnapNonCSGObjects",		RealtimeCSG.CSGSettings.SnapNonCSGObjects);
 

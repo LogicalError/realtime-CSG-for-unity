@@ -47,7 +47,7 @@ namespace RealtimeCSG.Components
 	{
 		public const float CurrentVersion = 1.1f;
 
-        public static ModelSettingsFlags DefaultSettings = ((ModelSettingsFlags)UnityEngine.Rendering.ShadowCastingMode.On) | ModelSettingsFlags.PreserveUVs;
+        public static ModelSettingsFlags DefaultSettings = ((ModelSettingsFlags)UnityEngine.Rendering.ShadowCastingMode.On) | ModelSettingsFlags.PreserveUVs | ModelSettingsFlags.AutoUpdateRigidBody;
 
         /// <value>The version number of this instance of a <see cref="CSGModel" /></value>
         [HideInInspector] public float Version = CurrentVersion;
