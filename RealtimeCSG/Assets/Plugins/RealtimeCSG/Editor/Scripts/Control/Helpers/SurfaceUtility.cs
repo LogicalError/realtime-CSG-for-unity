@@ -762,9 +762,10 @@ namespace RealtimeCSG
                     Debug.LogWarning("brush.Shape.TexGens.Length != brush.Shape.TexGenFlags.Length");
                 } else
                 {
-                    dstShape.TexGens	 = dstTexGens;
-                    dstShape.TexGenFlags = dstTexGenFlags;
-                    dstShape.Surfaces	 = dstSurfaces;
+                    // NOTE: Need to copy array for undo to capture the change
+                    dstShape.TexGens	 = dstTexGens.ToArray();
+                    dstShape.TexGenFlags = dstTexGenFlags.ToArray();
+                    dstShape.Surfaces	 = dstSurfaces.ToArray();
                     InternalCSGModelManager.SetBrushMeshSurfaces(dstBrush);
                 }
             }
@@ -790,12 +791,12 @@ namespace RealtimeCSG
             
             if (srcTexGenIndex < 0 || srcTexGenIndex >= srcBrush.Shape.TexGens.Length)
                 return false;
-    
+
             if (registerUndo)
             {
                 var dstBrushSurface = new[] { new SelectedBrushSurface(dstBrush, dstSurfaceIndex) };
                 Undo.IncrementCurrentGroup();
-                using (new UndoGroup(dstBrushSurface, "Copy materials"))
+                using (new UndoGroup(dstBrushSurface, "Copy materials", ignoreGroup: true))
                 {
                     dstBrush.Shape.TexGens[dstTexGenIndex].RenderMaterial = srcShape.TexGens[srcTexGenIndex].RenderMaterial;
                     CopyLastMaterialInternal(dstBrush, dstSurfaceIndex, dstSurfaceInverted,
