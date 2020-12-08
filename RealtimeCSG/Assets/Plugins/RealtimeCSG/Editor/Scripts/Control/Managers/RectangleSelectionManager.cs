@@ -112,6 +112,9 @@ namespace RealtimeCSG
 		static bool		mouseDragged        = false;
 		static Vector2	clickMousePosition  = MathConstants.zeroVector2;
 
+
+		static List<UnityEngine.Object> sFoundObjects = new List<UnityEngine.Object>();
+
 		// Update rectangle selection using reflection
 		// This is hacky & dangerous 
 		// LOOK AWAY NOW!
@@ -307,6 +310,18 @@ namespace RealtimeCSG
 				case EventType.MouseDown:
 				{
 					rectClickDown = (Event.current.button == 0 && hotControl == s_RectSelectionID_instance);
+					var selectedObjects = Selection.objects;
+					sFoundObjects.Clear();
+					foreach (var obj in selectedObjects)
+					{
+						var component = obj as Component;
+						var gameObject = obj as GameObject;
+						var transform = obj as Transform;
+						if (!(component && component.GetComponent<GeneratedMeshes>()) &&
+							!(gameObject && gameObject.GetComponent<GeneratedMeshes>()) &&
+							!(transform && transform.GetComponent<Transform>()))
+							sFoundObjects.Add(obj);
+					}
 					clickMousePosition = Event.current.mousePosition;
 					mouseDragged = false;
 					break;
@@ -314,11 +329,13 @@ namespace RealtimeCSG
 				case EventType.MouseUp:
 				{
 					rectClickDown = false;
+					sFoundObjects.Clear();
 					break;
 				}
 				case EventType.MouseMove:
 				{
 					rectClickDown = false;
+					sFoundObjects.Clear();
 					break;
 				}
 				case EventType.Used:
@@ -340,20 +357,9 @@ namespace RealtimeCSG
 							if (Selection.gameObjects != null)
 							{
 								var selectedObjects = Selection.objects;
-								var foundObjects = new List<UnityEngine.Object>();
-								foreach (var obj in selectedObjects)
+								if (sFoundObjects.Count != selectedObjects.Length)
 								{
-									var component = obj as Component;
-									var gameObject = obj as GameObject;
-									var transform = obj as Transform;
-									if (!(component && component.GetComponent<GeneratedMeshes>()) &&
-										!(gameObject && gameObject.GetComponent<GeneratedMeshes>()) &&
-										!(transform && transform.GetComponent<Transform>()))
-										foundObjects.Add(obj);
-								}
-								if (foundObjects.Count != selectedObjects.Length)
-								{
-									Selection.objects = foundObjects.ToArray();
+									Selection.objects = sFoundObjects.ToArray();
 								}
 							}
 							
@@ -363,6 +369,7 @@ namespace RealtimeCSG
 
 					}
 					rectClickDown = false;
+					sFoundObjects.Clear();
 					break;
 				}
 
