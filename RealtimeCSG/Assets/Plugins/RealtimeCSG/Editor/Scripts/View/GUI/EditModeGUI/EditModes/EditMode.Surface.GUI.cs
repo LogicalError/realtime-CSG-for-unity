@@ -1053,6 +1053,7 @@ namespace RealtimeCSG
 				boxArea.width		 += scrollbarWidth;
 			}
 			GUI.Box(boxArea, ContentSurfacesLabel, windowStyle);
+			int windowControlID = GUIUtility.GetControlID(SceneViewSurfaceOverlayHash, FocusType.Keyboard, boxArea);
 			{
 				currentArea.x += 5;
 				currentArea.width += 2;
@@ -1086,13 +1087,12 @@ namespace RealtimeCSG
 				EditModeToolWindowSceneGUI.GetWindow();
 
 			TooltipUtility.SetToolTip(CSG_GUIStyleUtility.PopOutTooltip, buttonArea);
-			int controlID = GUIUtility.GetControlID(SceneViewSurfaceOverlayHash, FocusType.Keyboard, boxArea);
-			switch (Event.current.GetTypeForControl(controlID))
+			switch (Event.current.GetTypeForControl(windowControlID))
 			{
-				case EventType.MouseDown:	{ if (boxArea.Contains(Event.current.mousePosition)) { GUIUtility.hotControl = controlID; GUIUtility.keyboardControl = controlID; Event.current.Use(); } break; }
+				case EventType.MouseDown:	{ if (boxArea.Contains(Event.current.mousePosition)) { GUIUtility.hotControl = windowControlID; GUIUtility.keyboardControl = windowControlID; Event.current.Use(); } break; }
 				case EventType.MouseMove:	{ if (boxArea.Contains(Event.current.mousePosition)) { Event.current.Use(); } break; }
-				case EventType.MouseUp:		{ if (GUIUtility.hotControl == controlID) { GUIUtility.hotControl = 0; GUIUtility.keyboardControl = 0; Event.current.Use(); } break; }
-				case EventType.MouseDrag:	{ if (GUIUtility.hotControl == controlID) { Event.current.Use(); } break; }
+				case EventType.MouseUp:		{ if (GUIUtility.hotControl == windowControlID) { GUIUtility.hotControl = 0; GUIUtility.keyboardControl = 0; Event.current.Use(); } break; }
+				case EventType.MouseDrag:	{ if (GUIUtility.hotControl == windowControlID) { Event.current.Use(); } break; }
 				case EventType.ScrollWheel: { if (boxArea.Contains(Event.current.mousePosition)) { Event.current.Use(); } break; }
 			}
 		}

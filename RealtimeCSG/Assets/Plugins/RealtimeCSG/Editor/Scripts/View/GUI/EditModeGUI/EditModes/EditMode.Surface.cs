@@ -947,6 +947,7 @@ namespace RealtimeCSG
         
         [NonSerialized] Vector2 prevMousePos;
 
+        bool clickedInScene = false;
 
         public void HandleEvents(SceneView sceneView, Rect sceneRect)
         {
@@ -969,27 +970,40 @@ namespace RealtimeCSG
             
                 switch (Event.current.type)
                 {
-                    //case EventType.MouseDown:
-                    case EventType.MouseUp:
-                    case EventType.MouseDrag:
+                    case EventType.MouseDown:
                     {
-                        if (Event.current.button != 0 ||
-                            GUIUtility.hotControl != 0)
-                            break;
-                        
+                        clickedInScene = false;
                         if (!sceneRect.Contains(Event.current.mousePosition))
                             break;
 
                         var guiArea = GetLastSceneGUIRect();
-                        GameObject gameObject = null;
                         if (guiArea.Contains(Event.current.mousePosition))
                             break;
 
+                        clickedInScene = true;
+                        break;
+                    }
+                    case EventType.MouseUp:
+                    case EventType.MouseDrag:
+                    {
+                        if (!clickedInScene ||
+                            Event.current.button != 0 ||
+                            GUIUtility.hotControl != 0)
+                            break;
+
+                        if (!sceneRect.Contains(Event.current.mousePosition))
+                            break;
+
+                        var guiArea = GetLastSceneGUIRect();
+                        if (guiArea.Contains(Event.current.mousePosition))
+                            break;
+
+                        GameObject gameObject = null;
                         if (SceneQueryUtility.FindUnityWorldIntersection(camera, Event.current.mousePosition, out gameObject))
                         {
                             if (gameObject == null &&
                                 Event.current.type == EventType.MouseUp)
-                            {
+                            { 
                                 SelectionUtility.DeselectAll();
                             } else
                                 SelectionUtility.DoSelectionClick(sceneView);

@@ -11,7 +11,6 @@ namespace RealtimeCSG
 	{
 		static int SceneViewBrushEditorOverlayHash = "SceneViewBrushEditorOverlay".GetHashCode();
 
-		static GUI.WindowFunction windowFunction = new GUI.WindowFunction(EditModeSelectionGUI.HandleSceneGUI);
 
 		public static float OnEditModeSelectionGUI()
 		{			
@@ -32,6 +31,7 @@ namespace RealtimeCSG
 		}
 
 		static GUIStyle sceneViewOverlayTransparentBackground = "SceneViewOverlayTransparentBackground";
+		static GUI.WindowFunction windowFunction = new GUI.WindowFunction(EditModeSelectionGUI.HandleSceneGUI);
 		
 		public static void HandleWindowGUI(Rect windowRect)
 		{
