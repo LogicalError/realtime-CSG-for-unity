@@ -1,4 +1,4 @@
-﻿using UnityEditor;
+using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
 using InternalRealtimeCSG;
@@ -172,10 +172,26 @@ namespace RealtimeCSG
 			{
 				if (obj == null || !obj)
 					continue;
-				obj.transform.rotation = hoverRotation;
-				obj.transform.position = hoverPosition;
-			//	if (hoverParent != null && !CSGPrefabUtility.IsPrefabAsset(hoverParent.gameObject))
-			//		obj.transform.SetParent(hoverParent, true);
+				var scale = Vector3.one;
+				var rotation = hoverRotation;
+				var position = hoverPosition;
+#if UNITY_2018_3_OR_NEWER
+				if (CSGPrefabUtility.IsPrefabInstance(obj))
+				{
+					var outer = CSGPrefabUtility.GetOutermostPrefabInstanceRoot(obj);
+					var prefabAsset = CSGPrefabUtility.GetPrefabAsset(outer);
+					var transform = prefabAsset.transform;
+					
+					rotation *= transform.localRotation;
+					//position += transform.localPosition;
+					scale = transform.localScale;
+				}
+#endif
+				obj.transform.rotation = rotation;
+				obj.transform.position = position;
+				obj.transform.localScale = scale;
+				//	if (hoverParent != null && !CSGPrefabUtility.IsPrefabAsset(hoverParent.gameObject))
+				//		obj.transform.SetParent(hoverParent, true);
 				obj.transform.SetSiblingIndex(hoverSiblingIndex + counter);
 				counter++;
 			}
