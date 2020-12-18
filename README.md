@@ -13,6 +13,6 @@ If you use the plugin, please let us know, we'd love to see what you've done wit
 
 
 
-![Example](ReadMe/Images/house_view.png)
+![Example](Readme/Images/house_view.png)
 *Programmer art example. 
 Note: couch, plants and some other small props are meshes, not CSG*
