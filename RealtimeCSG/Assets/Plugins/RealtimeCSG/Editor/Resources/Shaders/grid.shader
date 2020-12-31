@@ -1,4 +1,4 @@
-﻿//UNITY_SHADER_NO_UPGRADE
+//UNITY_SHADER_NO_UPGRADE
 Shader "Hidden/CSG/internal/Grid"
 {
 	Properties
@@ -74,21 +74,17 @@ Shader "Hidden/CSG/internal/Grid"
 
 				vertexOutput vert(vertexInput input) 
 				{
-					half3 worldGridCenter	= half4(_WorldSpaceCameraPos.x, 0, _WorldSpaceCameraPos.z, 1);
+					half3 worldGridCenter	= half3(_WorldSpaceCameraPos.x, 0, _WorldSpaceCameraPos.z);
 					float4 objectCenter		= mul(unity_ObjectToWorld, float4(0,0,0,1));
 					objectCenter.xyz /= objectCenter.w;
 					objectCenter.w = 0.0f;
 					
 					vertexOutput output;
 
-					//half3 normal		= normalize(mul((float3x3)unity_ObjectToWorld, half3(0, 1, 0)));
-					//half4 gridPlane	= half4(normal, -dot(normal, objectCenter));
-					//float distance	= (gridPlane.x * _WorldSpaceCameraPos.x) + (gridPlane.y * _WorldSpaceCameraPos.y) + (gridPlane.z * _WorldSpaceCameraPos.z) + (gridPlane.w);					
-					//float gridSize	= (max(1, abs(distance)) * 100);
+					float3	camDelta = _WorldSpaceCameraPos.xyz - (input.vertex.xyz / input.vertex.w);
+					float	camDistance = length(camDelta);
 
-					float gridSize		= max(1, abs(_GridSize)) * 200;
-
-					float3 vposition	= (input.vertex.xzy * gridSize);
+					float3 vposition	= (input.vertex.xzy * max(1,camDistance) * 5);
 					float4 position		= float4(vposition, 1);
 
 					output.objectPos	= mul(unity_ObjectToWorld, float4(vposition, 1));
