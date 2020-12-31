@@ -882,7 +882,7 @@ namespace InternalRealtimeCSG
 			{
 				var model = InternalCSGModelManager.Models[g];
                 
-                if (!ModelTraits.IsModelSelectable(model))
+                if (!model.isActiveAndEnabled || !ModelTraits.IsModelSelectable(model))
 					continue;
 
 				if (ignoreUnrenderables && !ModelTraits.WillModelRender(model) &&
@@ -922,7 +922,7 @@ namespace InternalRealtimeCSG
 
 				intersection = modelIntersection;
 			}
-
+			
 			if (intersection == null)
 				return false;
 			

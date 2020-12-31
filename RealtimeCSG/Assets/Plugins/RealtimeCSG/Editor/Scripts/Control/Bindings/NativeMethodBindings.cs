@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 using System;
@@ -371,7 +371,7 @@ namespace RealtimeCSG
 				ignoreNodeIDsPtr	= ignoreNodeIDsHandle.AddrOfPinnedObject();
 			}
 			
-			GCHandle outputIntersectionsHandle	= GCHandle.Alloc(__outputIntersections, GCHandleType.Pinned);
+			GCHandle outputIntersectionsHandle = GCHandle.Alloc(__outputIntersections, GCHandleType.Pinned);
 
 			var visibleLayers	 = Tools.visibleLayers;
 			__intersectionList.Clear();
@@ -390,7 +390,7 @@ namespace RealtimeCSG
 
 				if (intersectionCount == 0)
 					continue;
-
+				
 				if (__prevIntersectionCount < intersectionCount)
 				{
 					if (outputIntersectionsHandle.IsAllocated) 
@@ -449,10 +449,9 @@ namespace RealtimeCSG
 			}
 
 			__intersectionList.Sort(delegate(LegacyBrushIntersection x, LegacyBrushIntersection y)
-				{
-					return (int)Mathf.Sign(y.distance - x.distance);
-				}
-			);
+									{
+										return (int)Mathf.Sign(y.distance - x.distance);
+									});
 
 			intersections = __intersectionList.ToArray();
 			return true;

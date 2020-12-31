@@ -286,6 +286,7 @@ namespace RealtimeCSG
 					Cancel();
 					return false;
 				}
+
 				if (generatedGameObjects != null && generatedGameObjects.Length > 0)
 				{
 					if (registerUndo)
@@ -355,8 +356,8 @@ namespace RealtimeCSG
 							brush.ControlMesh.SetDirty();
                             if (registerUndo)
                                 EditorUtility.SetDirty(brush);
-                            }
-						}
+                        }
+					}
 					HideGenerateBrushes();
 				}
 			}

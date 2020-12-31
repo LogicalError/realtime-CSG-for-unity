@@ -129,7 +129,11 @@ namespace RealtimeCSG
             {
                 var prefabStage = UnityEditor.Experimental.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage();
                 if (prefabStage.IsPartOfPrefabContents(gameObject))
+    #if UNITY_2020_1_OR_NEWER
+                    return (GameObject)AssetDatabase.LoadMainAssetAtPath(prefabStage.assetPath);
+    #else
                     return (GameObject)AssetDatabase.LoadMainAssetAtPath(prefabStage.prefabAssetPath);
+    #endif
             }
     #endif
 
