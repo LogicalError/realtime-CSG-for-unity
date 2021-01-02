@@ -309,6 +309,8 @@ namespace RealtimeCSG
 				var gameObject = monoBehaviour.gameObject;
 				if (((1 << gameObject.layer) & visibleLayers) == 0)
 					continue;
+					
+				var distance = (__outputIntersections[i].intersection.worldIntersection - worldRayStart).magnitude;
 
 				intersectionList.Add(new LegacyBrushIntersection
 				{
@@ -322,7 +324,7 @@ namespace RealtimeCSG
 					worldPlane			= new CSGPlane(__outputIntersections[i].intersection.worldPlane),
 					worldIntersection	= __outputIntersections[i].intersection.worldIntersection,
 					surfaceIntersection = __outputIntersections[i].intersection.surfaceIntersection,
-					distance			= __outputIntersections[i].intersection.distance
+					distance			= distance//__outputIntersections[i].intersection.distance
 				});
 			}
 
@@ -418,6 +420,8 @@ namespace RealtimeCSG
 					var gameObject = monoBehaviour.gameObject;
 					if (((1 << gameObject.layer) & visibleLayers) == 0)
 						continue;
+
+					var distance = (__outputIntersections[i].intersection.worldIntersection - rayStart).magnitude;
 					
 					__intersectionList.Add(new LegacyBrushIntersection
 					{
@@ -431,7 +435,7 @@ namespace RealtimeCSG
 						worldPlane			= new CSGPlane(__outputIntersections[i].intersection.worldPlane),
 						worldIntersection	= __outputIntersections[i].intersection.worldIntersection,
 						surfaceIntersection = __outputIntersections[i].intersection.surfaceIntersection,
-						distance			= __outputIntersections[i].intersection.distance,						
+						distance			= distance//__outputIntersections[i].intersection.distance,						
 					});
 				}
 			}
@@ -542,6 +546,8 @@ namespace RealtimeCSG
 				intersection = null;
 				return false;
 			}
+					
+			var distance = (outputSurfaceIntersection.worldIntersection - rayStart).magnitude;
 
 			intersection = new LegacySurfaceIntersection
 			{
@@ -550,7 +556,7 @@ namespace RealtimeCSG
 				worldPlane			= new CSGPlane(outputSurfaceIntersection.worldPlane),
 				surfaceIntersection = outputSurfaceIntersection.surfaceIntersection,
 				worldIntersection	= outputSurfaceIntersection.worldIntersection,
-				distance			= outputSurfaceIntersection.distance
+				distance			= distance//outputSurfaceIntersection.distance
 			};
 			return true;
 		}
