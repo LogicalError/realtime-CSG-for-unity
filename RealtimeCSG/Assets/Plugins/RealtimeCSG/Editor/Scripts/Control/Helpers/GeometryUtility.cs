@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using InternalRealtimeCSG;
@@ -921,7 +921,7 @@ namespace RealtimeCSG
             var dstModelPoint2 = modelFromWorld.MultiplyPoint(dstWorldPoint2);
 
             var result = SurfaceUtility.AlignTextureSpaces(localFromModel,     texGens[srcTexGenIndex], texGenFlags[srcTexGenIndex], ref surfaces[srcSurfaceIndex], srcModelPoint1, srcModelPoint2,
-                                                           localFromModel, ref texGens[dstTexGenIndex], texGenFlags[dstTexGenIndex], ref surfaces[dstSurfaceIndex], dstModelPoint1, dstModelPoint2, false);
+                                                           localFromModel, ref texGens[dstTexGenIndex], texGenFlags[dstTexGenIndex], ref surfaces[dstSurfaceIndex], dstModelPoint1, dstModelPoint2, false, Vector3.one);
 
 //          if (src_is_world_space) SurfaceUtility.SetTextureLock(brush, srcSurfaceIndex, false);
 //          if (dst_is_world_space) SurfaceUtility.SetTextureLock(brush, dstSurfaceIndex, false);

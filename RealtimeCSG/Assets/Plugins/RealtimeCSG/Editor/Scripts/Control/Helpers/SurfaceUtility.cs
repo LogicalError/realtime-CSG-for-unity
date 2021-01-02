@@ -1,4 +1,4 @@
-﻿using InternalRealtimeCSG;
+using InternalRealtimeCSG;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -695,6 +695,11 @@ namespace RealtimeCSG
             var dstTexGenIndex  = dstShape.Surfaces[dstSurfaceIndex].TexGenIndex;
             var srcTexGenIndex  = srcShape.Surfaces[srcSurfaceIndex].TexGenIndex;
 
+            var srcBrushScale   = srcBrush.transform.lossyScale;
+            var dstBrushScale   = dstBrush.transform.lossyScale;
+
+            var srcBrushFromLocal = srcBrush.transform.localToWorldMatrix;
+            var dstBrushFromLocal = dstBrush.transform.localToWorldMatrix;
             var srcBrushFromWorld = srcBrush.transform.worldToLocalMatrix;
             var dstBrushFromWorld = dstBrush.transform.worldToLocalMatrix;
 
@@ -729,9 +734,10 @@ namespace RealtimeCSG
             var det             = edgeDirection.sqrMagnitude;
             if (det < MathConstants.AlignmentTestEpsilon)
             {
+                var tangent = GeometryUtility.CalculateTangent(srcNormal);
                 // Find 2 pairs of points on each plane, assumes planes are perfectly aligned
                 srcWorldPoint1 = srcWorldPlane.pointOnPlane;
-                srcWorldPoint2 = GeometryUtility.ProjectPointOnPlane(srcWorldPlane, srcWorldPoint1 + MathConstants.oneVector3);
+                srcWorldPoint2 = GeometryUtility.ProjectPointOnPlane(srcWorldPlane, srcWorldPoint1 + tangent);
 
                 dstWorldPoint1 = GeometryUtility.ProjectPointOnPlane(dstWorldPlane, srcWorldPoint1);
                 dstWorldPoint2 = GeometryUtility.ProjectPointOnPlane(dstWorldPlane, srcWorldPoint2);
@@ -754,8 +760,13 @@ namespace RealtimeCSG
             var dstModelPoint1 = dstModelFromWorld.MultiplyPoint(dstWorldPoint1);
             var dstModelPoint2 = dstModelFromWorld.MultiplyPoint(dstWorldPoint2);
 
+            var scale = dstBrushScale;
+            scale.x /= srcBrushScale.x; if (float.IsNaN(scale.x) || float.IsInfinity(scale.x)) scale.x = 1;
+            scale.y /= srcBrushScale.y; if (float.IsNaN(scale.y) || float.IsInfinity(scale.y)) scale.y = 1;
+            scale.z /= srcBrushScale.z; if (float.IsNaN(scale.z) || float.IsInfinity(scale.z)) scale.z = 1;
+
             if (AlignTextureSpaces(srcBrushFromModel,     srcTexGens[srcTexGenIndex], srcTexGenFlags[srcTexGenIndex], ref srcSurfaces[srcSurfaceIndex], srcModelPoint1, srcModelPoint2,
-                                   dstBrushFromModel, ref dstTexGens[dstTexGenIndex], dstTexGenFlags[dstTexGenIndex], ref dstSurfaces[dstSurfaceIndex], dstModelPoint1, dstModelPoint2, flipX))
+                                   dstBrushFromModel, ref dstTexGens[dstTexGenIndex], dstTexGenFlags[dstTexGenIndex], ref dstSurfaces[dstSurfaceIndex], dstModelPoint1, dstModelPoint2, flipX, scale))
             {
                 if (dstTexGens.Length != dstTexGenFlags.Length)
                 {
@@ -1264,7 +1275,7 @@ namespace RealtimeCSG
         }
 
         public static bool AlignTextureSpaces(Matrix4x4 src_Brush_From_Model,     TexGen srcTexGen, TexGenFlags srcTexGenFlags, ref Surface srcSurface, Vector3 srcModelPoint1, Vector3 srcModelPoint2, 
-                                              Matrix4x4 dst_Brush_From_Model, ref TexGen dstTexGen, TexGenFlags dstTexGenFlags, ref Surface dstSurface, Vector3 dstModelPoint1, Vector3 dstModelPoint2, bool flipX)
+                                              Matrix4x4 dst_Brush_From_Model, ref TexGen dstTexGen, TexGenFlags dstTexGenFlags, ref Surface dstSurface, Vector3 dstModelPoint1, Vector3 dstModelPoint2, bool flipX, Vector3 scale)
         {
             var src_Plane_From_Model    = GenerateModelSpaceToPlaneSpaceMatrix(srcSurface, srcTexGenFlags, src_Brush_From_Model);
             var dst_Plane_From_Model    = GenerateModelSpaceToPlaneSpaceMatrix(dstSurface, dstTexGenFlags, dst_Brush_From_Model);
@@ -1309,6 +1320,12 @@ namespace RealtimeCSG
                     angle = -angle;
 
                 dstTexGen.RotationAngle = angle;
+            }
+
+            if (scale != Vector3.one)
+            {
+                var dst_Texture_From_Plane = dstTexGen.GeneratePlaneSpaceToTextureSpaceMatrix();
+                dstTexGen.Scale = dst_Texture_From_Plane.MultiplyVector(scale);
             }
 
             // Re-align dstTexcoord1 with srcTexcoord1 on dstTexGen
