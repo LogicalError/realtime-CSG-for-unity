@@ -10,19 +10,19 @@ namespace InternalRealtimeCSG
 {
 	internal sealed partial class MeshInstanceManager
 	{
-		public static void Export(CSGModel model, ExportType exportType, bool exportColliders)
+		public static void Export(CSGModel model, RealtimeCSG.Components.ExportType exportType, bool exportColliders)
 		{
 			string typeName;
 			string extension;
 			switch (exportType)
 			{
-				case ExportType.FBX: typeName = "FBX"; extension = @"fbx"; break;
+				case RealtimeCSG.Components.ExportType.FBX: typeName = "FBX"; extension = @"fbx"; break;
 				default:
-				//case ExportType.UnityMesh:
-					typeName = "Mesh"; extension = @"prefab"; exportType = ExportType.UnityMesh; break;
+				//case RealtimeCSG.Components.ExportType.UnityMesh:
+					typeName = "Mesh"; extension = @"prefab"; exportType = RealtimeCSG.Components.ExportType.UnityMesh; break;
 			}
 			var newPath = model.exportPath;
-			if (exportType != ExportType.UnityMesh)
+			if (exportType != RealtimeCSG.Components.ExportType.UnityMesh)
 			{
 				newPath = UnityFBXExporter.ExporterMenu.GetNewPath(model.gameObject, typeName, extension, model.exportPath);
 				if (string.IsNullOrEmpty(newPath))
@@ -232,7 +232,7 @@ namespace InternalRealtimeCSG
 				GameObject modelGameObject;
 				switch (exportType)
 				{
-					case ExportType.FBX:
+					case RealtimeCSG.Components.ExportType.FBX:
 					{
 						if (!UnityFBXExporter.FBXExporter.ExportGameObjToFBX(tempExportObject, newPath, exportColliders: exportColliders))
 						{
@@ -260,7 +260,7 @@ namespace InternalRealtimeCSG
 						break;
 					}
 					default:
-					//case ExportType.UnityMesh:
+					//case RealtimeCSG.Components.ExportType.UnityMesh:
 					{
 						prefabObj = tempExportObject;// AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(newPath);
 						modelGameObject = tempExportObject;
@@ -278,7 +278,7 @@ namespace InternalRealtimeCSG
 
 				model.exportPath = newPath;
 
-				if (exportType == ExportType.FBX && prefabObj)
+				if (exportType == RealtimeCSG.Components.ExportType.FBX && prefabObj)
 				{
 					foreach (var meshRenderer in prefabObj.GetComponentsInChildren<MeshRenderer>())
 					{
@@ -373,7 +373,7 @@ namespace InternalRealtimeCSG
 			{
 				switch (exportType)
 				{
-					case ExportType.FBX:
+					case RealtimeCSG.Components.ExportType.FBX:
 					{
 						UnityEngine.Object.DestroyImmediate(tempExportObject);
 						break;

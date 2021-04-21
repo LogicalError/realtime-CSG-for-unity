@@ -194,7 +194,7 @@ namespace RealtimeCSG
 #if UNITY_2017_3_OR_NEWER
             var     CookingOptions          = models[0].MeshColliderCookingOptions;
 #endif
-            ExportType? ExportType			= models[0].exportType;
+            RealtimeCSG.Components.ExportType? ExportType = models[0].exportType;
             OriginType? OriginType			= models[0].originType;
 #if UNITY_2019_2_OR_NEWER
             ReceiveGI?  MeshReceiveGI		= models[0].ReceiveGI;
@@ -244,7 +244,7 @@ namespace RealtimeCSG
 #else
                 var currGenerateLightMaps           = (currStaticFlags & StaticEditorFlags.LightmapStatic) == StaticEditorFlags.LightmapStatic;
 #endif
-                ExportType currExportType			= models[i].exportType;
+                RealtimeCSG.Components.ExportType currExportType = models[i].exportType;
                 OriginType  currOriginType			= models[i].originType;
 #if UNITY_2019_2_OR_NEWER
                 ReceiveGI   currReceiveGI           = models[i].ReceiveGI;
@@ -437,7 +437,7 @@ namespace RealtimeCSG
                                 EditorGUI.BeginChangeCheck();
                                 {
                                     EditorGUI.showMixedValue = !ExportType.HasValue;
-                                    ExportType = (ExportType)EditorGUILayout.EnumPopup(ExportType ?? Components.ExportType.FBX, popupStyle);
+                                    ExportType = (RealtimeCSG.Components.ExportType)EditorGUILayout.EnumPopup(ExportType ?? RealtimeCSG.Components.ExportType.FBX, popupStyle);
                                     EditorGUI.showMixedValue = false;
                                 }
                                 if (EditorGUI.EndChangeCheck() && ExportType.HasValue)
