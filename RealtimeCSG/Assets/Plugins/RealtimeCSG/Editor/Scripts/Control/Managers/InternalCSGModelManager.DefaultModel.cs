@@ -88,8 +88,12 @@ namespace RealtimeCSG
 			bool inPrefabMode = false;
 			Transform prefabRootTransform = null;
 #if UNITY_2018_3_OR_NEWER
+    #if !UNITY_2020_1_OR_NEWER
 			var currentPrefabStage = UnityEditor.Experimental.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage();
-			if (currentPrefabStage != null)
+    #else
+            var currentPrefabStage = UnityEditor.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage();
+    #endif
+if (currentPrefabStage != null)
 			{
 				var prefabRoot = currentPrefabStage.prefabContentsRoot;
 				prefabRootTransform = prefabRoot.transform;

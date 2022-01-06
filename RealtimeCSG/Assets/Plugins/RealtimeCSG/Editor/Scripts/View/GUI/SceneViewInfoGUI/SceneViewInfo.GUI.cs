@@ -1,7 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * *
-RealtimeCSG.SceneViewInfo.GUI.cs
-
-License:
+License: MIT (TLDR: https://tldrlegal.com/license/mit-license)
 Author: Daniel Cornelius
 
 Description:

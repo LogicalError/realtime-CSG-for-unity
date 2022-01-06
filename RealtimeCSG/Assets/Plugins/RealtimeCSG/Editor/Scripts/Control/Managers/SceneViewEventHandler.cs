@@ -70,8 +70,8 @@ namespace RealtimeCSG
 				TooltipUtility.InitToolTip(sceneView);
 				if (Event.current.type == EventType.Repaint)
 				{
-					SceneViewBottomBarGUI.ShowGUI(sceneView);
-                	SceneViewInfoGUI.DrawInfoGUI( sceneView );
+					//SceneViewBottomBarGUI.ShowGUI(sceneView);
+                	//SceneViewInfoGUI.DrawInfoGUI( sceneView );
 				}
 				if (!mousePressed)
 				{
