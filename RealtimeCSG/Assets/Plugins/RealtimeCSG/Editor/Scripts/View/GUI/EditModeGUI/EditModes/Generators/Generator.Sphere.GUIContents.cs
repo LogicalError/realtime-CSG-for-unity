@@ -20,8 +20,10 @@ namespace RealtimeCSG
 		private static readonly GUIContent	RadiusContent				= new GUIContent("Radius");
 		private static readonly ToolTip		RadiusTooltip				= new ToolTip("Radius", "Set the radius of the cylinder. The radius is half of the width of a cylinder.");
 		
-		private static readonly GUILayoutOption width25					= GUILayout.Width(25);
-		private static readonly GUILayoutOption width65					= GUILayout.Width(65);
-		private static readonly GUILayoutOption width120				= GUILayout.Width(120);
+        private static readonly GUILayoutOption width20  = GUILayout.Width( 25 );
+        private static readonly GUILayoutOption width65  = GUILayout.Width( 65 );
+        private static readonly GUILayoutOption width80  = GUILayout.Width( 80 );
+        private static readonly GUILayoutOption width110 = GUILayout.Width( 110 );
+        private static readonly GUILayoutOption width120 = GUILayout.Width( 120 );
 	}
 }

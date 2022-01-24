@@ -517,7 +517,7 @@ namespace RealtimeCSG
 					if (RealtimeCSG.CSGSettings.EnableRealtimeCSG)
 					{
 						// handle the tool
-						var sceneSize = sceneView.rootVisualElement.contentRect;
+                        var sceneSize = sceneView.position.size;
 						var sceneRect = new Rect(0, 0, sceneSize.x, sceneSize.y - ((CSG_GUIStyleUtility.BottomToolBarHeight + 4) + 17));
 						
                         // This helps prevent weird issues with overlapping sceneviews + avoid some performance issues with multiple sceneviews open
