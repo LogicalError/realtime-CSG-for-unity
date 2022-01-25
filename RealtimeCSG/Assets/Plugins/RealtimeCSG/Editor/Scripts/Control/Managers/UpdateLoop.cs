@@ -64,10 +64,12 @@ namespace RealtimeCSG
 			EditorApplication.hierarchyWindowChanged	+= OnHierarchyWindowChanged;
 #endif
 
-#if UNITY_2018_3_OR_NEWER && !UNITY_2020_1_OR_NEWER
-            UnityEditor.Experimental.SceneManagement.PrefabStage.prefabSaving += OnPrefabSaving;
-#else
+#if UNITY_2021_2_OR_NEWER // SceneManagement.PrefabStage was moved out of experimental in 2021.2
             UnityEditor.SceneManagement.PrefabStage.prefabSaving += OnPrefabSaving;
+#else
+    #if UNITY_2018_3_OR_NEWER // SceneManagement.PrefabStage was introduced in 2018.3 with nested prefabs
+            UnityEditor.Experimental.SceneManagement.PrefabStage.prefabSaving += OnPrefabSaving;
+    #endif
 #endif
 
             EditorApplication.hierarchyWindowItemOnGUI	-= HierarchyWindowItemGUI.OnHierarchyWindowItemOnGUI;

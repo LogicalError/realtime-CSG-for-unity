@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 
 namespace RealtimeCSG
@@ -18,24 +14,22 @@ namespace RealtimeCSG
                 return EditorGUILayout.Toggle( content, value );
         }
 
-        static float SettingsSlider( float value, float minValue, float maxValue, GUIContent content, bool isSceneGUI )
+        static float FloatSettingsControl( float value, float minValue, float maxValue, GUIContent content, bool isSceneGUI )
         {
             if( isSceneGUI )
             {
                 GUILayout.BeginHorizontal( CSG_GUIStyleUtility.ContentEmpty );
                 GUILayout.Label( content, width65 );
-                //var result = EditorGUILayout.Slider( value, minValue, maxValue, width120 );
-                //GUILayout.Label( $"{value}" );
                 GUI.enabled = false;
 
                 value = EditorGUILayout.FloatField( Mathf.Clamp( value, minValue, maxValue ) );
 
                 GUI.enabled = true;
 
-                if( GUILayout.Button( "-", "buttonleft", width20 ) )
+                if( GUILayout.Button( "-", "buttonleft", width25 ) )
                     value--;
 
-                if( GUILayout.Button( "+", "buttonright", width20 ) )
+                if( GUILayout.Button( "+", "buttonright", width25 ) )
                     value++;
 
                 GUILayout.EndHorizontal();
@@ -46,8 +40,6 @@ namespace RealtimeCSG
             {
                 GUILayout.BeginHorizontal( CSG_GUIStyleUtility.ContentEmpty );
                 GUILayout.Label( content, width65 );
-                //var result = EditorGUILayout.Slider( value, minValue, maxValue, width120 );
-                //GUILayout.Label( $"{value}" );
 
                 GUI.enabled = false;
 
@@ -55,10 +47,10 @@ namespace RealtimeCSG
 
                 GUI.enabled = true;
 
-                if( GUILayout.Button( "-", "buttonleft", width20 ) )
+                if( GUILayout.Button( "-", "buttonleft", width25 ) )
                     value--;
 
-                if( GUILayout.Button( "+", "buttonright", width20 ) )
+                if( GUILayout.Button( "+", "buttonright", width25 ) )
                     value++;
 
                 GUILayout.EndHorizontal();
@@ -67,14 +59,12 @@ namespace RealtimeCSG
             }
         }
 
-        static int IntSettingsSlider( int value, int minValue, int maxValue, GUIContent content, bool isSceneGUI )
+        static int IntSettingsControl( int value, int minValue, int maxValue, GUIContent content, bool isSceneGUI )
         {
             if( isSceneGUI )
             {
                 GUILayout.BeginHorizontal( CSG_GUIStyleUtility.ContentEmpty );
                 GUILayout.Label( content, width65 );
-                //var result = EditorGUILayout.IntSlider( value, minValue, maxValue, width120 );
-                //GUILayout.Label( $"{value}" );
 
                 GUI.enabled = false;
 
@@ -82,10 +72,10 @@ namespace RealtimeCSG
 
                 GUI.enabled = true;
 
-                if( GUILayout.Button( "-", "buttonleft", width20 ) )
+                if( GUILayout.Button( "-", "buttonleft", width25 ) )
                     value--;
 
-                if( GUILayout.Button( "+", "buttonright", width20 ) )
+                if( GUILayout.Button( "+", "buttonright", width25 ) )
                     value++;
 
                 GUILayout.EndHorizontal();
@@ -96,8 +86,6 @@ namespace RealtimeCSG
             {
                 GUILayout.BeginHorizontal( CSG_GUIStyleUtility.ContentEmpty );
                 GUILayout.Label( content, width65 );
-                //var result = EditorGUILayout.IntSlider( value, minValue, maxValue, width120 );
-                //GUILayout.Label( $"{value}" );
 
                 GUI.enabled = false;
 
@@ -105,10 +93,10 @@ namespace RealtimeCSG
 
                 GUI.enabled = true;
 
-                if( GUILayout.Button( "-", "buttonleft", width20 ) )
+                if( GUILayout.Button( "-", "buttonleft", width25 ) )
                     value--;
 
-                if( GUILayout.Button( "+", "buttonright", width20 ) )
+                if( GUILayout.Button( "+", "buttonright", width25 ) )
                     value++;
 
                 GUILayout.EndHorizontal();
@@ -122,33 +110,27 @@ namespace RealtimeCSG
             if( isSceneGUI )
                 GUILayout.BeginHorizontal( GUILayout.MinWidth( 0 ) );
 
+            if( isSceneGUI )
+                GUILayout.BeginVertical( width110 );
+
+            generator.CircleSmoothShading = SettingsToggle( generator.CircleSmoothShading, SmoothShadingContent, width110, isSceneGUI );
+            TooltipUtility.SetToolTip( SmoothShadingTooltip );
+            generator.CircleDistanceToSide = SettingsToggle( generator.CircleDistanceToSide, AlignToSideContent, width110, isSceneGUI );
+            TooltipUtility.SetToolTip( AlignToSideTooltip );
+
+            if( isSceneGUI )
             {
-                if( isSceneGUI )
-                    GUILayout.BeginVertical( width110 );
-
-                {
-                    generator.CircleSmoothShading = SettingsToggle( generator.CircleSmoothShading, SmoothShadingContent, width110, isSceneGUI );
-                    TooltipUtility.SetToolTip( SmoothShadingTooltip );
-                    generator.CircleDistanceToSide = SettingsToggle( generator.CircleDistanceToSide, AlignToSideContent, width110, isSceneGUI );
-                    TooltipUtility.SetToolTip( AlignToSideTooltip );
-                }
-
-                if( isSceneGUI )
-                {
-                    GUILayout.EndVertical();
-                    GUILayout.BeginVertical( width80 );
-                }
-
-                {
-                    generator.CircleSingleSurfaceEnds = !SettingsToggle( !generator.CircleSingleSurfaceEnds, RadialCapsContent, width80, isSceneGUI );
-                    TooltipUtility.SetToolTip( RadialCapsTooltip );
-                    generator.CircleRecenter = SettingsToggle( generator.CircleRecenter, FitShapeContent, width80, isSceneGUI );
-                    TooltipUtility.SetToolTip( FitShapeTooltip );
-                }
-
-                if( isSceneGUI )
-                    GUILayout.EndVertical();
+                GUILayout.EndVertical();
+                GUILayout.BeginVertical( width80 );
             }
+
+            generator.CircleSingleSurfaceEnds = !SettingsToggle( !generator.CircleSingleSurfaceEnds, RadialCapsContent, width80, isSceneGUI );
+            TooltipUtility.SetToolTip( RadialCapsTooltip );
+            generator.CircleRecenter = SettingsToggle( generator.CircleRecenter, FitShapeContent, width80, isSceneGUI );
+            TooltipUtility.SetToolTip( FitShapeTooltip );
+
+            if( isSceneGUI )
+                GUILayout.EndVertical();
 
             if( isSceneGUI )
                 GUILayout.EndHorizontal();
@@ -170,6 +152,7 @@ namespace RealtimeCSG
                 var distanceUnit = RealtimeCSG.CSGSettings.DistanceUnit;
                 var nextUnit     = Units.CycleToNextUnit( distanceUnit );
                 var unitText     = Units.GetUnitGUIContent( distanceUnit );
+                
                 GUILayout.BeginHorizontal( CSG_GUIStyleUtility.ContentEmpty );
                 {
                     GUILayout.Label( HeightContent, width65 );
@@ -194,7 +177,7 @@ namespace RealtimeCSG
                             generator.DefaultHeight = height;
                     }
 
-                    if( GUILayout.Button( unitText, EditorStyles.miniLabel, width20 ) )
+                    if( GUILayout.Button( unitText, EditorStyles.miniLabel, width25 ) )
                     {
                         distanceUnit                         = nextUnit;
                         RealtimeCSG.CSGSettings.DistanceUnit = distanceUnit;
@@ -203,12 +186,11 @@ namespace RealtimeCSG
                         CSG_EditorGUIUtility.RepaintAll();
                     }
                 }
-
-                {
-                    GUILayout.EndHorizontal();
-                    TooltipUtility.SetToolTip( HeightTooltip );
-                    GUILayout.BeginHorizontal( CSG_GUIStyleUtility.ContentEmpty );
-                }
+                GUILayout.EndHorizontal();
+                
+                TooltipUtility.SetToolTip( HeightTooltip );
+                
+                GUILayout.BeginHorizontal( CSG_GUIStyleUtility.ContentEmpty );
                 {
                     EditorGUI.BeginDisabledGroup( !generator.CanCommit );
                     {
@@ -231,7 +213,7 @@ namespace RealtimeCSG
                             generator.RadiusA = radius;
                         }
 
-                        if( GUILayout.Button( unitText, EditorStyles.miniLabel, width20 ) )
+                        if( GUILayout.Button( unitText, EditorStyles.miniLabel, width25 ) )
                         {
                             distanceUnit                         = nextUnit;
                             RealtimeCSG.CSGSettings.DistanceUnit = distanceUnit;
@@ -250,7 +232,7 @@ namespace RealtimeCSG
 
             GUILayout.EndVertical();
             {
-                generator.CircleSides = IntSettingsSlider
+                generator.CircleSides = IntSettingsControl
                 (
                     generator.CircleSides,
                     3,
@@ -261,19 +243,16 @@ namespace RealtimeCSG
 
                 TooltipUtility.SetToolTip( SidesTooltip );
             }
+            generator.CircleOffset = FloatSettingsControl
+            (
+                generator.CircleOffset,
+                0,
+                360,
+                OffsetContent,
+                isSceneGUI
+            );
 
-            {
-                generator.CircleOffset = SettingsSlider
-                (
-                    generator.CircleOffset,
-                    0,
-                    360,
-                    OffsetContent,
-                    isSceneGUI
-                );
-
-                TooltipUtility.SetToolTip( OffsetTooltip );
-            }
+            TooltipUtility.SetToolTip( OffsetTooltip );
 
 
             if( !isSceneGUI )

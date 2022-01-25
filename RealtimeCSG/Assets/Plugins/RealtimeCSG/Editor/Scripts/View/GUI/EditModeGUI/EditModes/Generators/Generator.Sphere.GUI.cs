@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 
 namespace RealtimeCSG
@@ -19,7 +15,7 @@ namespace RealtimeCSG
         }
 
 
-        static float SettingsSlider( float value, float minValue, float maxValue, GUIContent content, bool isSceneGUI )
+        static float FloatSettingsControl( float value, float minValue, float maxValue, GUIContent content, bool isSceneGUI )
         {
             if( isSceneGUI )
             {
@@ -31,10 +27,10 @@ namespace RealtimeCSG
 
                 GUI.enabled = true;
 
-                if( GUILayout.Button( "-", "buttonleft", width20 ) )
+                if( GUILayout.Button( "-", "buttonleft", width25 ) )
                     value--;
 
-                if( GUILayout.Button( "+", "buttonright", width20 ) )
+                if( GUILayout.Button( "+", "buttonright", width25 ) )
                     value++;
 
                 GUILayout.EndHorizontal();
@@ -52,10 +48,10 @@ namespace RealtimeCSG
 
                 GUI.enabled = true;
 
-                if( GUILayout.Button( "-", "buttonleft", width20 ) )
+                if( GUILayout.Button( "-", "buttonleft", width25 ) )
                     value--;
 
-                if( GUILayout.Button( "+", "buttonright", width20 ) )
+                if( GUILayout.Button( "+", "buttonright", width25 ) )
                     value++;
 
                 GUILayout.EndHorizontal();
@@ -64,7 +60,7 @@ namespace RealtimeCSG
             }
         }
 
-        static int IntSettingsSlider( int value, int minValue, int maxValue, GUIContent content, bool isSceneGUI )
+        static int IntSettingsControl( int value, int minValue, int maxValue, GUIContent content, bool isSceneGUI )
         {
             if( isSceneGUI )
             {
@@ -77,10 +73,10 @@ namespace RealtimeCSG
 
                 GUI.enabled = true;
 
-                if( GUILayout.Button( "-", "buttonleft", width20 ) )
+                if( GUILayout.Button( "-", "buttonleft", width25 ) )
                     value--;
 
-                if( GUILayout.Button( "+", "buttonright", width20 ) )
+                if( GUILayout.Button( "+", "buttonright", width25 ) )
                     value++;
 
                 GUILayout.EndHorizontal();
@@ -98,10 +94,10 @@ namespace RealtimeCSG
 
                 GUI.enabled = true;
 
-                if( GUILayout.Button( "-", "buttonleft", width20 ) )
+                if( GUILayout.Button( "-", "buttonleft", width25 ) )
                     value--;
 
-                if( GUILayout.Button( "+", "buttonright", width20 ) )
+                if( GUILayout.Button( "+", "buttonright", width25 ) )
                     value++;
 
                 GUILayout.EndHorizontal();
@@ -162,7 +158,7 @@ namespace RealtimeCSG
                             generator.SphereRadius = radius;
                         }
 
-                        if( GUILayout.Button( unitText, EditorStyles.miniLabel, width20 ) )
+                        if( GUILayout.Button( unitText, EditorStyles.miniLabel, width25 ) )
                         {
                             distanceUnit                         = nextUnit;
                             RealtimeCSG.CSGSettings.DistanceUnit = distanceUnit;
@@ -179,31 +175,29 @@ namespace RealtimeCSG
                 if( !isSceneGUI )
                     TooltipUtility.SetToolTip( RadiusTooltip );
 
-                {
-                    generator.SphereSplits = IntSettingsSlider
-                    (
-                        generator.SphereSplits,
-                        1,
-                        RealtimeCSG.CSGSettings.MaxSphereSplits,
-                        SplitsContent,
-                        isSceneGUI
-                    );
+            
+                generator.SphereSplits = IntSettingsControl
+                (
+                    generator.SphereSplits,
+                    1,
+                    RealtimeCSG.CSGSettings.MaxSphereSplits,
+                    SplitsContent,
+                    isSceneGUI
+                );
 
-                    TooltipUtility.SetToolTip( SplitsTooltip );
-                }
+                TooltipUtility.SetToolTip( SplitsTooltip );
+                
+                generator.SphereOffset = FloatSettingsControl
+                (
+                    generator.SphereOffset,
+                    0,
+                    360,
+                    OffsetContent,
+                    isSceneGUI
+                );
 
-                {
-                    generator.SphereOffset = SettingsSlider
-                    (
-                        generator.SphereOffset,
-                        0,
-                        360,
-                        OffsetContent,
-                        isSceneGUI
-                    );
-
-                    TooltipUtility.SetToolTip( OffsetTooltip );
-                }
+                TooltipUtility.SetToolTip( OffsetTooltip );
+            
             }
 
             GUILayout.EndVertical();
