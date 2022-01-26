@@ -24,13 +24,8 @@ namespace RealtimeCSG
 				Rect  bottomBarRect;
 				if (haveOffset)
 				{
-#if UNITY_2021_2_OR_NEWER
-					bottomBarRect = new Rect(0, height - (CSG_GUIStyleUtility.BottomToolBarHeight + 27),
-						  width, CSG_GUIStyleUtility.BottomToolBarHeight);
-#else
 					bottomBarRect = new Rect(0, height - (CSG_GUIStyleUtility.BottomToolBarHeight + 18), 
 											  width, CSG_GUIStyleUtility.BottomToolBarHeight);
-#endif
 				} else
 					bottomBarRect = new Rect(0, height - (CSG_GUIStyleUtility.BottomToolBarHeight + 1), width, CSG_GUIStyleUtility.BottomToolBarHeight);
 
@@ -102,7 +97,7 @@ namespace RealtimeCSG
 				currentRect.x		= layoutX;
 				layoutX += currentRect.width;
 
-#region "Grid" button
+				#region "Grid" button
 				if (showGrid)
 				{
 					showGrid = GUI.Toggle(currentRect, showGrid, skin.gridIconOn, EditorStyles.toolbarButton);
@@ -112,7 +107,7 @@ namespace RealtimeCSG
 				}
 				//(x:6.00, y:0.00, width:27.00, height:18.00)
 				TooltipUtility.SetToolTip(showGridTooltip, currentRect);
-#endregion
+				#endregion
 
 				if (viewWidth >= 800)
 					layoutX += 6; //(x:33.00, y:0.00, width:6.00, height:6.00)
@@ -122,7 +117,7 @@ namespace RealtimeCSG
 				if (lockAxisX)
 					GUI.backgroundColor = lockedBackgroundColor;
 
-#region "X" lock button
+				#region "X" lock button
 				currentRect.width	= 17;
 				currentRect.y		= 0;
 				currentRect.height	= layoutHeight - currentRect.y;
@@ -137,9 +132,9 @@ namespace RealtimeCSG
 				else
 					TooltipUtility.SetToolTip(xTooltipOff, currentRect);
 				GUI.backgroundColor = prevBackgroundColor;
-#endregion
+				#endregion
 												
-#region "Y" lock button
+				#region "Y" lock button
 				currentRect.x		= layoutX;
 				layoutX += currentRect.width;
 
@@ -152,9 +147,9 @@ namespace RealtimeCSG
 				else
 					TooltipUtility.SetToolTip(yTooltipOff, currentRect);
 				GUI.backgroundColor = prevBackgroundColor;
-#endregion
+				#endregion
 						
-#region "Z" lock button
+				#region "Z" lock button
 				currentRect.x		= layoutX;
 				layoutX += currentRect.width;
 
@@ -167,14 +162,14 @@ namespace RealtimeCSG
 				else
 					TooltipUtility.SetToolTip(zTooltipOff, currentRect);
 				GUI.backgroundColor = prevBackgroundColor;
-#endregion
+				#endregion
 			}
 			modified = GUI.changed || modified;
 
 			if (viewWidth >= 800)
 				layoutX += 6; // (x:91.00, y:0.00, width:6.00, height:6.00)
 				
-#region "SnapMode" button
+			#region "SnapMode" button
 			GUI.changed = false;
 			{
 				currentRect.width	= 27;
@@ -224,13 +219,13 @@ namespace RealtimeCSG
                 }
             }
             modified = GUI.changed || modified;
-#endregion
+            #endregion
 				
 			if (viewWidth >= 460)
 			{
 				if (snapMode != SnapMode.None)
 				{
-#region "Position" label
+					#region "Position" label
 					if (viewWidth >= 500)
 					{ 
 						if (viewWidth >= 865)
@@ -261,11 +256,11 @@ namespace RealtimeCSG
 							TooltipUtility.SetToolTip(positionTooltip, currentRect);
 						}
 					}
-#endregion
+					#endregion
 							
 					layoutX += 2;
 
-#region "Position" field
+					#region "Position" field
 					if (uniformGrid || viewWidth < 515)
 					{
 						EditorGUI.showMixedValue = !(moveSnapVector.x == moveSnapVector.y && moveSnapVector.x == moveSnapVector.z);
@@ -321,11 +316,11 @@ namespace RealtimeCSG
 						}
 						modified = GUI.changed || modified;
 					}
-#endregion
+					#endregion
 
 					layoutX++;
 
-#region "Position" Unit
+					#region "Position" Unit
 					DistanceUnit nextUnit = Units.CycleToNextUnit(distanceUnit);
 					GUIContent   unitText = Units.GetUnitGUIContent(distanceUnit);
 						
@@ -341,11 +336,11 @@ namespace RealtimeCSG
 						distanceUnit = nextUnit;
 						modified = true;
 					}
-#endregion
+					#endregion
 
 					layoutX += 2;
 
-#region "Position" +/-
+					#region "Position" +/-
 					if (viewWidth >= 700)
 					{
 						currentRect.width	= 19;
@@ -370,11 +365,11 @@ namespace RealtimeCSG
 						//(x:429.00, y:2.00, width:17.00, height:15.00)
 						TooltipUtility.SetToolTip(positionMinnusTooltip, currentRect);
 					}
-#endregion
+					#endregion
 
 					layoutX += 2;
 
-#region "Angle" label
+					#region "Angle" label
 					if (viewWidth >= 750)
 					{
 						if (viewWidth >= 865)
@@ -402,11 +397,11 @@ namespace RealtimeCSG
 						}
 						TooltipUtility.SetToolTip(angleTooltip, currentRect);
 					}
-#endregion
+					#endregion
 						
 					layoutX += 2;
 
-#region "Angle" field
+					#region "Angle" field
 					GUI.changed = false;
 					{
 						currentRect.width	= 70;
@@ -422,11 +417,11 @@ namespace RealtimeCSG
 							TooltipUtility.SetToolTip(angleTooltip, currentRect);
 					}
 					modified = GUI.changed || modified;
-#endregion
+					#endregion
 
 					layoutX++;
 
-#region "Angle" Unit
+					#region "Angle" Unit
 					if (viewWidth >= 370)
 					{
 						currentRect.width	= 14;
@@ -438,11 +433,11 @@ namespace RealtimeCSG
 							
 						GUI.Label(currentRect, angleUnitLabel, miniTextStyle);
 					}
-#endregion
+					#endregion
 						
 					layoutX += 2;
 
-#region "Angle" +/-
+					#region "Angle" +/-
 					if (viewWidth >= 700)
 					{
 						currentRect.width	= 19;
@@ -468,11 +463,11 @@ namespace RealtimeCSG
 						//(x:592.00, y:2.00, width:17.00, height:15.00)
 						TooltipUtility.SetToolTip(angleMinnusTooltip, currentRect);
 					}
-#endregion
+					#endregion
 
 					layoutX += 2;
 
-#region "Scale" label
+					#region "Scale" label
 					if (viewWidth >= 750)
 					{
 						if (viewWidth >= 865)
@@ -500,11 +495,11 @@ namespace RealtimeCSG
 						}
 						TooltipUtility.SetToolTip(scaleTooltip, currentRect);
 					}
-#endregion
+					#endregion
 						
 					layoutX += 2;
 
-#region "Scale" field
+					#region "Scale" field
 					GUI.changed = false;
 					{
 						currentRect.width	= 70;
@@ -520,11 +515,11 @@ namespace RealtimeCSG
 							TooltipUtility.SetToolTip(scaleTooltip, currentRect);
 					}
 					modified = GUI.changed || modified;
-#endregion
+					#endregion
 
 					layoutX ++;
 						
-#region "Scale" Unit
+					#region "Scale" Unit
 					if (viewWidth >= 370)
 					{
 						currentRect.width	= 15;
@@ -537,11 +532,11 @@ namespace RealtimeCSG
 						GUI.Label(currentRect, scaleUnitLabel, miniTextStyle);
 						//(x:722.00, y:2.00, width:15.00, height:16.00)
 					}
-#endregion
+					#endregion
 						
 					layoutX += 2;
 
-#region "Scale" +/-
+					#region "Scale" +/-
 					if (viewWidth >= 700)
 					{
 						currentRect.width	= 19;
@@ -567,7 +562,7 @@ namespace RealtimeCSG
 						//(x:760.00, y:2.00, width:17.00, height:15.00)
 						TooltipUtility.SetToolTip(scaleMinnusTooltip, currentRect);
 					}
-#endregion
+					#endregion
 				}
 			}
 
@@ -577,7 +572,7 @@ namespace RealtimeCSG
 			layoutX = viewWidth;
 
 				
-#region "Rebuild"
+			#region "Rebuild"
 			currentRect.width	= 27;
 			currentRect.y		= 0;
 			currentRect.height	= layoutHeight - currentRect.y; 
@@ -631,12 +626,12 @@ namespace RealtimeCSG
 			}
 			//(x:1442.00, y:0.00, width:27.00, height:18.00)
 			TooltipUtility.SetToolTip(rebuildTooltip, currentRect);
-#endregion
+			#endregion
 
 			if (viewWidth >= 800)
 				layoutX -= 6; //(x:1436.00, y:0.00, width:6.00, height:6.00)
 
-#region "Helper Surface Flags" Mask
+			#region "Helper Surface Flags" Mask
 			if (viewWidth >= 250)
 			{
 				GUI.changed = false;
@@ -663,9 +658,9 @@ namespace RealtimeCSG
 					modified = true;
 				}
 			}
-#endregion
+			#endregion
 
-#region "Show wireframe" button
+			#region "Show wireframe" button
 			GUI.changed = false;
 			currentRect.width	= 26;
 			currentRect.y		= 0;
@@ -689,13 +684,13 @@ namespace RealtimeCSG
 				wireframeModified = true;
 				modified = true;
 			}
-#endregion
+			#endregion
 
 
 
 
 
-#region Capture mouse clicks in empty space
+			#region Capture mouse clicks in empty space
 			var mousePoint  = Event.current.mousePosition;
 			int controlID = GUIUtility.GetControlID(BottomBarEditorOverlayHash, FocusType.Passive, barSize);
 			switch (Event.current.GetTypeForControl(controlID))
@@ -706,11 +701,11 @@ namespace RealtimeCSG
 				case EventType.MouseDrag:	{ if (GUIUtility.hotControl == controlID) { Event.current.Use(); } break; }
 				case EventType.ScrollWheel: { if (barSize.Contains(mousePoint)) { Event.current.Use(); } break; }
 			}
-#endregion
+			#endregion
 
 
 
-#region Store modified values
+			#region Store modified values
 			rotationSnap = Mathf.Max(1.0f, Mathf.Abs((360 + (rotationSnap % 360))) % 360);
 			moveSnapVector.x = Mathf.Max(1.0f / 1024.0f, moveSnapVector.x);
 			moveSnapVector.y = Mathf.Max(1.0f / 1024.0f, moveSnapVector.y);
@@ -748,7 +743,7 @@ namespace RealtimeCSG
 				RealtimeCSG.CSGSettings.Save();
 				CSG_EditorGUIUtility.RepaintAll();
 			}
-#endregion
+			#endregion
 		}
 		
 	}
