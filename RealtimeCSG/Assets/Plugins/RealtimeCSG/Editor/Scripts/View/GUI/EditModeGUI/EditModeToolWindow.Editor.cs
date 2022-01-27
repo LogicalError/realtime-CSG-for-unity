@@ -9,12 +9,12 @@ public class EditModeToolWindowEditor : Editor
 	public Bounds OnGetFrameBounds()		{ return RealtimeCSG.BoundsUtilities.OnGetFrameBounds(RealtimeCSG.EditModeManager.FilteredSelection); }
 	public override void OnInspectorGUI()
 	{
-		if (EditorApplication.isPlayingOrWillChangePlaymode)
-		{
-			Selection.activeObject = null;
-            
-			return;
-		}
+        if( EditorApplication.isPlayingOrWillChangePlaymode )
+        {
+            Selection.activeObject = null;
+
+            return;
+        }
 		RealtimeCSG.EditModeSelectionGUI.OnInspectorGUI(this, this.targets);
 	}
 }
