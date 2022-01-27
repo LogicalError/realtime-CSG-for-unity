@@ -12,6 +12,7 @@ public class EditModeToolWindowEditor : Editor
 		if (EditorApplication.isPlayingOrWillChangePlaymode)
 		{
 			Selection.activeObject = null;
+            
 			return;
 		}
 		RealtimeCSG.EditModeSelectionGUI.OnInspectorGUI(this, this.targets);
