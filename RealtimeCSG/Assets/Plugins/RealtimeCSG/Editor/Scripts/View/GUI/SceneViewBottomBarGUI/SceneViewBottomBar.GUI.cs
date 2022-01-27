@@ -19,18 +19,13 @@ namespace RealtimeCSG
 			CSG_GUIStyleUtility.InitStyles();
 			if (sceneView != null)
 			{
-				float height	= sceneView.position.height;//Screen.height;
-				float width		= sceneView.position.width;//Screen.width;
-				Rect bottomBarRect;
+				float height = sceneView.rootVisualElement.contentRect.height; //Screen.height;
+				float width  = sceneView.rootVisualElement.contentRect.width;  //Screen.width;
+				Rect  bottomBarRect;
 				if (haveOffset)
 				{
-#if UNITY_2021_2_OR_NEWER
-					bottomBarRect = new Rect(0, height - (CSG_GUIStyleUtility.BottomToolBarHeight + 27),
-						  width, CSG_GUIStyleUtility.BottomToolBarHeight);
-#else
 					bottomBarRect = new Rect(0, height - (CSG_GUIStyleUtility.BottomToolBarHeight + 18), 
 											  width, CSG_GUIStyleUtility.BottomToolBarHeight);
-#endif
 				} else
 					bottomBarRect = new Rect(0, height - (CSG_GUIStyleUtility.BottomToolBarHeight + 1), width, CSG_GUIStyleUtility.BottomToolBarHeight);
 
@@ -87,7 +82,7 @@ namespace RealtimeCSG
 			var updateSurfaces	= false;
 			bool wireframeModified = false;
 
-			var viewWidth = sceneView.position.width;
+			var viewWidth = sceneView.rootVisualElement.contentRect.width;
 
 			float layoutHeight = barSize.height;
 			float layoutX = 6.0f;
