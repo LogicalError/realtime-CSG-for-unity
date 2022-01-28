@@ -18,7 +18,7 @@ using UnityEditor;
 using UnityEngine;
 
 
-namespace NI
+namespace RealtimeCSG.Utilities
 {
     public class Icon2EmbeddedAssetsUtility : EditorWindow
     {
