@@ -6,7 +6,7 @@ https://assetstore.unity.com/packages/tools/modeling/realtime-csg-69542
 
 **Project website**: https://www.realtimecsg.com/
 
-**How to install**: Copy the Plugins directory in your Assets folder
+**How to install**: Copy the RealtimeCSG folder, or pull a copy of this repo to anywhere in your project.
 
 If you use the plugin, please let us know, we'd love to see what you've done with it!
 
