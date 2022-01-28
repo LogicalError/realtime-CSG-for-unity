@@ -62,7 +62,7 @@ namespace RealtimeCSG.Utilities
                     {
                     };
 
-                    foundT2Ds = Resources.LoadAll<Texture2D>( "Icons" );
+                    foundT2Ds = Resources.LoadAll<Texture2D>( "RealtimeCSG/Icons" );
                 }
             }
 
