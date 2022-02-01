@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 using InternalRealtimeCSG;
@@ -93,10 +94,10 @@ namespace RealtimeCSG
 			};
 			if (textureName != null)
 			{
-				string filename = "Assets/Plugins/RealtimeCSG/Editor/Resources/Textures/" + textureName + ".png";
-				material.mainTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(filename);
+				//string filename = "Assets/Plugins/RealtimeCSG/Editor/Resources/Textures/" + textureName + ".png";
+                material.mainTexture = Resources.Load<Texture2D>($"RealtimeCSG/Textures/{textureName}"); //AssetDatabase.LoadAssetAtPath<Texture2D>(filename);
 				if (!material.mainTexture)
-					Debug.LogWarning("Could not find internal texture: " + filename);
+					Debug.LogWarning("Could not find internal texture: " + textureName);
 			}
 			EditorMaterials.Add(name, material);
 			return material;
@@ -142,17 +143,63 @@ namespace RealtimeCSG
 					o.name == n.name;
 		}
 
-		
-		const string DefaultMaterialPath = "Assets/Plugins/RealtimeCSG/Runtime/Materials/";
-		const string DefaultTexturePath = "Assets/Plugins/RealtimeCSG/Runtime/Textures/";
+        private static string _RCSGFolder = "";
+
+        // always locate RealtimeCSG/Plugins via looking for its asmdef
+        private static string RCSGFolder
+        {
+            get
+            {
+                if( _RCSGFolder.Length < 1 )
+                {
+                    var    ids  = AssetDatabase.FindAssets( "t:AssemblyDefinitionAsset RealtimeCSG" );
+                    string path = AssetDatabase.GUIDToAssetPath( ids[0] );
+                    _RCSGFolder = $"{Path.GetDirectoryName( path ).Replace( "\\", "/" )}/";
+                }
+
+                return _RCSGFolder;
+            }
+        }
+
+        private static string RuntimeResourcesFolder
+        {
+            get
+            {
+                return $"{RCSGFolder}Plugins/Runtime/Resources/RealtimeCSG/";
+            }
+        }
+
+        private static string DefaultMaterialPath
+        {
+            get
+            {
+                return $"{RuntimeResourcesFolder}Materials/";
+            }
+        }
+
+        private static string DefaultTexturePath
+        {
+            get
+            {
+                return $"{RuntimeResourcesFolder}Textures/";
+            }
+        }
+
+        private static string _pipeline = "";
+        
+		//const string DefaultMaterialPath = "Assets/Plugins/RealtimeCSG/Runtime/Materials/";
+		//const string DefaultTexturePath = "Assets/Plugins/RealtimeCSG/Runtime/Textures/";
 		
 		internal static void CreateRenderPipelineVersionOfDefaultMaterial(Material defaultMaterial, string materialName)
 		{
 			if (!defaultMaterial)
 				return;
-			
-			var materialPath		= string.Format("{0}{1}/", DefaultMaterialPath, defaultMaterial.shader.name);
-			var materialFilename	= string.Format("{0}{1}.mat", materialPath, materialName);
+
+            var materialPath     = $"{DefaultMaterialPath}{_pipeline}/";
+			var materialFilename = $"{materialPath}{materialName}.mat";
+            
+            //Debug.Log(materialFilename );
+            //return;
 
 			var material = AssetDatabase.LoadAssetAtPath<Material>(materialFilename);
 			if (material)
@@ -165,7 +212,7 @@ namespace RealtimeCSG
 				if (!System.IO.Directory.Exists(materialPath))
 					System.IO.Directory.CreateDirectory(materialPath);
 				// HDRenderPipeline will generate errors when creating it's own type of materials
-				AssetDatabase.CreateAsset(material, materialFilename);
+                AssetDatabase.CreateAsset(material, materialFilename);
 				material = AssetDatabase.LoadAssetAtPath<Material>(materialFilename);
 			}
 			catch (Exception ex)
@@ -182,16 +229,16 @@ namespace RealtimeCSG
 				else if	(material.HasProperty("_MainTex")) destTexture = "_MainTex";
 				if (destTexture != null)
 				{
-					var texturePath		= string.Format("{0}{1}.png", DefaultTexturePath, materialName);
-					var defaultTexture	= AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
+					var texturePath    = string.Format("{0}{1}.png", DefaultTexturePath, materialName);
+                    var defaultTexture = Resources.Load<Texture2D>( $"RealtimeCSG/Textures/{materialName}" ); //AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
 					if (defaultTexture)
 					{
 						material.SetTexture(destTexture, defaultTexture);
 						material.mainTexture = defaultTexture;
 					} else
 					{
-						var regularMaterialPath = string.Format("{0}{1}.mat", DefaultMaterialPath, materialName);
-						var regularMaterial		= AssetDatabase.LoadAssetAtPath<Material>(regularMaterialPath);
+						//var regularMaterialPath = string.Format("{0}{1}.mat", DefaultMaterialPath, materialName);
+                        var regularMaterial     = Resources.Load<Material>( $"RealtimeCSG/Materials/{materialName}" ); //AssetDatabase.LoadAssetAtPath<Material>(regularMaterialPath);
 						if (regularMaterial)
 						{
 							material.SetTexture(destTexture, regularMaterial.mainTexture);
@@ -210,9 +257,13 @@ namespace RealtimeCSG
 
 		internal static void CreateRenderPipelineVersionOfDefaultMaterials(Material defaultMaterial)
 		{
-			if (!defaultMaterial)
-				return;
 
+            if( _pipeline.Length < 1 )
+                _pipeline = defaultMaterial.shader.name.StartsWith( "HDRP" ) ? "HDRP" : "URP";
+            
+            if (!defaultMaterial)
+				return;
+            
 			CreateRenderPipelineVersionOfDefaultMaterial(defaultMaterial, WallMaterialName);
 			CreateRenderPipelineVersionOfDefaultMaterial(defaultMaterial, FloorMaterialName);
 			CreateRenderPipelineVersionOfDefaultMaterial(defaultMaterial, WindowMaterialName);
@@ -226,8 +277,8 @@ namespace RealtimeCSG
 			var currentMaterialPath = AssetDatabase.GetAssetPath(currentMaterial);
 			if (!currentMaterialPath.StartsWith(DefaultMaterialPath))
 				return;
-			
-			var materialPath = string.Format("{0}{1}/", DefaultMaterialPath, defaultMaterial.shader.name);
+
+            var materialPath = $"{DefaultMaterialPath}{_pipeline}/";
 			if (currentMaterialPath.StartsWith(materialPath))
 				return;
 			
@@ -247,12 +298,12 @@ namespace RealtimeCSG
 
 			if (!defaultMaterial)
 			{
-				var defaultFilename	= string.Format("{0}{1}.mat", DefaultMaterialPath, materialName);
+				var defaultFilename	= $"{DefaultMaterialPath}{materialName}.mat";
 				return AssetDatabase.LoadAssetAtPath<Material>(defaultFilename);
 			}
 			
-			var materialPath		= string.Format("{0}{1}/", DefaultMaterialPath, defaultMaterial.shader.name);
-			var materialFilename	= string.Format("{0}{1}.mat", materialPath, materialName);
+			var materialPath     = $"{DefaultMaterialPath}{_pipeline}/";
+			var materialFilename = $"{materialPath}{materialName}.mat";
 
 			var material = AssetDatabase.LoadAssetAtPath<Material>(materialFilename);
 			if (material)
@@ -266,8 +317,9 @@ namespace RealtimeCSG
 
         internal static PhysicMaterial GetRuntimePhysicMaterial(string materialName)
         {
-            var defaultFilename = string.Format("{0}{1}.physicMaterial", DefaultMaterialPath, materialName);
-            return AssetDatabase.LoadAssetAtPath<PhysicMaterial>(defaultFilename);
+            //var defaultFilename = string.Format("{0}{1}.physicMaterial", DefaultMaterialPath, materialName);
+
+            return Resources.Load<PhysicMaterial>( $"RealtimeCSG/Materials/{materialName}" ); //AssetDatabase.LoadAssetAtPath<PhysicMaterial>(defaultFilename);
         }
 
 
