@@ -630,7 +630,8 @@ namespace RealtimeCSG
 			//var image = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
             //Debug.Assert(image, "Could not find image at " + path);
 
-            EmbeddedAssets.TryFindIcon( name, out Texture2D image );
+            Texture2D image;
+            EmbeddedAssets.TryFindIcon( name, out image );
             
 			return new GUIContent(image);
 		}

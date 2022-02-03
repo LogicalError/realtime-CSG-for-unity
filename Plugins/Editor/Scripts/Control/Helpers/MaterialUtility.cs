@@ -95,7 +95,7 @@ namespace RealtimeCSG
 			if (textureName != null)
 			{
 				//string filename = "Assets/Plugins/RealtimeCSG/Editor/Resources/Textures/" + textureName + ".png";
-                material.mainTexture = Resources.Load<Texture2D>($"RealtimeCSG/Textures/{textureName}"); //AssetDatabase.LoadAssetAtPath<Texture2D>(filename);
+                material.mainTexture = Resources.Load<Texture2D>( string.Format( "RealtimeCSG/Textures/{0}", textureName ) ); //AssetDatabase.LoadAssetAtPath<Texture2D>(filename);
 				if (!material.mainTexture)
 					Debug.LogWarning("Could not find internal texture: " + textureName);
 			}
@@ -152,9 +152,13 @@ namespace RealtimeCSG
             {
                 if( _RCSGFolder.Length < 1 )
                 {
+                    #if UNITY_2017_3_OR_NEWER
                     var    ids  = AssetDatabase.FindAssets( "t:AssemblyDefinitionAsset RealtimeCSG" );
+#else
+                    var ids = AssetDatabase.FindAssets( "t:TextAsset rcsg_root" );
+                    #endif
                     string path = AssetDatabase.GUIDToAssetPath( ids[0] );
-                    _RCSGFolder = $"{Path.GetDirectoryName( path ).Replace( "\\", "/" )}/";
+                    _RCSGFolder = string.Format( "{0}/", Path.GetDirectoryName( path ).Replace( "\\", "/" ) );
                 }
 
                 return _RCSGFolder;
@@ -165,7 +169,7 @@ namespace RealtimeCSG
         {
             get
             {
-                return $"{RCSGFolder}Plugins/Runtime/Resources/RealtimeCSG/";
+                return string.Format( "{0}Plugins/Runtime/Resources/RealtimeCSG/", RCSGFolder );
             }
         }
 
@@ -173,7 +177,7 @@ namespace RealtimeCSG
         {
             get
             {
-                return $"{RuntimeResourcesFolder}Materials/";
+                return string.Format( "{0}Materials/", RuntimeResourcesFolder );
             }
         }
 
@@ -181,7 +185,7 @@ namespace RealtimeCSG
         {
             get
             {
-                return $"{RuntimeResourcesFolder}Textures/";
+                return string.Format( "{0}Textures/", RuntimeResourcesFolder );
             }
         }
 
@@ -195,8 +199,8 @@ namespace RealtimeCSG
 			if (!defaultMaterial)
 				return;
 
-            var materialPath     = $"{DefaultMaterialPath}{_pipeline}/";
-			var materialFilename = $"{materialPath}{materialName}.mat";
+            var materialPath     = string.Format( "{0}{1}/", DefaultMaterialPath, _pipeline );
+			var materialFilename = string.Format( "{0}{1}.mat", materialPath, materialName );
             
             //Debug.Log(materialFilename );
             //return;
@@ -230,7 +234,7 @@ namespace RealtimeCSG
 				if (destTexture != null)
 				{
 					var texturePath    = string.Format("{0}{1}.png", DefaultTexturePath, materialName);
-                    var defaultTexture = Resources.Load<Texture2D>( $"RealtimeCSG/Textures/{materialName}" ); //AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
+                    var defaultTexture = Resources.Load<Texture2D>( string.Format( "RealtimeCSG/Textures/{0}", materialName ) ); //AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
 					if (defaultTexture)
 					{
 						material.SetTexture(destTexture, defaultTexture);
@@ -238,7 +242,7 @@ namespace RealtimeCSG
 					} else
 					{
 						//var regularMaterialPath = string.Format("{0}{1}.mat", DefaultMaterialPath, materialName);
-                        var regularMaterial     = Resources.Load<Material>( $"RealtimeCSG/Materials/{materialName}" ); //AssetDatabase.LoadAssetAtPath<Material>(regularMaterialPath);
+                        var regularMaterial = Resources.Load<Material>( string.Format( "RealtimeCSG/Materials/{0}", materialName ) ); //AssetDatabase.LoadAssetAtPath<Material>(regularMaterialPath);
 						if (regularMaterial)
 						{
 							material.SetTexture(destTexture, regularMaterial.mainTexture);
@@ -278,7 +282,7 @@ namespace RealtimeCSG
 			if (!currentMaterialPath.StartsWith(DefaultMaterialPath))
 				return;
 
-            var materialPath = $"{DefaultMaterialPath}{_pipeline}/";
+            var materialPath = string.Format( "{0}{1}/", DefaultMaterialPath, _pipeline );
 			if (currentMaterialPath.StartsWith(materialPath))
 				return;
 			
@@ -298,12 +302,12 @@ namespace RealtimeCSG
 
 			if (!defaultMaterial)
 			{
-				var defaultFilename	= $"{DefaultMaterialPath}{materialName}.mat";
+				var defaultFilename	= string.Format( "{0}{1}.mat", DefaultMaterialPath, materialName );
 				return AssetDatabase.LoadAssetAtPath<Material>(defaultFilename);
 			}
 			
-			var materialPath     = $"{DefaultMaterialPath}{_pipeline}/";
-			var materialFilename = $"{materialPath}{materialName}.mat";
+			var materialPath     = string.Format( "{0}{1}/", DefaultMaterialPath, _pipeline );
+			var materialFilename = string.Format( "{0}{1}.mat", materialPath, materialName );
 
 			var material = AssetDatabase.LoadAssetAtPath<Material>(materialFilename);
 			if (material)
@@ -319,7 +323,7 @@ namespace RealtimeCSG
         {
             //var defaultFilename = string.Format("{0}{1}.physicMaterial", DefaultMaterialPath, materialName);
 
-            return Resources.Load<PhysicMaterial>( $"RealtimeCSG/Materials/{materialName}" ); //AssetDatabase.LoadAssetAtPath<PhysicMaterial>(defaultFilename);
+            return Resources.Load<PhysicMaterial>( string.Format( "RealtimeCSG/Materials/{0}", materialName ) ); //AssetDatabase.LoadAssetAtPath<PhysicMaterial>(defaultFilename);
         }
 
 

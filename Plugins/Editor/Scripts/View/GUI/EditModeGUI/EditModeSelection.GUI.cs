@@ -50,9 +50,12 @@ namespace RealtimeCSG
 			{
 				if (!SceneDragToolManager.IsDraggingObjectInScene)
 					OnEditModeSelectionSceneGUI();
-
+#if UNITY_2018_3_OR_NEWER
 				var viewRect = new Rect(4, 0, sceneView.rootVisualElement.contentRect.width, sceneView.rootVisualElement.contentRect.height - (CSG_GUIStyleUtility.BottomToolBarHeight + 4));
-				GUILayout.BeginArea(viewRect);
+#else
+                var viewRect = new Rect( 4, 0, sceneView.position.width, sceneView.position.height - ( CSG_GUIStyleUtility.BottomToolBarHeight + 4 ) );
+#endif
+                GUILayout.BeginArea(viewRect);
 
 				if (EditModeManager.ActiveTool != null)
 				{

@@ -36,8 +36,14 @@ namespace RealtimeCSG
 
         private static void InitStyles( SceneView sceneView )
         {
-            infoGUIRect.x      = sceneView.rootVisualElement.contentRect.width - 116;
-            infoGUIRect.y      = sceneView.rootVisualElement.contentRect.height - 74;
+#if UNITY_2018_3_OR_NEWER
+            infoGUIRect.x = sceneView.rootVisualElement.contentRect.width - 116;
+            infoGUIRect.y = sceneView.rootVisualElement.contentRect.height - 74;
+#else
+            infoGUIRect.x = sceneView.position.width - 116;
+            infoGUIRect.y = sceneView.position.height - 74;
+#endif
+
             infoGUIRect.width  = 110;
             infoGUIRect.height = infoGUILabelHeight;
 
