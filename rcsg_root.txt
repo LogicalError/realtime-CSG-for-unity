@@ -1,0 +1,1 @@
+do not delete! used to find RCSG folder by older versions of unity (before asmdef)
