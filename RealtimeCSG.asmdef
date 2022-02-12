@@ -2,7 +2,9 @@
     "name": "RealtimeCSG",
     "rootNamespace": "RealtimeCSG",
     "references": [],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
