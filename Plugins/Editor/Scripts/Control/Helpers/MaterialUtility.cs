@@ -143,34 +143,31 @@ namespace RealtimeCSG
 					o.name == n.name;
 		}
 
-        private static string _RCSGFolder = "";
-
-        // always locate RealtimeCSG/Plugins via looking for its asmdef
-        private static string RCSGFolder
+        /// <summary>
+        /// Locates the root folder of RealtimeCSG
+        /// </summary>
+        private static string FindRCSGFolder()
         {
-            get
-            {
-                if( _RCSGFolder.Length < 1 )
-                {
-                    #if UNITY_2017_3_OR_NEWER
-                    var    ids  = AssetDatabase.FindAssets( "t:AssemblyDefinitionAsset RealtimeCSG" );
-#else
-                    var ids = AssetDatabase.FindAssets( "t:TextAsset rcsg_root" );
-                    #endif
-                    string path = AssetDatabase.GUIDToAssetPath( ids[0] );
-                    _RCSGFolder = string.Format( "{0}/", Path.GetDirectoryName( path ).Replace( "\\", "/" ) );
-                }
+            string   path    = string.Empty;
+            string[] folders = Directory.GetDirectories( Application.dataPath, "RealtimeCSG", SearchOption.AllDirectories );
 
-                return _RCSGFolder;
-            }
+            if( folders.Length < 1 )
+                // the folder wasnt renamed when downloaded from github, so we'll look for the downloaded folder name instead.
+                folders = Directory.GetDirectories( Application.dataPath, "realtime-CSG-for-unity-master", SearchOption.AllDirectories );
+
+            if( folders.Length > 0 )
+                path = folders[0].Substring( Application.dataPath.Length );
+            else
+                Debug.LogException( new DirectoryNotFoundException( "Could not locate the 'RealtimeCSG' or 'realtime-CSG-for-unity-master' folder. Please make sure the root folder of RealtimeCSG is named 'RealtimeCSG' or 'realtime-CSG-for-unity-master'." ) );
+
+
+            return string.Format( "Assets/{0}/", Path.GetDirectoryName( path ) );
         }
+
 
         private static string RuntimeResourcesFolder
         {
-            get
-            {
-                return string.Format( "{0}Plugins/Runtime/Resources/RealtimeCSG/", RCSGFolder );
-            }
+            get { return string.Format( "{0}Plugins/Runtime/Resources/RealtimeCSG/", FindRCSGFolder() ); }
         }
 
         private static string DefaultMaterialPath
