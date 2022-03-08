@@ -10,12 +10,12 @@ If you use this plugin, please let us know, we'd love to see what you've done wi
 ---
 **Git (Requires having [git](https://git-scm.com/) installed)**
 
-* In the `Assets/` folder of your project, in the command line, use the git command `git clone https://github.com/LogicalError/realtime-CSG-for-unity.git RealtimeCSG`
+* In the `Assets/` or `Packages/` folder of your project, in the command line, use the git command `git clone https://github.com/LogicalError/realtime-CSG-for-unity.git RealtimeCSG`
 
 **Manual Download**
 
 * [Download this repo](https://github.com/LogicalError/realtime-CSG-for-unity/archive/refs/heads/master.zip)
-* Copy the folder in the downloaded zip to anywhere in your `Assets/` folder, or to the `Plugins/` folder.
+* Copy the folder in the downloaded zip to anywhere in your `Assets/` folder, or to the `Packages/` folder.
 * Rename the downloaded folder to `RealtimeCSG`
 
 **Unity Package Manager (UPM)**
