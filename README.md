@@ -32,6 +32,7 @@ If you use this plugin, please let us know, we'd love to see what you've done wi
 
 **Manual Update**
 * Close Unity
+* Delete the RealtimeCSG folder
 * Repeat the steps from "Manual Download" above
 
 **Unity Package Manager (UPM)**
