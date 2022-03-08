@@ -149,19 +149,24 @@ namespace RealtimeCSG
         private static string FindRCSGFolder()
         {
             string   path    = string.Empty;
-            string[] folders = Directory.GetDirectories( Application.dataPath, "RealtimeCSG", SearchOption.AllDirectories );
+            string[] folders = Directory.GetDirectories( Directory.GetParent( Application.dataPath ).FullName, "RealtimeCSG", SearchOption.AllDirectories );
 
             if( folders.Length < 1 )
+            {
                 // the folder wasnt renamed when downloaded from github, so we'll look for the downloaded folder name instead.
-                folders = Directory.GetDirectories( Application.dataPath, "realtime-CSG-for-unity-master", SearchOption.AllDirectories );
+                folders = Directory.GetDirectories( Directory.GetParent( Application.dataPath ).FullName, "realtime-CSG-for-unity-master", SearchOption.AllDirectories );
+            }
 
             if( folders.Length > 0 )
-                path = folders[0].Substring( Application.dataPath.Length );
+            {
+                path = folders[0].Substring( Directory.GetParent( Application.dataPath ).FullName.Length );
+            }
             else
                 Debug.LogException( new DirectoryNotFoundException( "Could not locate the 'RealtimeCSG' or 'realtime-CSG-for-unity-master' folder. Please make sure the root folder of RealtimeCSG is named 'RealtimeCSG' or 'realtime-CSG-for-unity-master'." ) );
 
+            path = path.Replace( "\\", "/" ).Remove( 0, 1 );
 
-            return string.Format( "Assets/{0}/", Path.GetDirectoryName( path ) );
+            return string.Format( "{0}/", path );
         }
 
 
