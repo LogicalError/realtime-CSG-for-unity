@@ -12,8 +12,8 @@ namespace RealtimeCSG
 		Meters,
 		Centimeters,
 		Millimeters,
-		Inches,
-		Feet
+		Feet,
+		Inches
 	}
 
 	public enum PixelUnit
@@ -67,7 +67,7 @@ namespace RealtimeCSG
 		{
 			if (unit < DistanceUnit.Meters)
 				return DistanceUnit.Meters;
-			return (DistanceUnit)((int)(unit + 1) % (((int)DistanceUnit.Feet) + 1));
+			return (DistanceUnit)((int)(unit + 1) % (((int)DistanceUnit.Inches) + 1));
 		}
 
 		
