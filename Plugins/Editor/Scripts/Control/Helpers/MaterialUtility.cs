@@ -4,6 +4,8 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using InternalRealtimeCSG;
+using UnityEngine.Rendering;
+
 
 namespace RealtimeCSG
 {
@@ -143,191 +145,161 @@ namespace RealtimeCSG
 					o.name == n.name;
 		}
 
-        /// <summary>
-        /// Locates the root folder of RealtimeCSG
-        /// </summary>
-        private static string FindRCSGFolder()
+        private static string GetRenderPipelineType()
         {
-            string   path    = string.Empty;
-            string[] folders = Directory.GetDirectories( Directory.GetParent( Application.dataPath ).FullName, "RealtimeCSG", SearchOption.AllDirectories );
+            if( GraphicsSettings.renderPipelineAsset == null )
+                return string.Empty; // we are using built-in, so do nothing.
 
-            if( folders.Length < 1 )
-            {
-                // the folder wasnt renamed when downloaded from github, so we'll look for the downloaded folder name instead.
-                folders = Directory.GetDirectories( Directory.GetParent( Application.dataPath ).FullName, "realtime-CSG-for-unity-master", SearchOption.AllDirectories );
-            }
+            string rpDefaultMatShader = GraphicsSettings.renderPipelineAsset.defaultMaterial.shader.name;
 
-            if( folders.Length > 0 )
-            {
-                path = folders[0].Substring( Directory.GetParent( Application.dataPath ).FullName.Length );
-            }
-            else
-                Debug.LogException( new DirectoryNotFoundException( "Could not locate the 'RealtimeCSG' or 'realtime-CSG-for-unity-master' folder. Please make sure the root folder of RealtimeCSG is named 'RealtimeCSG' or 'realtime-CSG-for-unity-master'." ) );
+            if( rpDefaultMatShader.StartsWith( "HDRP" ) )
+                return "HDRP";
 
-            path = path.Replace( "\\", "/" ).Remove( 0, 1 );
+            if( rpDefaultMatShader.StartsWith( "LWRP" ) )
+                return "LWRP";
 
-            return string.Format( "{0}/", path );
+            if( rpDefaultMatShader.StartsWith( "URP" ) || rpDefaultMatShader.StartsWith(  "Universal Render Pipeline" ))
+                return "URP";
+
+            return string.Empty; // default rp, do nothing.
         }
 
-
-        private static string RuntimeResourcesFolder
+        private static bool TryGetShaderMainTex( Material material, out string mainTexTag )
         {
-            get { return string.Format( "{0}Plugins/Runtime/Resources/RealtimeCSG/", FindRCSGFolder() ); }
-        }
-
-        private static string DefaultMaterialPath
-        {
-            get
+            if( material.HasProperty( "_Diffuse" ) )
             {
-                return string.Format( "{0}Materials/", RuntimeResourcesFolder );
-            }
-        }
+                mainTexTag = "_Diffuse";
 
-        private static string DefaultTexturePath
-        {
-            get
+                return true;
+            }
+
+            if( material.HasProperty( "_Albedo" ) )
             {
-                return string.Format( "{0}Textures/", RuntimeResourcesFolder );
+                mainTexTag = "_Albedo";
+
+                return true;
             }
+
+            if( material.HasProperty( "_BaseColorMap" ) )
+            {
+                mainTexTag = "_BaseColorMap";
+
+                return true;
+            }
+
+            if( material.HasProperty( "_MainTex" ) )
+            {
+                mainTexTag = "_MainTex";
+
+                return true;
+            }
+
+            mainTexTag = "";
+
+            return false;
+        }
+ private static bool TryGetMetallicProperty(Material material,  out string property )
+        {
+            if( material.HasProperty( "_Metallic" ) )
+            {
+                property = "_Metallic";
+
+                return true;
+            }
+
+            property = "_Metallic";
+            return false;
         }
 
-        private static string _pipeline = "";
-        
-		//const string DefaultMaterialPath = "Assets/Plugins/RealtimeCSG/Runtime/Materials/";
-		//const string DefaultTexturePath = "Assets/Plugins/RealtimeCSG/Runtime/Textures/";
-		
-		internal static void CreateRenderPipelineVersionOfDefaultMaterial(Material defaultMaterial, string materialName)
-		{
-			if (!defaultMaterial)
-				return;
+        /*
+         * 1: Check that we actually have the material were looking for
+         * 2: Find RP type, and then create any neccessary directories
+         * 3: If we arent on the built-in RP, then update the material to the default material shader for the current RP
+         *   3.1: Stop entirely if the default material shader doesnt have a compatible default main texture property
+         * 4: Save the changes to disk
+         */
+        private static void GenerateBuiltinPipelineMaterial( string name )
+        {
+            Material material = Resources.Load<Material>( string.Format( "{0}{1}", "RealtimeCSG/Materials/", name ) );
 
-            var materialPath     = string.Format( "{0}{1}/", DefaultMaterialPath, _pipeline );
-			var materialFilename = string.Format( "{0}{1}.mat", materialPath, materialName );
-            
-            //Debug.Log(materialFilename );
-            //return;
+            if( material == null )
+            {
+                Debug.LogWarningFormat( "Could not find material '{0}{1}.mat'. Not generating material '{0}{1}.mat' for the current render pipeline.", "RealtimeCSG/Materials/", name );
 
-			var material = AssetDatabase.LoadAssetAtPath<Material>(materialFilename);
-			if (material)
-				return;
+                return;
+            }
 
-			material = new Material(defaultMaterial);
+            string rpType = GetRenderPipelineType();
 
-			try
-			{
-				if (!System.IO.Directory.Exists(materialPath))
-					System.IO.Directory.CreateDirectory(materialPath);
-				// HDRenderPipeline will generate errors when creating it's own type of materials
-                AssetDatabase.CreateAsset(material, materialFilename);
-				material = AssetDatabase.LoadAssetAtPath<Material>(materialFilename);
-			}
-			catch (Exception ex)
-			{
-				Debug.LogException(ex);
-			}
+            if( !string.IsNullOrEmpty( rpType ) ) // if we are using any RP
+            {
+                AssetDatabase.StartAssetEditing();
 
-			try
-			{
-				string destTexture = null;
-				if (material.HasProperty("_Diffuse")) destTexture = "_Diffuse";
-				else if (material.HasProperty("_Albedo")) destTexture = "_Albedo";
-				else if (material.HasProperty("_BaseColorMap")) destTexture = "_BaseColorMap";
-				else if	(material.HasProperty("_MainTex")) destTexture = "_MainTex";
-				if (destTexture != null)
-				{
-					var texturePath    = string.Format("{0}{1}.png", DefaultTexturePath, materialName);
-                    var defaultTexture = Resources.Load<Texture2D>( string.Format( "RealtimeCSG/Textures/{0}", materialName ) ); //AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
-					if (defaultTexture)
-					{
-						material.SetTexture(destTexture, defaultTexture);
-						material.mainTexture = defaultTexture;
-					} else
-					{
-						//var regularMaterialPath = string.Format("{0}{1}.mat", DefaultMaterialPath, materialName);
-                        var regularMaterial = Resources.Load<Material>( string.Format( "RealtimeCSG/Materials/{0}", materialName ) ); //AssetDatabase.LoadAssetAtPath<Material>(regularMaterialPath);
-						if (regularMaterial)
-						{
-							material.SetTexture(destTexture, regularMaterial.mainTexture);
-							material.mainTexture = regularMaterial.mainTexture;
-						} else
-							Debug.LogWarning("couldn't find source texture for " + materialName);
-					}
-				}
-			}
-			catch(Exception ex)
-			{
-				Debug.LogException(ex);
-			}
-		}
+                string pipelineShader = GraphicsSettings.renderPipelineAsset.defaultMaterial.shader.name;
 
+                material.shader = Shader.Find( pipelineShader );
 
-		internal static void CreateRenderPipelineVersionOfDefaultMaterials(Material defaultMaterial)
-		{
+                string mainTexTag;
 
-            if( _pipeline.Length < 1 )
-                _pipeline = defaultMaterial.shader.name.StartsWith( "HDRP" ) ? "HDRP" : "URP";
-            
-            if (!defaultMaterial)
-				return;
-            
-			CreateRenderPipelineVersionOfDefaultMaterial(defaultMaterial, WallMaterialName);
-			CreateRenderPipelineVersionOfDefaultMaterial(defaultMaterial, FloorMaterialName);
-			CreateRenderPipelineVersionOfDefaultMaterial(defaultMaterial, WindowMaterialName);
-			CreateRenderPipelineVersionOfDefaultMaterial(defaultMaterial, MetalMaterialName);
-			
-			CSGSettings.Reload();
-			var currentMaterial = CSGSettings.DefaultMaterial;
-			if (!currentMaterial)
-				return;  
-			
-			var currentMaterialPath = AssetDatabase.GetAssetPath(currentMaterial);
-			if (!currentMaterialPath.StartsWith(DefaultMaterialPath))
-				return;
+                if( TryGetShaderMainTex( material, out mainTexTag ) )
+                {
+                    material.SetTexture( mainTexTag, Resources.Load<Texture2D>( string.Format( "RealtimeCSG/Textures/{0}", name ) ) );
 
-            var materialPath = string.Format( "{0}{1}/", DefaultMaterialPath, _pipeline );
-			if (currentMaterialPath.StartsWith(materialPath))
-				return;
-			
-			var newMaterialPath = currentMaterialPath.Replace(DefaultMaterialPath, materialPath);
-			currentMaterial =  AssetDatabase.LoadAssetAtPath<Material>(newMaterialPath);
-			if (currentMaterial)
-				CSGSettings.DefaultMaterial = currentMaterial;
-			CSGSettings.Save();
-		}
+                    if( material.name.Equals( "Metal" ) )
+                    {
+                        // if the material is the built-in metal texture, then we'll set its metalness to 100%
 
-		internal static Material GetRuntimeMaterial(string materialName)
-		{
-			Material defaultMaterial = null;
-			var renderPipelineAsset = UnityEngine.Rendering.GraphicsSettings.renderPipelineAsset;
-			if (renderPipelineAsset)
-				defaultMaterial = DefaultMaterial;
+                        string metalnessTag;
 
-			if (!defaultMaterial)
-			{
-				var defaultFilename	= string.Format( "{0}{1}.mat", DefaultMaterialPath, materialName );
-				return AssetDatabase.LoadAssetAtPath<Material>(defaultFilename);
-			}
-			
-			var materialPath     = string.Format( "{0}{1}/", DefaultMaterialPath, _pipeline );
-			var materialFilename = string.Format( "{0}{1}.mat", materialPath, materialName );
+                        if( TryGetMetallicProperty( material, out metalnessTag ) )
+                        {
+                            material.SetFloat( metalnessTag, 1f );
+                            material.SetFloat( "_Smoothness", 1f );
+                            material.SetTexture( "_MetallicGlossMap", Resources.Load<Texture2D>( "RealtimeCSG/Textures/checker_m" ) );
+                        }
 
-			var material = AssetDatabase.LoadAssetAtPath<Material>(materialFilename);
-			if (material)
-				return material;
-			
-			CreateRenderPipelineVersionOfDefaultMaterials(defaultMaterial);
-			
-			return AssetDatabase.LoadAssetAtPath<Material>(materialFilename);
-		}
+                        if( material.HasProperty( "_DetailAlbedoMap" ) )
+                        {
+                            material.SetTexture( "_DetailAlbedoMap", Resources.Load<Texture2D>( "RealtimeCSG/Textures/checker" ) );
+                        }
+                    }
+                }
+                else // we failed to find any default RP shader, so we'll just abort early
+                {
+                    AssetDatabase.StopAssetEditing();
 
+                    Debug.LogErrorFormat( "Could not find a compatible default render pipeline shader. Shader '{0}' does not contain any properties named '_MainTex', '_Albedo', '_Diffuse', or '_BaseColorMap'." );
+
+                    return;
+                }
+
+                AssetDatabase.StopAssetEditing();
+
+                EditorUtility.SetDirty( material );
+                AssetDatabase.SaveAssetIfDirty( material );
+
+                AssetDatabase.Refresh( ImportAssetOptions.ForceUpdate );
+
+                Resources.UnloadUnusedAssets();
+            }
+
+            // using built-in, just dont do anything.
+        }
+
+        internal static Material GetRuntimeMaterial( string materialName )
+        {
+            GenerateBuiltinPipelineMaterial( WallMaterialName );
+            GenerateBuiltinPipelineMaterial( FloorMaterialName );
+            GenerateBuiltinPipelineMaterial( WindowMaterialName );
+            GenerateBuiltinPipelineMaterial( MetalMaterialName );
+
+            return Resources.Load<Material>( string.Format( "RealtimeCSG/Materials/{0}/{1}", GetRenderPipelineType(), materialName ) );
+        }
 
         internal static PhysicMaterial GetRuntimePhysicMaterial(string materialName)
         {
-            //var defaultFilename = string.Format("{0}{1}.physicMaterial", DefaultMaterialPath, materialName);
-
-            return Resources.Load<PhysicMaterial>( string.Format( "RealtimeCSG/Materials/{0}", materialName ) ); //AssetDatabase.LoadAssetAtPath<PhysicMaterial>(defaultFilename);
+            return Resources.Load<PhysicMaterial>( string.Format( "RealtimeCSG/Materials/{0}", materialName ) );
         }
-
 
         private static Material _defaultMaterial;
 		public static Material DefaultMaterial
