@@ -198,18 +198,6 @@ namespace RealtimeCSG
 
             return false;
         }
- private static bool TryGetMetallicProperty(Material material,  out string property )
-        {
-            if( material.HasProperty( "_Metallic" ) )
-            {
-                property = "_Metallic";
-
-                return true;
-            }
-
-            property = "_Metallic";
-            return false;
-        }
 
         /*
          * 1: Check that we actually have the material were looking for
@@ -239,6 +227,13 @@ namespace RealtimeCSG
 
                 material.shader = Shader.Find( pipelineShader );
 
+                if( material.shader.name == pipelineShader ) // if our shader is already the default RP shader, then don't do anything
+                {
+                    AssetDatabase.StopAssetEditing();
+
+                    return;
+                }
+
                 string mainTexTag;
 
                 if( TryGetShaderMainTex( material, out mainTexTag ) )
@@ -249,11 +244,9 @@ namespace RealtimeCSG
                     {
                         // if the material is the built-in metal texture, then we'll set its metalness to 100%
 
-                        string metalnessTag;
-
-                        if( TryGetMetallicProperty( material, out metalnessTag ) )
+                        if( material.HasProperty( "_Metallic" ) )
                         {
-                            material.SetFloat( metalnessTag, 1f );
+                            material.SetFloat( "_Metallic", 1f );
                             material.SetFloat( "_Smoothness", 1f );
                             material.SetTexture( "_MetallicGlossMap", Resources.Load<Texture2D>( "RealtimeCSG/Textures/checker_m" ) );
                         }
@@ -274,15 +267,19 @@ namespace RealtimeCSG
                 }
 
                 AssetDatabase.StopAssetEditing();
-
                 EditorUtility.SetDirty( material );
+
+                // SaveAssetsIfDirty doesn't exist on versions older than 2020.3.16
+#if UNITY_2020_3_OR_NEWER && ! (UNITY_2020_3_0 || UNITY_2020_3_1 || UNITY_2020_3_2 || UNITY_2020_3_3 || UNITY_2020_3_4 || UNITY_2020_3_5 || UNITY_2020_3_6 || UNITY_2020_3_7 || UNITY_2020_3_8 || UNITY_2020_3_9 || UNITY_2020_3_10 || UNITY_2020_3_11 || UNITY_2020_3_12 || UNITY_2020_3_13 || UNITY_2020_3_14 || UNITY_2020_3_15)
                 AssetDatabase.SaveAssetIfDirty( material );
+#else
+                AssetDatabase.SaveAssets();
+#endif
 
                 AssetDatabase.Refresh( ImportAssetOptions.ForceUpdate );
-
                 Resources.UnloadUnusedAssets();
             }
-
+            
             // using built-in, just dont do anything.
         }
 
