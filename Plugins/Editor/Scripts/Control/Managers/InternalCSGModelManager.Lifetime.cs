@@ -1,14 +1,6 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
-using UnityEngine.SceneManagement;
-using UnityEditor.SceneManagement;
 using UnityEditor;
 using InternalRealtimeCSG;
-using System.Reflection;
-using UnityEngine.Rendering;
-using System.Runtime.InteropServices;
 
 namespace RealtimeCSG
 {
@@ -20,6 +12,9 @@ namespace RealtimeCSG
 		internal static NativeMethods External;
 
 		#region Clear
+    #if UNITY_2019_4_OR_NEWER
+        [RuntimeInitializeOnLoadMethod( RuntimeInitializeLoadType.SubsystemRegistration )]        
+#endif
 		public static void Clear()
 		{
 			BrushOutlineManager.ClearOutlines();
