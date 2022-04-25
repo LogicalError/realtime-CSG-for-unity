@@ -145,25 +145,6 @@ namespace RealtimeCSG
 					o.name == n.name;
 		}
 
-        private static string GetRenderPipelineType()
-        {
-            if( GraphicsSettings.renderPipelineAsset == null )
-                return string.Empty; // we are using built-in, so do nothing.
-
-            string rpDefaultMatShader = GraphicsSettings.renderPipelineAsset.defaultMaterial.shader.name;
-
-            if( rpDefaultMatShader.StartsWith( "HDRP" ) )
-                return "HDRP";
-
-            if( rpDefaultMatShader.StartsWith( "LWRP" ) )
-                return "LWRP";
-
-            if( rpDefaultMatShader.StartsWith( "URP" ) || rpDefaultMatShader.StartsWith(  "Universal Render Pipeline" ))
-                return "URP";
-
-            return string.Empty; // default rp, do nothing.
-        }
-
         private static bool TryGetShaderMainTex( Material material, out string mainTexTag )
         {
             if( material.HasProperty( "_Diffuse" ) )
@@ -217,9 +198,7 @@ namespace RealtimeCSG
                 return;
             }
 
-            string rpType = GetRenderPipelineType();
-
-            if( !string.IsNullOrEmpty( rpType ) ) // if we are using any RP
+            if( GraphicsSettings.renderPipelineAsset != null ) // if we are using any RP
             {
                 AssetDatabase.StartAssetEditing();
 
@@ -290,7 +269,7 @@ namespace RealtimeCSG
             GenerateBuiltinPipelineMaterial( WindowMaterialName );
             GenerateBuiltinPipelineMaterial( MetalMaterialName );
 
-            return Resources.Load<Material>( string.Format( "RealtimeCSG/Materials/{0}/{1}", GetRenderPipelineType(), materialName ) );
+            return Resources.Load<Material>( string.Format( "RealtimeCSG/Materials/{0}", materialName ) );
         }
 
         internal static PhysicMaterial GetRuntimePhysicMaterial(string materialName)
