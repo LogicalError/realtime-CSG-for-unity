@@ -660,7 +660,7 @@ namespace RealtimeCSG
 
 			if (mouseIsDragging || 
 				(Event.current.type == EventType.MouseDown && Tools.viewTool == ViewTool.Orbit))
-				HandleCameraOrbit(sceneView, editMode != EditMode.CreatePlane);
+				HandleCameraOrbit(sceneView, editMode != EditMode.CreateShape && editMode != EditMode.CreatePlane);
 						
 			// pretend we dragged so we don't click if we just changed edit modes
 			if (prevEditMode != editMode)
