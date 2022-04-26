@@ -1359,9 +1359,10 @@ namespace RealtimeCSG
 			var inCamera			= (camera != null) && camera.pixelRect.Contains(Event.current.mousePosition);
 
 			var originalEventType = Event.current.type;
-			if      (originalEventType == EventType.MouseMove) { mouseIsDragging = false; draggingOnCamera = null; realMousePosition = Event.current.mousePosition; }
-			else if (originalEventType == EventType.MouseDown) { mouseIsDragging = false; draggingOnCamera = camera; realMousePosition = prevMousePos = Event.current.mousePosition; }
-			else if (originalEventType == EventType.MouseUp)   { draggingOnCamera = null; }
+            if( Event.current.type == EventType.MouseMove ) { sceneView.Repaint(); }
+            else if      (originalEventType == EventType.MouseMove) { mouseIsDragging = false; draggingOnCamera = null; realMousePosition   = Event.current.mousePosition; }
+            else if (originalEventType == EventType.MouseDown) { mouseIsDragging      = false; draggingOnCamera = camera; realMousePosition = prevMousePos = Event.current.mousePosition; }
+			else if (originalEventType == EventType.MouseUp)   { draggingOnCamera     = null; }
 			else if (originalEventType == EventType.MouseDrag)
 			{
 				if (!mouseIsDragging && (prevMousePos - Event.current.mousePosition).sqrMagnitude > 4.0f)
