@@ -409,14 +409,14 @@ namespace InternalRealtimeCSG
                 if (!ModelTraits.IsModelEditable(model))
 					continue;
 
+                if( !model.generatedMeshes )
+                    continue;
+                
 				var container = model.generatedMeshes;
                 if (container.owner != model ||
 					!container.gameObject)
                     continue;
-
-				if (!model.generatedMeshes)
-					continue;
-
+                
                 if (!container.HasHelperSurfaces)
                 {
                     if (!container.HasMeshInstances)

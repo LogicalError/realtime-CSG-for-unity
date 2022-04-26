@@ -12,7 +12,7 @@ namespace RealtimeCSG
 		internal static NativeMethods External;
 
 		#region Clear
-    #if UNITY_2019_4_OR_NEWER
+#if UNITY_2019_4_OR_NEWER
         [RuntimeInitializeOnLoadMethod( RuntimeInitializeLoadType.SubsystemRegistration )]        
 #endif
 		public static void Clear()
