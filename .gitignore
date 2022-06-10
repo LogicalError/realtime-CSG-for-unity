@@ -46,15 +46,5 @@ Logs/
 
 ProjectSettings/ProjectVersion\.txt
 
-
 *.exp
-
 *.lib
-
-Packages/com\.chisel\.core/Chisel/Core/API\.private/Native/Plugin/x64/Chisel\[TEST\]\.exp\.meta
-LICENSE.md.meta
-Icons.zip.meta
-README.md.meta
-Readme.meta
-Readme/Images.meta
-Readme/Images/house_view.png.meta

@@ -1344,7 +1344,7 @@ namespace RealtimeCSG
                                 {
                                     for (int p = 0; p < surfaceState.surfaceSelectState.Length; p++)
                                     {
-                                        if (surfaceState.surfaceSelectState[p] != oldSurfaceStates[p])
+                                        if (surfaceState.surfaceSelectState[p] != oldSurfaceStates[p] || oldSurfaceStates[p] == SelectState.None)
                                             repaint = true;
                                     }
                                 }
@@ -1352,9 +1352,6 @@ namespace RealtimeCSG
                         }
                         editMode = newEditMode;
                         Handles.matrix = origMatrix;
-            
-                        if (repaint)
-                            CSG_EditorGUIUtility.RepaintAll();
             
                         if (hoverOnTarget >= 0 && hoverOnSurfaceIndex >= 0 && surfaceStates.Length > hoverOnTarget &&
                             surfaceStates[hoverOnTarget].surfaceSelectState.Length > hoverOnSurfaceIndex)
@@ -1365,6 +1362,10 @@ namespace RealtimeCSG
                                     currentCursor = MouseCursor.ArrowPlus;
                             }
                         }
+
+                        if( repaint )
+                            CSG_EditorGUIUtility.RepaintAll();
+                        
                         break;
                     }
                 }
@@ -1585,6 +1586,7 @@ namespace RealtimeCSG
                 if (originalEventType == EventType.MouseUp ||
                     originalEventType == EventType.MouseMove) { mouseIsDragging = false; mouseIsDown = false; }
             }
+            
         }
 
         

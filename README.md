@@ -56,4 +56,4 @@ If you use this plugin, please let us know, we'd love to see what you've done wi
 * Create your own branch
 * Submit a PR (do not submit PRs from the master branch of your fork)
 
-<sub>README last updated March 4th, 2022</sup>
+<sub>README last updated June 9th, 2022</sup>
