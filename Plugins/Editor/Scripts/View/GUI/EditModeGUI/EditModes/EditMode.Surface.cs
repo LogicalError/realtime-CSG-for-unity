@@ -959,7 +959,7 @@ namespace RealtimeCSG
             else if (originalEventType == EventType.MouseDrag)
             {
                 mouseIsDown = true; 
-                if (!mouseIsDragging && (prevMousePos - Event.current.mousePosition).sqrMagnitude > 4.0f)
+                if (!mouseIsDragging && (prevMousePos - Event.current.mousePosition).magnitude > 4.0f)
                     mouseIsDragging = true;
             }
 

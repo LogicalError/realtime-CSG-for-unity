@@ -157,7 +157,7 @@ namespace RealtimeCSG
 						settings.AddPoint(worldPosition);
 					}
 					
-					if ((settings.vertices[0] - settings.vertices[1]).sqrMagnitude <= MathConstants.EqualityEpsilon)
+					if ((settings.vertices[0] - settings.vertices[1]).magnitude <= MathConstants.EqualityEpsilon)
 					{
 						Cancel();
 						return false;

@@ -79,7 +79,7 @@ namespace RealtimeCSG
 
 			Clear();
 
-			if (EditorApplication.isPlaying || EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 			{
 				return false;
 			}
@@ -105,7 +105,7 @@ namespace RealtimeCSG
 		#region Reset
 		public static void Reset(CSGNode node)
 		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 			{
 				return;
 			}
@@ -122,7 +122,7 @@ namespace RealtimeCSG
 		#region AddNodeRegistration
 		static void AddNodeRegistration(CSGNode node)
 		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 			{
 				return;
 			}
@@ -461,7 +461,7 @@ namespace RealtimeCSG
 		#region RegisterChild
 		static void RegisterChild(ChildNodeData childData)
 		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return;
 			
 			// make sure our model has actually been initialized
@@ -485,7 +485,7 @@ namespace RealtimeCSG
 		#region RegisterBrush
 		static void RegisterBrush(CSGBrush brush)
 		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode ||
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode ||
 				External == null ||
 				!brush ||
 				!brush.isActiveAndEnabled ||
@@ -572,7 +572,7 @@ namespace RealtimeCSG
 		#region RegisterOperation
 		static void RegisterOperation(CSGOperation op)
 		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode ||
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode ||
 				External == null ||
 				!op ||
 				!op.isActiveAndEnabled ||
@@ -634,7 +634,7 @@ namespace RealtimeCSG
 		#region RegisterModel
 		private static void RegisterModel(CSGModel model)
 		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode ||
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode ||
 				External == null ||
 				!model ||
 				!model.isActiveAndEnabled ||
@@ -726,7 +726,7 @@ namespace RealtimeCSG
 		#region UnregisterBrush  
 		static void UnregisterBrush(CSGBrush brush)
 		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return;
 			
 			if (External == null)
@@ -773,7 +773,7 @@ namespace RealtimeCSG
 		#region UnregisterOperation
 		static void UnregisterOperation(CSGOperation op)
 		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return;
 			
 			if (External == null)
@@ -820,7 +820,7 @@ namespace RealtimeCSG
 		#region UnregisterModel
 		static void UnregisterModel(CSGModel model)
 		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return;
 			
 			if (!model.IsRegistered)
@@ -862,7 +862,7 @@ namespace RealtimeCSG
 		#region EnableModel
 		private static void EnableModel(CSGModel model)
 		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return;
 
 			if (External == null)
@@ -889,7 +889,7 @@ namespace RealtimeCSG
 		#region DisableModel
 		private static void DisableModel(CSGModel model)
 		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return;
 
 			if (External == null)

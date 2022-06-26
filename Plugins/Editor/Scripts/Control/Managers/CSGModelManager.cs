@@ -7,6 +7,13 @@ namespace RealtimeCSG
 {
 	public static class CSGModelManager
 	{
+		public static bool AllowInEditorPlayMode = false;
+
+		public static bool IsInPlayMode
+		{
+			get => !AllowInEditorPlayMode && (UnityEditor.EditorApplication.isPlaying || UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode);
+		}
+
 		public static void ForceRebuild()
 		{
 #if UNITY_EDITOR

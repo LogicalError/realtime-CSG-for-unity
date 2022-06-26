@@ -42,7 +42,7 @@ namespace InternalRealtimeCSG
 
 		public static void Destroy(GeneratedMeshes generatedMeshes)
 		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return;
 
 			if (!generatedMeshes)
@@ -104,6 +104,9 @@ namespace InternalRealtimeCSG
 
 		static void Initialize(GeneratedMeshes container, GeneratedMeshInstance meshInstance)
 		{
+			// Retain layer
+			meshInstance.gameObject.layer = container.gameObject.layer;
+
 			container.AddMeshInstance(meshInstance);
 		}
 
@@ -323,6 +326,9 @@ namespace InternalRealtimeCSG
 			var generatedMeshesTransform = generatedMeshesObject.transform;
 			generatedMeshesTransform.SetParent(model.transform, false);
 
+			// Retain layer
+			generatedMeshesObject.layer = model.gameObject.layer;
+
 			generatedMeshesObject.SetActive(true);
 
 			UpdateGeneratedMeshesVisibility(generatedMeshes, model.ShowGeneratedMeshes);
@@ -334,7 +340,7 @@ namespace InternalRealtimeCSG
 
 		internal static bool ValidateModelNow(CSGModel model, bool checkChildren = false)
         {
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return true;
 
 			if (!checkChildren && 
@@ -531,7 +537,7 @@ namespace InternalRealtimeCSG
 
         internal static void Reset()
 		{
-			if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return;
 
 			for (var sceneIndex = 0; sceneIndex < SceneManager.sceneCount; sceneIndex++)
@@ -777,6 +783,8 @@ namespace InternalRealtimeCSG
             hasGeneratedNormals = false;
 			if (!recreateMeshes &&sharedMesh)
 			{
+				if (!CSGProjectSettings.Instance.SaveMeshesInSceneFiles)
+					sharedMesh.hideFlags |= HideFlags.DontSaveInEditor;
 				sharedMesh.Clear(keepVertexLayout: true);
 				return;
 			}
@@ -786,6 +794,8 @@ namespace InternalRealtimeCSG
 			sharedMesh.MarkDynamic();
             if (editorOnly)
                 sharedMesh.hideFlags = HideFlags.DontSaveInBuild;
+			if (!CSGProjectSettings.Instance.SaveMeshesInSceneFiles)
+				sharedMesh.hideFlags |= HideFlags.DontSaveInEditor;
         }
 
         public static bool UsesLightmapUVs(CSGModel model)
@@ -1026,7 +1036,7 @@ namespace InternalRealtimeCSG
 		//		internal static double updateMeshColliderMeshTime = 0.0;
 		public static void Refresh(GeneratedMeshInstance instance, CSGModel owner, bool postProcessScene = false, bool onlyFastRefreshes = true, bool skipAssetDatabaseUpdate = true)
         {
-            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return;
 
 			if (!instance)
@@ -1492,7 +1502,7 @@ namespace InternalRealtimeCSG
 		
 		public static void UpdateHelperSurfaceVisibility(bool force = false)
 		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return;
             
             //			updateMeshColliderMeshTime = 0.0;
@@ -1661,7 +1671,7 @@ namespace InternalRealtimeCSG
 
         public static bool ValidateGeneratedMeshesNow(GeneratedMeshes generatedMeshes, bool skipSiblingCheck = false)
 		{
-			if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return false;
 
             if (!generatedMeshes)
@@ -1820,7 +1830,7 @@ namespace InternalRealtimeCSG
 				return;
 			}
 
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return;
 
 			// TODO: make sure outlines are updated when models move
@@ -1843,7 +1853,7 @@ namespace InternalRealtimeCSG
 		public static List<GameObject> FindUnusedMeshInstances(GeneratedMeshes                    container, 
 													           HashSet<GeneratedMeshInstance>     foundInstances)
 		{
-			if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
                 return null;
 
 			if (!container || !container.owner)
@@ -1892,7 +1902,7 @@ namespace InternalRealtimeCSG
 													 HashSet<GeneratedMeshInstance> foundInstances,
 													 HashSet<HelperSurfaceDescription> foundHelperSurfaces)
 		{
-			if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return;
 
 			if (!container || !container.owner)

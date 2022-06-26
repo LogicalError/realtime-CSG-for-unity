@@ -1315,7 +1315,7 @@ namespace RealtimeCSG
 
 			PaintUtility.DrawDottedLine(rotateCenter, rotateMousePosition, ColorSettings.BoundsEdgeHover);
 
-			if ((worldSpacePivotCenter - rotateCenter).sqrMagnitude > MathConstants.EqualityEpsilon)
+			if ((worldSpacePivotCenter - rotateCenter).magnitude > MathConstants.EqualityEpsilon)
 			{
 				PaintUtility.DrawDottedLine(worldSpacePivotCenter, rotateCenter, ColorSettings.BoundsEdgeHover);
 				PaintUtility.DrawProjectedPivot(camera, rotateCenter, ColorSettings.BoundsEdgeHover);
@@ -1365,7 +1365,7 @@ namespace RealtimeCSG
 			else if (originalEventType == EventType.MouseUp)   { draggingOnCamera     = null; }
 			else if (originalEventType == EventType.MouseDrag)
 			{
-				if (!mouseIsDragging && (prevMousePos - Event.current.mousePosition).sqrMagnitude > 4.0f)
+				if (!mouseIsDragging && (prevMousePos - Event.current.mousePosition).magnitude > 4.0f)
 				{
 					mouseIsDragging = true;
 				}

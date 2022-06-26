@@ -2001,7 +2001,7 @@ namespace RealtimeCSG
 				{
 					if (Event.current.button != 0)
 						_nonZeroMouseIsDown = true;
-					if (!_mouseIsDragging && (_prevMousePos - Event.current.mousePosition).sqrMagnitude > 4.0f)
+					if (!_mouseIsDragging && (_prevMousePos - Event.current.mousePosition).magnitude > 4.0f)
 						_mouseIsDragging = true;
 					break;
 				}
@@ -2623,7 +2623,7 @@ namespace RealtimeCSG
 							
 							if (!_showMarquee)
 							{
-								if ((_startMousePoint - Event.current.mousePosition).sqrMagnitude >
+								if ((_startMousePoint - Event.current.mousePosition).magnitude >
 										(MathConstants.MinimumMouseMovement * MathConstants.MinimumMouseMovement))
 								{
 									_brushSelection.BackupSelection();

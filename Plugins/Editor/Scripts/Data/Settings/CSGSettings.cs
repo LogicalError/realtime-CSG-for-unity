@@ -761,7 +761,7 @@ namespace RealtimeCSG
                     builder.Append(sceneView.name);
                 }
             }
-            EditorPrefs.SetString("Wireframe", builder.ToString());
+            EditorPrefs.SetString("Wireframe", builder.ToString()); 
         }
         #endregion
 

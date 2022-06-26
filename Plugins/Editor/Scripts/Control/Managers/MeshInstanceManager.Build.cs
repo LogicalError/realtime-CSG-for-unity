@@ -212,7 +212,7 @@ namespace InternalRealtimeCSG
 
         internal static void DestroyAllMeshInstances()
         {
-            if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+            if (RealtimeCSG.CSGModelManager.IsInPlayMode)
                 return;
 
             for (var sceneIndex = 0; sceneIndex < SceneManager.sceneCount; sceneIndex++)

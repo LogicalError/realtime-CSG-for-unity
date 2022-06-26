@@ -290,7 +290,7 @@ namespace RealtimeCSG
                     var vertex2		= controlMesh.Vertices[vertexIndex2];
                     var pointOnLine	= ProjectPointLine(point, vertex1, vertex2);
                     var delta		= pointOnLine - point;
-                    var distance	= delta.sqrMagnitude;
+                    var distance	= delta.magnitude;
                     if (distance < closestDistance)
                     {
                         closestEdge			= e;
@@ -3867,7 +3867,7 @@ CleanUpPlanesAgain:
                 for (var index2 = index1 + 1; index2 < vertices.Length; index2++)
                 {
                     var vertex2 = vertices[index2];
-                    if (!((vertex1 - vertex2).sqrMagnitude < MathConstants.EqualityEpsilon))
+                    if (!((vertex1 - vertex2).magnitude < MathConstants.EqualityEpsilon))
                         continue;
 
                     //if ((pointSelectState[index1] & SelectState.Selected) != SelectState.Selected &&
@@ -3917,7 +3917,7 @@ CleanUpPlanesAgain:
                 for (var index2 = index1 + 1; index2 < vertices.Length; index2++)
                 {
                     var vertex2 = vertices[index2];
-                    if (!((vertex1 - vertex2).sqrMagnitude < MathConstants.EqualityEpsilon))
+                    if (!((vertex1 - vertex2).magnitude < MathConstants.EqualityEpsilon))
                         continue;
 
                     var found = false;

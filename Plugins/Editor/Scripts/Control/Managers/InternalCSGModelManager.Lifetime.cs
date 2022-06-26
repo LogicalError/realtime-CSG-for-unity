@@ -96,7 +96,7 @@ namespace RealtimeCSG
 		public static bool skipCheckForChanges = false;
 		public static void CheckForChanges(bool forceHierarchyUpdate = false)
 		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return;
 
 			if (!forceHierarchyUpdate && skipCheckForChanges)
@@ -153,5 +153,38 @@ namespace RealtimeCSG
 
 		}
 		#endregion
+
+#if UNITY_EDITOR
+
+		[UnityEditor.InitializeOnEnterPlayMode]
+		public static void OnEnterPlayMode()
+		{
+			// If saving meshes to scene files, we don't need to dynamically rebuild on scene changes
+			if (CSGProjectSettings.Instance.SaveMeshesInSceneFiles)
+				return;
+
+			static void sceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+			{
+				RealtimeCSG.CSGModelManager.AllowInEditorPlayMode = true;
+				InternalCSGModelManager.Shutdown();
+				InternalCSGModelManager.CheckForChanges(false);
+				RealtimeCSG.CSGModelManager.AllowInEditorPlayMode = false;
+			}
+
+			static void onPlayModeChange(PlayModeStateChange playMode)
+			{
+				if (playMode == PlayModeStateChange.ExitingPlayMode)
+				{
+					//UnityEditor.SceneManagement.EditorSceneManager.sceneOpened -= sceneOpened;
+					UnityEngine.SceneManagement.SceneManager.sceneLoaded -= sceneLoaded;
+					EditorApplication.playModeStateChanged -= onPlayModeChange;
+				}
+			}
+
+			EditorApplication.playModeStateChanged += onPlayModeChange;
+			UnityEngine.SceneManagement.SceneManager.sceneLoaded += sceneLoaded;
+			//UnityEditor.SceneManagement.EditorSceneManager.sceneOpened += sceneOpened;
+		}
+#endif
 	}
 }

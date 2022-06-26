@@ -81,12 +81,12 @@ namespace RealtimeCSG
             // remove any points that are too close to one another
             for (int j = vertices.Length - 1, i = vertices.Length - 2; i >= 0; j = i, i--)
             {
-                if ((vertices[j] - vertices[i]).sqrMagnitude < MathConstants.DistanceEpsilon)
+                if ((vertices[j] - vertices[i]).magnitude < MathConstants.DistanceEpsilon)
                 {
                     ArrayUtility.RemoveAt(ref vertices, j);
                 }
             }
-            while (vertices.Length > 3 && (vertices[0] - vertices[vertices.Length - 1]).sqrMagnitude < MathConstants.DistanceEpsilon)
+            while (vertices.Length > 3 && (vertices[0] - vertices[vertices.Length - 1]).magnitude < MathConstants.DistanceEpsilon)
             {
                 var lastIndex = vertices.Length - 1;
                 ArrayUtility.RemoveAt(ref vertices, lastIndex);
@@ -101,13 +101,13 @@ namespace RealtimeCSG
             // remove any points that are too close to one another
             for (int j = vertices.Length - 1, i = vertices.Length - 2; i >= 0; j = i, i--)
             {
-                if ((vertices[j] - vertices[i]).sqrMagnitude < MathConstants.DistanceEpsilon)
+                if ((vertices[j] - vertices[i]).magnitude < MathConstants.DistanceEpsilon)
                 {
                     ArrayUtility.RemoveAt(ref vertices, j);
                     ArrayUtility.RemoveAt(ref edgeTexgens, j);
                 }
             }
-            while (vertices.Length > 3 && (vertices[0] - vertices[vertices.Length - 1]).sqrMagnitude < MathConstants.DistanceEpsilon)
+            while (vertices.Length > 3 && (vertices[0] - vertices[vertices.Length - 1]).magnitude < MathConstants.DistanceEpsilon)
             {
                 var lastIndex = vertices.Length - 1;
                 ArrayUtility.RemoveAt(ref vertices, lastIndex);
@@ -159,7 +159,7 @@ namespace RealtimeCSG
             {
                 for (int j = i + 2; j < vertices2d.Length; j++)
                 {
-                    if ((vertices2d[j] - vertices2d[i]).sqrMagnitude < MathConstants.DistanceEpsilon)
+                    if ((vertices2d[j] - vertices2d[i]).magnitude < MathConstants.DistanceEpsilon)
                     {
                         List<ShapePolygon> combined_polygons = null;
                         
