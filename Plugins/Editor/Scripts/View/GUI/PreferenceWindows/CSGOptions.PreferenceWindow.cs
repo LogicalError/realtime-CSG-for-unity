@@ -54,10 +54,20 @@ namespace RealtimeCSG
         {
             EditorGUI.BeginChangeCheck();
             {
-                CSGProjectSettings.Instance.SaveMeshesInSceneFiles = EditorGUILayout.ToggleLeft("Save Meshes In Scene Files", CSGProjectSettings.Instance.SaveMeshesInSceneFiles);
-                EditorGUILayout.HelpBox(
-                    "If disabled, meshes will be automatically rebuilt on editor & scene load, dramatically saving disk space.",
-                    MessageType.Info, true);
+                CSGProjectSettings.Instance.SaveMeshesInSceneFiles = !EditorGUILayout.ToggleLeft("[Experimental] Don't Save Meshes In Scene Files", !CSGProjectSettings.Instance.SaveMeshesInSceneFiles);
+
+                if (!CSGProjectSettings.Instance.SaveMeshesInSceneFiles)
+                {
+                    EditorGUILayout.HelpBox(
+                        "Meshes will be rebuilt on editor & scene load. This is an experimental option, if meshes are not rebuilding properly, please disable it.",
+                        MessageType.Warning, true);
+                }
+                else
+                {
+                    EditorGUILayout.HelpBox(
+                        "If enabled, meshes will be automatically rebuilt on editor & scene load, dramatically saving disk space.",
+                        MessageType.Info, true);
+                }
 
                 CSGProjectSettings.Instance.SnapEverythingTo0001Grid = EditorGUILayout.ToggleLeft("Snap All CSG Objects To 0.001 Grid", CSGProjectSettings.Instance.SnapEverythingTo0001Grid);
                 EditorGUILayout.HelpBox(
