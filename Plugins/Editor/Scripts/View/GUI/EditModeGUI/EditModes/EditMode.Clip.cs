@@ -953,7 +953,7 @@ namespace RealtimeCSG
 
 			RecordAllObjects("Created clip plane");
 
-			if ((points[2] - points[1]).sqrMagnitude < 0.1f)
+			if ((points[2] - points[1]).magnitude < 0.1f)
 			{
 				var direction = -normal;
 				var snapVector = RealtimeCSG.CSGGrid.CurrentGridSnapVector;

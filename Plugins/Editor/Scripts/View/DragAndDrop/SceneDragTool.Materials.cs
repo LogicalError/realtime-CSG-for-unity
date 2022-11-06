@@ -561,7 +561,7 @@ namespace RealtimeCSG
 									var material = GetMaterial();
 									if (texGens[m].RenderMaterial != material)
 									{
-										if (!modified)
+										if (modified)
 										{
 											UndoInit();
 											Undo.RecordObject(brush, "Modifying material");

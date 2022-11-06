@@ -67,40 +67,43 @@ namespace RealtimeCSG
 
 		static public Vector3 CleanPosition(Vector3 position)
 		{
-			float signX = Mathf.Sign(position.x);
-			float signY = Mathf.Sign(position.y);
-			float signZ = Mathf.Sign(position.z);
-			
-			float absPosX = position.x * signX;
-			float absPosY = position.y * signY;
-			float absPosZ = position.z * signZ;
+			if (CSGProjectSettings.Instance.SnapEverythingTo0001Grid)
+            {
+				float signX = Mathf.Sign(position.x);
+				float signY = Mathf.Sign(position.y);
+				float signZ = Mathf.Sign(position.z);
 
-			int intPosX = Mathf.FloorToInt(absPosX);
-			int intPosY = Mathf.FloorToInt(absPosY);
-			int intPosZ = Mathf.FloorToInt(absPosZ);
+				float absPosX = position.x * signX;
+				float absPosY = position.y * signY;
+				float absPosZ = position.z * signZ;
 
-			float fractPosX = (absPosX - intPosX);
-			float fractPosY = (absPosY - intPosY);
-			float fractPosZ = (absPosZ - intPosZ);
+				int intPosX = Mathf.FloorToInt(absPosX);
+				int intPosY = Mathf.FloorToInt(absPosY);
+				int intPosZ = Mathf.FloorToInt(absPosZ);
 
-			fractPosX = Mathf.Round(fractPosX * 1000.0f) / 1000.0f;
-			fractPosY = Mathf.Round(fractPosY * 1000.0f) / 1000.0f;
-			fractPosZ = Mathf.Round(fractPosZ * 1000.0f) / 1000.0f;
+				float fractPosX = (absPosX - intPosX);
+				float fractPosY = (absPosY - intPosY);
+				float fractPosZ = (absPosZ - intPosZ);
 
-			const float epsilon = MathConstants.EqualityEpsilon;
+				fractPosX = Mathf.Round(fractPosX * 1000.0f) / 1000.0f;
+				fractPosY = Mathf.Round(fractPosY * 1000.0f) / 1000.0f;
+				fractPosZ = Mathf.Round(fractPosZ * 1000.0f) / 1000.0f;
 
-			if (fractPosX <      epsilon) fractPosX = 0;
-			if (fractPosY <      epsilon) fractPosY = 0;
-			if (fractPosZ <      epsilon) fractPosZ = 0;
+				const float epsilon = MathConstants.EqualityEpsilon;
 
-			if (fractPosX >= 1 - epsilon) fractPosX = 1;
-			if (fractPosY >= 1 - epsilon) fractPosY = 1;
-			if (fractPosZ >= 1 - epsilon) fractPosZ = 1;
+				if (fractPosX < epsilon) fractPosX = 0;
+				if (fractPosY < epsilon) fractPosY = 0;
+				if (fractPosZ < epsilon) fractPosZ = 0;
 
-			if (!float.IsNaN(fractPosX) && !float.IsInfinity(fractPosX)) position.x = (intPosX + fractPosX) * signX;
-			if (!float.IsNaN(fractPosY) && !float.IsInfinity(fractPosY)) position.y = (intPosY + fractPosY) * signY;
-			if (!float.IsNaN(fractPosZ) && !float.IsInfinity(fractPosZ)) position.z = (intPosZ + fractPosZ) * signZ;
-			
+				if (fractPosX >= 1 - epsilon) fractPosX = 1;
+				if (fractPosY >= 1 - epsilon) fractPosY = 1;
+				if (fractPosZ >= 1 - epsilon) fractPosZ = 1;
+
+				if (!float.IsNaN(fractPosX) && !float.IsInfinity(fractPosX)) position.x = (intPosX + fractPosX) * signX;
+				if (!float.IsNaN(fractPosY) && !float.IsInfinity(fractPosY)) position.y = (intPosY + fractPosY) * signY;
+				if (!float.IsNaN(fractPosZ) && !float.IsInfinity(fractPosZ)) position.z = (intPosZ + fractPosZ) * signZ;
+			}
+
 			return position;
 		}
         

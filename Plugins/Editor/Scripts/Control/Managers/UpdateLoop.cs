@@ -251,8 +251,8 @@ namespace RealtimeCSG
 		
 		static void RunEditorUpdate()
 		{
-			if (!RealtimeCSG.CSGSettings.EnableRealtimeCSG)
-				return;
+			//if (!RealtimeCSG.CSGSettings.EnableRealtimeCSG)
+			//	return;
 
 			if (EditorApplication.isPlayingOrWillChangePlaymode)
 				return;

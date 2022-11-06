@@ -130,7 +130,10 @@ namespace InternalRealtimeCSG
                     }
                 }
 
-                UnityEngine.Object.DestroyImmediate(meshContainer);
+                if (CSGProjectSettings.Instance.SaveMeshesInSceneFiles || !EditorApplication.isPlayingOrWillChangePlaymode)
+                    UnityEngine.Object.DestroyImmediate(meshContainer);
+                else
+                    meshContainer.hideFlags |= HideFlags.HideInHierarchy | HideFlags.HideInInspector;
             }
 
 
@@ -139,7 +142,10 @@ namespace InternalRealtimeCSG
             {
                 if (meshInstance)
                 {
-                    UnityEngine.Object.DestroyImmediate(meshInstance);
+                    if (CSGProjectSettings.Instance.SaveMeshesInSceneFiles || !EditorApplication.isPlayingOrWillChangePlaymode)
+                        UnityEngine.Object.DestroyImmediate(meshInstance);
+                    else
+                        meshInstance.hideFlags |= HideFlags.HideInHierarchy | HideFlags.HideInInspector;
                 }
             }
 
@@ -173,8 +179,14 @@ namespace InternalRealtimeCSG
                 } else
                 if (gameObject.CompareTag("Untagged"))
                     removableGameObjects.Add(gameObject);
+                
                 if (csgnode)
-                    UnityEngine.Object.DestroyImmediate(csgnode);
+                {
+                    if (CSGProjectSettings.Instance.SaveMeshesInSceneFiles || !EditorApplication.isPlayingOrWillChangePlaymode)
+                        UnityEngine.Object.DestroyImmediate(csgnode);
+                    else
+                        csgnode.hideFlags |= HideFlags.HideInHierarchy | HideFlags.HideInInspector;
+                }
             }
 
             var removableTransforms = new HashSet<Transform>();
@@ -184,7 +196,8 @@ namespace InternalRealtimeCSG
                 var transform = gameObject.transform;
                 if (removableTransforms.Contains(transform))
                     continue;
-                RemoveWithChildrenIfPossible(transform, removableTransforms);
+                if (CSGProjectSettings.Instance.SaveMeshesInSceneFiles || !EditorApplication.isPlayingOrWillChangePlaymode)
+                    RemoveWithChildrenIfPossible(transform, removableTransforms);
             }
         }
 
@@ -212,7 +225,7 @@ namespace InternalRealtimeCSG
 
         internal static void DestroyAllMeshInstances()
         {
-            if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+            if (RealtimeCSG.CSGModelManager.IsInPlayMode)
                 return;
 
             for (var sceneIndex = 0; sceneIndex < SceneManager.sceneCount; sceneIndex++)

@@ -248,8 +248,8 @@ namespace RealtimeCSG
 				Vector3 forward			= gridOrientation.gridRotation      * MathConstants.forwardVector3;
 				Vector3 work_forward	= gridOrientation.gridWorkRotation * MathConstants.forwardVector3;
 				if (ForceGrid &&
-					!((forward - work_forward).sqrMagnitude < 0.001f ||
-					  (forward + work_forward).sqrMagnitude < 0.001f
+					!((forward - work_forward).magnitude < 0.001f ||
+					  (forward + work_forward).magnitude < 0.001f
 					  // && gridOrientation.grid_work_center   == gridOrientation.grid_center
 						))
 				{

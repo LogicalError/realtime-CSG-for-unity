@@ -50,7 +50,7 @@ namespace InternalRealtimeCSG
 			var realCenter = transform.position;
 			var difference = newCenter - realCenter;
 
-			if (difference.sqrMagnitude < MathConstants.ConsideredZero)
+			if (difference.magnitude < MathConstants.ConsideredZero)
 				return;
 
 			transform.position += difference;
@@ -64,7 +64,7 @@ namespace InternalRealtimeCSG
 		{
 			if (brushes == null ||
 				brushes.Length == 0 ||
-				offset.sqrMagnitude < MathConstants.ConsideredZero)
+				offset.magnitude < MathConstants.ConsideredZero)
 				return;
 
 			for (int i = 0; i < brushes.Length; i++)

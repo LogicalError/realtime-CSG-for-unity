@@ -257,7 +257,7 @@ namespace RealtimeCSG
 						settings.bounds = GetShapeBounds();
 					}
 					
-					if ((settings.vertices[0] - settings.vertices[1]).sqrMagnitude <= MathConstants.EqualityEpsilon)
+					if ((settings.vertices[0] - settings.vertices[1]).magnitude <= MathConstants.EqualityEpsilon)
 					{
 						Cancel();
 						return false;
@@ -821,7 +821,7 @@ namespace RealtimeCSG
 					prevWorldPosition = worldPosition;
 					if (settings.vertices.Length > 0)
 					{
-						if ((settings.vertices[0] - worldPosition).sqrMagnitude > MathConstants.EqualityEpsilon)
+						if ((settings.vertices[0] - worldPosition).magnitude > MathConstants.EqualityEpsilon)
 						{
 							UpdateSizes();
 							UpdateBaseShape(true);

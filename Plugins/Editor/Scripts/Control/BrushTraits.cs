@@ -39,7 +39,10 @@ namespace RealtimeCSG
 				return true;
 			}
 
-			if (ignoreSurfaceFlags)
+            if( (texGenFlags[texGenIndex] & TexGenFlags.NoRender) == TexGenFlags.NoRender )
+                return false;
+
+            if (ignoreSurfaceFlags)
 			{
 				var isNotRenderable = (texGenFlags[texGenIndex] & TexGenFlags.NoRender) == TexGenFlags.NoRender;
 				if (!isNotRenderable)

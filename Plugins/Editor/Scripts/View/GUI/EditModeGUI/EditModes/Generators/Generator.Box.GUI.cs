@@ -51,14 +51,14 @@ namespace RealtimeCSG
 					GUILayout.BeginHorizontal(CSG_GUIStyleUtility.ContentEmpty);
 					{
 						GUILayout.Label(LengthContent, Width65);
-						var length = generator.Length;
+						var width = generator.Width;
 						EditorGUI.BeginChangeCheck();
 						{
-							length = Units.DistanceUnitToUnity(distanceUnit, EditorGUILayout.DoubleField(Units.UnityToDistanceUnit(distanceUnit, length)));
+							width = Units.DistanceUnitToUnity(distanceUnit, EditorGUILayout.DoubleField(Units.UnityToDistanceUnit(distanceUnit, width)));
 						}
 						if (EditorGUI.EndChangeCheck())
 						{
-							generator.Length = length;
+							generator.Width = width;
 						}
 						if (GUILayout.Button(unitText, EditorStyles.miniLabel, Width25))
 						{
@@ -74,14 +74,14 @@ namespace RealtimeCSG
 					GUILayout.BeginHorizontal(CSG_GUIStyleUtility.ContentEmpty);
 					{
 						GUILayout.Label(WidthContent, Width65);
-						var width = generator.Width;
+						var length = generator.Length;
 						EditorGUI.BeginChangeCheck();
 						{
-							width = Units.DistanceUnitToUnity(distanceUnit, EditorGUILayout.DoubleField(Units.UnityToDistanceUnit(distanceUnit, width)));
+							length = Units.DistanceUnitToUnity(distanceUnit, EditorGUILayout.DoubleField(Units.UnityToDistanceUnit(distanceUnit, length)));
 						}
 						if (EditorGUI.EndChangeCheck())
 						{
-							generator.Width = width;
+							generator.Length = length;
 						}
 						if (GUILayout.Button(unitText, EditorStyles.miniLabel, Width25))
 						{

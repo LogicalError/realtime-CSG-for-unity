@@ -42,7 +42,7 @@ namespace InternalRealtimeCSG
 
 		public static void Destroy(GeneratedMeshes generatedMeshes)
 		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return;
 
 			if (!generatedMeshes)
@@ -104,6 +104,9 @@ namespace InternalRealtimeCSG
 
 		static void Initialize(GeneratedMeshes container, GeneratedMeshInstance meshInstance)
 		{
+			// Retain layer
+			meshInstance.gameObject.layer = container.gameObject.layer;
+
 			container.AddMeshInstance(meshInstance);
 		}
 
@@ -323,6 +326,9 @@ namespace InternalRealtimeCSG
 			var generatedMeshesTransform = generatedMeshesObject.transform;
 			generatedMeshesTransform.SetParent(model.transform, false);
 
+			// Retain layer
+			generatedMeshesObject.layer = model.gameObject.layer;
+
 			generatedMeshesObject.SetActive(true);
 
 			UpdateGeneratedMeshesVisibility(generatedMeshes, model.ShowGeneratedMeshes);
@@ -334,7 +340,7 @@ namespace InternalRealtimeCSG
 
 		internal static bool ValidateModelNow(CSGModel model, bool checkChildren = false)
         {
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return true;
 
 			if (!checkChildren && 
@@ -409,14 +415,14 @@ namespace InternalRealtimeCSG
                 if (!ModelTraits.IsModelEditable(model))
 					continue;
 
+                if( !model.generatedMeshes )
+                    continue;
+                
 				var container = model.generatedMeshes;
                 if (container.owner != model ||
 					!container.gameObject)
                     continue;
-
-				if (!model.generatedMeshes)
-					continue;
-
+                
                 if (!container.HasHelperSurfaces)
                 {
                     if (!container.HasMeshInstances)
@@ -531,7 +537,7 @@ namespace InternalRealtimeCSG
 
         internal static void Reset()
 		{
-			if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return;
 
 			for (var sceneIndex = 0; sceneIndex < SceneManager.sceneCount; sceneIndex++)
@@ -777,15 +783,19 @@ namespace InternalRealtimeCSG
             hasGeneratedNormals = false;
 			if (!recreateMeshes &&sharedMesh)
 			{
+				if (!CSGProjectSettings.Instance.SaveMeshesInSceneFiles)
+					sharedMesh.hideFlags |= HideFlags.DontSaveInEditor;
 				sharedMesh.Clear(keepVertexLayout: true);
 				return;
 			}
 			
 			sharedMesh = new Mesh();
-			sharedMesh.name = string.Format("<{0} generated {1}>", baseName, sharedMesh.GetInstanceID());
+			sharedMesh.name = $"<{baseName} generated {sharedMesh.GetInstanceID()}>";
 			sharedMesh.MarkDynamic();
             if (editorOnly)
                 sharedMesh.hideFlags = HideFlags.DontSaveInBuild;
+			if (!CSGProjectSettings.Instance.SaveMeshesInSceneFiles)
+				sharedMesh.hideFlags |= HideFlags.DontSaveInEditor;
         }
 
         public static bool UsesLightmapUVs(CSGModel model)
@@ -916,33 +926,28 @@ namespace InternalRealtimeCSG
 			return !instance.HasUV2 && instance.RenderSurfaceType == RenderSurfaceType.Normal;
 		}
 
-		private static bool NeedCollider(CSGModel model, GeneratedMeshInstance instance)
+		private static bool AreBoundsEmpty(GeneratedMeshInstance instance)
 		{
-			return //((model.HaveCollider || model.IsTrigger) &&
-
-					(//instance.RenderSurfaceType == RenderSurfaceType.Normal ||
-						instance.RenderSurfaceType == RenderSurfaceType.Collider ||
-						instance.RenderSurfaceType == RenderSurfaceType.Trigger
-						) &&
-
-					// Make sure the bounds of the mesh are not empty ...
-					(Mathf.Abs(instance.SharedMesh.bounds.size.x) > MathConstants.EqualityEpsilon ||
-					 Mathf.Abs(instance.SharedMesh.bounds.size.y) > MathConstants.EqualityEpsilon ||
-					 Mathf.Abs(instance.SharedMesh.bounds.size.z) > MathConstants.EqualityEpsilon)
-					//)
-			;
+			return
+				Mathf.Abs(instance.SharedMesh.bounds.size.x) <= MathConstants.EqualityEpsilon ||
+				Mathf.Abs(instance.SharedMesh.bounds.size.y) <= MathConstants.EqualityEpsilon ||
+				Mathf.Abs(instance.SharedMesh.bounds.size.z) <= MathConstants.EqualityEpsilon;
 		}
 
-        private static bool NeedMeshRenderer(RenderSurfaceType renderSurfaceType)
+		private static bool NeedCollider(RenderSurfaceType surfaceType)
+		{
+			return surfaceType == RenderSurfaceType.Collider || surfaceType == RenderSurfaceType.Trigger;
+		}
+
+		private static bool NeedMeshRenderer(RenderSurfaceType renderSurfaceType)
         {
-            return (renderSurfaceType == RenderSurfaceType.Normal ||
-                    renderSurfaceType == RenderSurfaceType.ShadowOnly);
+            return renderSurfaceType == RenderSurfaceType.Normal || renderSurfaceType == RenderSurfaceType.ShadowOnly;
         }
 
 		static StaticEditorFlags FilterStaticEditorFlags(StaticEditorFlags modelStaticFlags, RenderSurfaceType renderSurfaceType)
 		{
             if (!NeedMeshRenderer(renderSurfaceType))
-				return (StaticEditorFlags)0;
+	            return modelStaticFlags;
 
 			var meshStaticFlags = modelStaticFlags;
 			var walkable =	renderSurfaceType != RenderSurfaceType.Hidden &&
@@ -1026,7 +1031,7 @@ namespace InternalRealtimeCSG
 		//		internal static double updateMeshColliderMeshTime = 0.0;
 		public static void Refresh(GeneratedMeshInstance instance, CSGModel owner, bool postProcessScene = false, bool onlyFastRefreshes = true, bool skipAssetDatabaseUpdate = true)
         {
-            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return;
 
 			if (!instance)
@@ -1084,7 +1089,6 @@ namespace InternalRealtimeCSG
 
 			var meshFilterComponent		= instance.CachedMeshFilter;
 			var meshRendererComponent	= instance.CachedMeshRenderer;
-			var needMeshCollider		= NeedCollider(owner, instance);
 			
 			
 
@@ -1173,12 +1177,12 @@ namespace InternalRealtimeCSG
                 if ((meshFilterComponent.hideFlags & HideFlags.HideInHierarchy) == 0)
                 {
                     meshFilterComponent.hideFlags |= HideFlags.HideInHierarchy;
-				}
-
-				if ((meshRendererComponent.hideFlags & HideFlags.HideInHierarchy) == 0)
+                }
+                
+                if ((meshRendererComponent.hideFlags & HideFlags.HideInHierarchy) == 0)
                 {
                     meshRendererComponent.hideFlags |= HideFlags.HideInHierarchy;
-				}
+                }
 
                 if (instance.RenderSurfaceType != RenderSurfaceType.ShadowOnly)
 				{ 
@@ -1188,7 +1192,7 @@ namespace InternalRealtimeCSG
                         instance.ResetUVTime = Time.realtimeSinceStartup;
 						if (instance.HasUV2)
 							ClearUVs(instance);
-					}
+                    }
 
 					if ((owner.AutoRebuildUVs || postProcessScene))
 					{
@@ -1309,8 +1313,8 @@ namespace InternalRealtimeCSG
 
                         if (SOModified)
                             meshRendererComponentSO.ApplyModifiedProperties();
-                        }
-					}
+                    }
+				}
                 //*/
 
 #if UNITY_2019_2_OR_NEWER
@@ -1328,7 +1332,7 @@ namespace InternalRealtimeCSG
                 {
                     meshRendererComponent.sharedMaterial = requiredMaterial;
 					instance.Dirty = true;
-				}
+                }
 
 			} else
 			{
@@ -1353,6 +1357,8 @@ namespace InternalRealtimeCSG
 			// TODO:	occludee/reflection probe static
 			
 			var meshColliderComponent	= instance.CachedMeshCollider;
+			var needMeshCollider		= !AreBoundsEmpty(instance) && NeedCollider(instance.RenderSurfaceType);
+
 			if (needMeshCollider)
 			{
 				if (!meshColliderComponent)
@@ -1373,10 +1379,10 @@ namespace InternalRealtimeCSG
                     meshColliderComponent.hideFlags |= HideFlags.HideInHierarchy;
                 }
 
-                var currentPhyicsMaterial = instance.PhysicsMaterial ?? owner.DefaultPhysicsMaterial;
-				if (meshColliderComponent.sharedMaterial != currentPhyicsMaterial)
+                var currentPhysicsMaterial = instance.PhysicsMaterial ?? owner.DefaultPhysicsMaterial;
+				if (meshColliderComponent.sharedMaterial != currentPhysicsMaterial)
                 {
-                    meshColliderComponent.sharedMaterial = currentPhyicsMaterial;
+                    meshColliderComponent.sharedMaterial = currentPhysicsMaterial;
 					instance.Dirty = true;
 				}
 
@@ -1492,7 +1498,7 @@ namespace InternalRealtimeCSG
 		
 		public static void UpdateHelperSurfaceVisibility(bool force = false)
 		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return;
             
             //			updateMeshColliderMeshTime = 0.0;
@@ -1623,9 +1629,9 @@ namespace InternalRealtimeCSG
 					constraints = RigidbodyConstraints.None;
 				}
 				
-				if (rigidBody.isKinematic != isKinematic) rigidBody.isKinematic = isKinematic;
-				if (rigidBody.useGravity  != useGravity) rigidBody.useGravity = useGravity;
-				if (rigidBody.constraints != constraints) rigidBody.constraints = constraints;
+				if (rigidBody.isKinematic != isKinematic)	rigidBody.isKinematic = isKinematic;
+				if (rigidBody.useGravity  != useGravity)	rigidBody.useGravity = useGravity;
+				if (rigidBody.constraints != constraints)	rigidBody.constraints = constraints;
 				container.CachedRigidBody = rigidBody;
 			} else
 			{
@@ -1661,7 +1667,7 @@ namespace InternalRealtimeCSG
 
         public static bool ValidateGeneratedMeshesNow(GeneratedMeshes generatedMeshes, bool skipSiblingCheck = false)
 		{
-			if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return false;
 
             if (!generatedMeshes)
@@ -1820,7 +1826,7 @@ namespace InternalRealtimeCSG
 				return;
 			}
 
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return;
 
 			// TODO: make sure outlines are updated when models move
@@ -1843,7 +1849,7 @@ namespace InternalRealtimeCSG
 		public static List<GameObject> FindUnusedMeshInstances(GeneratedMeshes                    container, 
 													           HashSet<GeneratedMeshInstance>     foundInstances)
 		{
-			if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
                 return null;
 
 			if (!container || !container.owner)
@@ -1892,7 +1898,7 @@ namespace InternalRealtimeCSG
 													 HashSet<GeneratedMeshInstance> foundInstances,
 													 HashSet<HelperSurfaceDescription> foundHelperSurfaces)
 		{
-			if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return;
 
 			if (!container || !container.owner)
@@ -2026,9 +2032,9 @@ namespace InternalRealtimeCSG
 			var showVisibleSurfaces	= (RealtimeCSG.CSGSettings.VisibleHelperSurfaces & HelperSurfaceFlags.ShowVisibleSurfaces) != 0;
 
 
-			if (ownerStaticFlags != previousStaticFlags ||
-                !ownerGameObject.CompareTag(generatedMeshes.gameObject.tag) ||
-				containerLayer != generatedMeshes.gameObject.layer)
+			if (ownerStaticFlags != previousStaticFlags
+			    || !ownerGameObject.CompareTag(generatedMeshes.gameObject.tag)
+			    || containerLayer != generatedMeshes.gameObject.layer)
             {
                 var containerTag = ownerGameObject.tag;
                 foreach (var meshInstance in generatedMeshes.MeshInstances)

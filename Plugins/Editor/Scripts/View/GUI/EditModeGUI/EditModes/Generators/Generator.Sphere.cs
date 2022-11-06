@@ -103,7 +103,7 @@ namespace RealtimeCSG
 						settings.AddPoint(worldPosition);
 					}
 					
-					if ((settings.vertices[0] - settings.vertices[1]).sqrMagnitude <= MathConstants.EqualityEpsilon)
+					if ((settings.vertices[0] - settings.vertices[1]).magnitude <= MathConstants.EqualityEpsilon)
 					{
 						Cancel();
 						return false;
@@ -642,7 +642,7 @@ namespace RealtimeCSG
 					prevWorldPosition = worldPosition;
 					if (settings.vertices.Length > 0)
 					{
-						if (hadSphere || (settings.vertices[0] - worldPosition).sqrMagnitude > MathConstants.EqualityEpsilon)
+						if (hadSphere || (settings.vertices[0] - worldPosition).magnitude > MathConstants.EqualityEpsilon)
 						{
 							hadSphere = true;
 							UpdateBaseShape(true);

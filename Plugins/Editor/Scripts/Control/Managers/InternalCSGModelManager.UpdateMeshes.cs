@@ -176,7 +176,7 @@ namespace RealtimeCSG
 		#region RefreshMeshes
 		public static void RefreshMeshes()
 		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return;
 
 			if (skipCheckForChanges)
@@ -245,6 +245,14 @@ namespace RealtimeCSG
 					   ref outputHasGeneratedNormals,
 					   ref sharedMesh,
                        editorOnly);
+
+			if (!CSGProjectSettings.Instance.SaveMeshesInSceneFiles)
+			{
+				// If is prefab scene, allow save
+				if (string.IsNullOrEmpty(model.gameObject.scene.path) && sharedMesh != null)
+					sharedMesh.hideFlags &= ~HideFlags.DontSaveInEditor;
+			}
+
 			return true;
 		}
 
@@ -409,8 +417,7 @@ namespace RealtimeCSG
 		static bool inUpdateMeshes = false;
 		public static bool UpdateMeshes(System.Text.StringBuilder text = null, bool forceUpdate = false)
 		{
-			if (EditorApplication.isPlaying
-				|| EditorApplication.isPlayingOrWillChangePlaymode)
+			if (RealtimeCSG.CSGModelManager.IsInPlayMode)
 				return false;
 			
 			if (inUpdateMeshes)
@@ -583,5 +590,31 @@ namespace RealtimeCSG
 			}
 		}
 		#endregion
+
+		#region Destroy meshes
+		/// <summary>
+		/// Used to destroy any helper surface meshes in the current scene. Useful because they don't get destroyed otherwise, and stay in the Scene file.
+		/// </summary>
+		[MenuItem("Edit/Realtime-CSG/Destroy All Helper Surface Meshes In Scene")]
+		public static void DestroyAllHelperSurfaceCSGMeshes()
+		{
+			var allMeshesInScene = UnityEngine.Object.FindObjectsOfType<Mesh>(true);
+
+			// regex matches all possible names for the helper surfaces that we can generate
+			var nameMatch = new System.Text.RegularExpressions.Regex(
+				$"^{System.Text.RegularExpressions.Regex.Escape("<")}" +
+				$"(?:{string.Join("|", System.Linq.Enumerable.Select(renderSurfaceMeshNames, n => System.Text.RegularExpressions.Regex.Escape(n)))})" +
+				$" generated -?[0-9]+{System.Text.RegularExpressions.Regex.Escape(">")}$",
+				System.Text.RegularExpressions.RegexOptions.Compiled);
+
+			foreach (var mesh in allMeshesInScene)
+			{
+				if (nameMatch.IsMatch(mesh.name))
+				{
+					Undo.DestroyObjectImmediate(mesh);
+				}
+			}
+		}
+		#endregion Destroy meshes
 	}
 }

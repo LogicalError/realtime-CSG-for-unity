@@ -398,7 +398,7 @@ namespace RealtimeCSG
 			}
 		}
 
-		protected void SetCameraPosition(SceneView sceneView, Vector3 center, float size)
+		/*protected void SetCameraPosition(SceneView sceneView, Vector3 center, float size)
 		{
 			if (float.IsInfinity(size) || float.IsNaN(size) ||
 				float.IsInfinity(center.x) || float.IsNaN(center.x) ||
@@ -407,7 +407,7 @@ namespace RealtimeCSG
 				return;
 			if (sceneView)
                 sceneView.LookAt(center, sceneView.rotation, Mathf.Max(size, (sceneView.camera.transform.position - center).magnitude));
-		}
+		}*/
 		
 
 		protected void HideGenerateBrushes()
@@ -622,7 +622,7 @@ namespace RealtimeCSG
 
 		public abstract AABB GetShapeBounds();
 		
-		protected void HandleCameraOrbit(SceneView sceneView, bool allowCameraOrbit)
+		/*protected void HandleCameraOrbit(SceneView sceneView, bool allowCameraOrbit)
 		{
 			if (!ignoreOrbit &&
 				Tools.viewTool == ViewTool.Orbit &&
@@ -638,7 +638,7 @@ namespace RealtimeCSG
 
 			if (Event.current.type == EventType.MouseUp ||
 				Event.current.type == EventType.MouseMove) ignoreOrbit = false;
-		}
+		}*/
 		
 
 		public bool UndoRedoPerformed()
@@ -658,9 +658,9 @@ namespace RealtimeCSG
 
 			CreateControlIDs();
 
-			if (mouseIsDragging || 
-				(Event.current.type == EventType.MouseDown && Tools.viewTool == ViewTool.Orbit))
-				HandleCameraOrbit(sceneView, editMode != EditMode.CreatePlane);
+			//if (mouseIsDragging || 
+			//	(Event.current.type == EventType.MouseDown && Tools.viewTool == ViewTool.Orbit))
+			//	HandleCameraOrbit(sceneView, editMode != EditMode.CreateShape && editMode != EditMode.CreatePlane);
 						
 			// pretend we dragged so we don't click if we just changed edit modes
 			if (prevEditMode != editMode)
