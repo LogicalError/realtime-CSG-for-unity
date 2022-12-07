@@ -163,57 +163,57 @@ namespace RealtimeCSG
 			if (CSGProjectSettings.Instance.SaveMeshesInSceneFiles)
 				return;
 
-			static bool ensureExternalMethodsPopulated()
-			{
-				if (External == null ||
-					External.ResetCSG == null)
-				{
-					NativeMethodBindings.RegisterUnityMethods();
-					NativeMethodBindings.RegisterExternalMethods();
-				}
-
-				if (External == null)
-				{
-					Debug.LogError("RealtimeCSG: Cannot rebuild meshes for some reason. External modules not loaded. Please save meshes into the Scene.");
-					return false;
-				}
-
-				return true;
-			}
-
-			static void rebuildMeshes()
-            {
-				if (!ensureExternalMethodsPopulated())
-					return;
-
-				RealtimeCSG.CSGModelManager.AllowInEditorPlayMode = true;
-				InternalCSGModelManager.Shutdown();
-				DoForcedMeshUpdate();
-				InternalCSGModelManager.CheckForChanges(false);
-				RealtimeCSG.CSGModelManager.AllowInEditorPlayMode = false;
-			}
-
-			static void sceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
-			{
-				rebuildMeshes();
-			}
-
-			static void onPlayModeChange(PlayModeStateChange playMode)
-			{
-				if (playMode == PlayModeStateChange.EnteredEditMode)
-				{
-					UnityEngine.SceneManagement.SceneManager.sceneLoaded -= sceneLoaded;
-					EditorApplication.playModeStateChanged -= onPlayModeChange;
-
-					rebuildMeshes();
-				}
-			}
-
 			if (!ensureExternalMethodsPopulated())
 				return;
 
 			EditorApplication.playModeStateChanged += onPlayModeChange;
 			UnityEngine.SceneManagement.SceneManager.sceneLoaded += sceneLoaded;
+		}
+
+		static bool ensureExternalMethodsPopulated()
+		{
+			if (External == null ||
+			    External.ResetCSG == null)
+			{
+				NativeMethodBindings.RegisterUnityMethods();
+				NativeMethodBindings.RegisterExternalMethods();
+			}
+
+			if (External == null)
+			{
+				Debug.LogError("RealtimeCSG: Cannot rebuild meshes for some reason. External modules not loaded. Please save meshes into the Scene.");
+				return false;
+			}
+
+			return true;
+		}
+
+		static void rebuildMeshes()
+		{
+			if (!ensureExternalMethodsPopulated())
+				return;
+
+			RealtimeCSG.CSGModelManager.AllowInEditorPlayMode = true;
+			InternalCSGModelManager.Shutdown();
+			DoForcedMeshUpdate();
+			InternalCSGModelManager.CheckForChanges(false);
+			RealtimeCSG.CSGModelManager.AllowInEditorPlayMode = false;
+		}
+
+		static void sceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+		{
+			rebuildMeshes();
+		}
+
+		static void onPlayModeChange(PlayModeStateChange playMode)
+		{
+			if (playMode == PlayModeStateChange.EnteredEditMode)
+			{
+				UnityEngine.SceneManagement.SceneManager.sceneLoaded -= sceneLoaded;
+				EditorApplication.playModeStateChanged -= onPlayModeChange;
+
+				rebuildMeshes();
+			}
 		}
 #endif
 	}

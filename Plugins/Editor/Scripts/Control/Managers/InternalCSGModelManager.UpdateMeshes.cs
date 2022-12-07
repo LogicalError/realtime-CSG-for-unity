@@ -5,6 +5,7 @@ using UnityEditor;
 using InternalRealtimeCSG;
 using RealtimeCSG.Foundation;
 using RealtimeCSG.Components;
+using UnityEngine.SceneManagement;
 
 namespace RealtimeCSG
 {
@@ -598,7 +599,19 @@ namespace RealtimeCSG
 		[MenuItem("Edit/Realtime-CSG/Destroy All Helper Surface Meshes In Scene")]
 		public static void DestroyAllHelperSurfaceCSGMeshes()
 		{
-			var allMeshesInScene = UnityEngine.Object.FindObjectsOfType<Mesh>(true);
+			var allMeshesInScene = new List<Mesh>();
+			for(int i = 0; i< SceneManager.sceneCount; i++)
+			{
+				var s = SceneManager.GetSceneAt(i);
+				if (s.isLoaded == false)
+					continue;
+				
+				foreach (var go in s.GetRootGameObjects())
+				{
+					foreach (var filter in go.GetComponentsInChildren<MeshFilter>(true))
+						allMeshesInScene.Add(filter.sharedMesh);
+				}
+			}
 
 			// regex matches all possible names for the helper surfaces that we can generate
 			var nameMatch = new System.Text.RegularExpressions.Regex(
