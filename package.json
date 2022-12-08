@@ -1,9 +1,9 @@
 {
   "name": "com.prenominal.realtimecsg",
-  "version": "1.57.2",
+  "version": "1.60.1",
   "description": "RealtimeCSG is a CSG level design tool, that allows you to intuitively and rapidly create levels. With its non-destructive workflow, you can easily adjust your levels at any time, and iterate with instant feedback.",
   "displayName": "RealtimeCSG",
-  "unity": "2018.3",
+  "unity": "2018.4",
   "author": {
     "name": "Sander van Rossen (LogicalError), Contributions by Daniel Cornelius (NukeAndBeans, Kerfuffles) and Kolton Meier (Janooba)",
     "url": "https://github.com/LogicalError"
