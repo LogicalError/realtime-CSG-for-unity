@@ -59,11 +59,15 @@ namespace RealtimeCSG
         /// <param name="subMeshes">Submeshes geometry indices</param>
         /// <param name="debug"> An object which will receive debug information </param>
         /// <param name="maxDist"> The maximum distance to cover when stitching cracks, larger than this will not be stitched </param>
+        /// <param name="pCancellationToken"> Optional cancellation token </param>
         /// <returns> Yield while solving if the preprocessor has been enabled, otherwise returns empty </returns>
-        public static IEnumerable SolveRaw(Vector3[] vertices, int[] tris, List<int>[] subMeshes, ISolverDebugProvider debug, float maxDist = 0.05f)
+        public static IEnumerable SolveRaw(Vector3[] vertices, int[] tris, List<int>[] subMeshes, ISolverDebugProvider debug, float maxDist = 0.05f, CancellationToken pCancellationToken = default)
         {
             // Merging duplicate vertices to ignore material-specific topology
             Merge(vertices, out var newVertices, ref tris);
+            
+            pCancellationToken.ThrowIfCancellationRequested();
+            
             var nativeVertices = vertices;
             vertices = newVertices;
 
@@ -87,6 +91,8 @@ namespace RealtimeCSG
                     sharedEdges.Add(edgeC);
             }
             
+            pCancellationToken.ThrowIfCancellationRequested();
+            
             // Only keep edges which do not share multiple triangles
             var leftToSolve = new HashSet<EdgeId>(allEdges);
             foreach (var edge in sharedEdges)
@@ -99,6 +105,8 @@ namespace RealtimeCSG
 
             while (leftToSolve.Count > 0)
             {
+                pCancellationToken.ThrowIfCancellationRequested();
+                
                 // Take one random edge from the hashset
                 EdgeId thisEdge;
                 using (var e = leftToSolve.GetEnumerator())
@@ -121,6 +129,8 @@ namespace RealtimeCSG
                 int swapCount = 0;
                 do
                 {
+                    pCancellationToken.ThrowIfCancellationRequested();
+                    
                     ReturnBestMatchFor(ref bestMatch.edge, ref workingData, out var otherBestMatch);
                     if (otherBestMatch.dist > maxDist)
                     {
@@ -178,6 +188,8 @@ namespace RealtimeCSG
                     posToSubMesh[pos] = (subMeshIndex, subMeshVertIndex);
                 }
             }
+            
+            pCancellationToken.ThrowIfCancellationRequested();
 
             foreach (var (x, y, z) in trianglesToAdd)
             {
@@ -196,6 +208,8 @@ namespace RealtimeCSG
                 indices.Add(mappingB);
                 indices.Add(mappingA);
             }
+            
+            pCancellationToken.ThrowIfCancellationRequested();
             
             #if !YIELD_SUBSTEPS
                 return Array.Empty<System.Object>();
@@ -479,9 +493,8 @@ namespace RealtimeCSG
                 {
                     try
                     {
-                        foreach (var _ in SolveRaw(verts, tris, subMeshes, debug, maxDist))
-                            cancellationToken.ThrowIfCancellationRequested();
-                    
+                        foreach (var _ in SolveRaw(verts, tris, subMeshes, debug, maxDist, cancellationToken)) { }
+
                         cancellationToken.ThrowIfCancellationRequested();
                         EditorApplication.update += OnMainThread;
                     }

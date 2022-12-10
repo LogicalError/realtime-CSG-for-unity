@@ -138,7 +138,7 @@ namespace InternalRealtimeCSG
 		[HideInInspector] public Int64	LightingHashValue;
 		[HideInInspector] public Int64  CracksHashValue;
 		
-		[NonSerialized] public CancellationTokenSource CracksSolverCancellation;
+		[NonSerialized] public Action CracksSolverCancellation;
 		[NonSerialized] [HideInInspector] public bool Dirty	= true;
 		[NonSerialized] [HideInInspector] public MeshCollider	CachedMeshCollider;
 		[NonSerialized] [HideInInspector] public MeshFilter		CachedMeshFilter;
@@ -157,7 +157,7 @@ namespace InternalRealtimeCSG
 		    ResetStitchCracksTime   = float.PositiveInfinity;
 		    LightingHashValue       = 0;
 		    CracksHashValue         = 0;
-		    CracksSolverCancellation?.Cancel();
+		    CracksSolverCancellation?.Invoke();
 
 		    Dirty	                = true;
 

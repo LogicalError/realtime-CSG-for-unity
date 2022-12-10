@@ -991,23 +991,60 @@ namespace InternalRealtimeCSG
 
 			UnityEngine.Object pingObject = model;
 			if (model.ShowGeneratedMeshes) pingObject = instance;
-			Debug.Log($"Stitching cracks for the mesh {instance.name} of the Model named \"{model.name}\n", pingObject);
+			
+			instance.CracksSolverCancellation?.Invoke();
 
-			var genTime = EditorApplication.timeSinceStartup;
 			MeshUtility.Optimize(instance.SharedMesh);
-			instance.CracksSolverCancellation?.Cancel();
-			instance.CracksSolverCancellation = new CancellationTokenSource();
-			CracksStitching.SolveAsync(instance.SharedMesh, null, instance.CracksSolverCancellation.Token,
+			
+			int progressId = Progress.Start($"Stitching {model.name}'s {instance.name}");
+			var tokenSource = new CancellationTokenSource();
+			var progressLogger = new CracksProgressLogger(progressId);
+			EditorApplication.update += progressLogger.Update;
+			instance.CracksSolverCancellation += () =>
+			{
+				tokenSource.Cancel();
+				Progress.Finish(progressId);
+				instance.CracksSolverCancellation = null;
+				EditorApplication.update -= progressLogger.Update;
+			};
+			CracksStitching.SolveAsync(instance.SharedMesh, progressLogger, tokenSource.Token,
 				() =>
 				{
-					genTime = EditorApplication.timeSinceStartup - genTime;
-					Debug.Log($"\tCracks stitched in {(genTime* 1000):F1} ms\n", model);
 					EditorSceneManager.MarkSceneDirty(instance.gameObject.scene);
+					instance.CracksSolverCancellation?.Invoke();
 				});
 
 			EditorSceneManager.MarkSceneDirty(instance.gameObject.scene);
 			instance.CracksHashValue = instance.MeshDescription.geometryHashValue;
 			instance.HasNoCracks = true;
+		}
+
+		private class CracksProgressLogger : CracksStitching.ISolverDebugProvider
+		{
+			CracksStitching.WorkingData data;
+			int progressId;
+
+			public CracksProgressLogger(int pProgressId)
+			{
+				progressId = pProgressId;
+			}
+
+			public void Update()
+			{
+				if (data.edgesLeft == null)
+				{
+					Progress.Report(progressId, 0f );
+				}
+				else
+				{
+					// DATA IS NOT THREAD SAFE, BE VERY CAREFUL WITH HOW YOU READ STUFF FROM IT
+					Progress.Report(progressId, 1.0f - ((float)data.edgesLeft.Count / data.allEdges.Count) );
+				}
+			}
+
+			public void HookIntoWorkingData(CracksStitching.WorkingData pData) => data = pData;
+			public void LogWarning(string str){ }
+			public void Log(string str){ }
 		}
 
 		/// <summary> Thin helper to debug issues related to crack stitching </summary>
@@ -1027,7 +1064,7 @@ namespace InternalRealtimeCSG
 		{
 			instance.CracksHashValue = 0;
 			instance.HasNoCracks = false;
-			instance.CracksSolverCancellation?.Cancel();
+			instance.CracksSolverCancellation?.Invoke();
 		}
 
 		private static bool AreBoundsEmpty(GeneratedMeshInstance instance)
