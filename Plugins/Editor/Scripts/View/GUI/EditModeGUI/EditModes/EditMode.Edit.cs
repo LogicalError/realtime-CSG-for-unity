@@ -361,6 +361,15 @@ namespace RealtimeCSG
 
 
 		private MouseCursor _currentCursor = MouseCursor.Arrow;
+		private void UpdateMouseCursor()
+		{
+			if (GUIUtility.hotControl == _rectSelectionId &&
+			    !_movePlaneInNormalDirection              &&
+			    GUIUtility.hotControl != 0)
+				return;
+
+			_currentCursor = CursorUtility.GetSelectionCursor(SelectionUtility.GetEventSelectionType());
+		}
 
 		private EditMode SetHoverOn(EditMode editModeType, int target, int index = -1)
 		{
@@ -379,34 +388,22 @@ namespace RealtimeCSG
 			if (index == -1)
 				return EditMode.None;
 
-			var newCursor = MouseCursor.Arrow;
 			switch (editModeType)
 			{
-				case EditMode.RotateEdge:       _hoverOnEdgeIndex    = index; newCursor = MouseCursor.RotateArrow; break;
-				case EditMode.MovingEdge:       _hoverOnEdgeIndex    = index; newCursor = MouseCursor.MoveArrow; break;
-				case EditMode.MovingPoint:      _hoverOnPointIndex   = index; newCursor = MouseCursor.MoveArrow; break;
-				case EditMode.MovingPolygon:    _hoverOnPolygonIndex = index; newCursor = MouseCursor.MoveArrow; break; 
+				case EditMode.RotateEdge:		_hoverOnEdgeIndex		= index;	break;
+				case EditMode.MovingEdge:		_hoverOnEdgeIndex		= index;	break;
+				case EditMode.MovingPoint:		_hoverOnPointIndex		= index;	break;
+				case EditMode.MovingPolygon:	_hoverOnPolygonIndex	= index;	break; 
 			}
-
-			if (_currentCursor == MouseCursor.Arrow)
-				_currentCursor = newCursor;
 
 			return editModeType;
 		}
-		private void UpdateMouseCursor()
-		{
-			if (GUIUtility.hotControl == _rectSelectionId &&
-				!_movePlaneInNormalDirection &&
-				GUIUtility.hotControl != 0)
-				return;
 
-			_currentCursor = CursorUtility.GetSelectionCursor(SelectionUtility.GetEventSelectionType());
-		}
-		
 		private EditMode HoverOnPoint(ControlMeshState meshState, int brushNodeIndex, int pointIndex)
 		{
 			var editMode = SetHoverOn(EditMode.MovingPoint, brushNodeIndex, pointIndex);
 			meshState.Selection.Points[pointIndex] |= SelectState.Hovering;
+			_currentCursor = MouseCursor.MoveArrow;
 
 			return editMode;
 		}
@@ -471,7 +468,10 @@ namespace RealtimeCSG
 				_currentCursor = CursorUtility.GetCursorForEdge(delta);
 			} else
 			if (Tools.current == Tool.Rotate)
+			{
 				editMode = SetHoverOn(EditMode.RotateEdge, brushIndex, edgeIndex);
+				_currentCursor = MouseCursor.RotateArrow;
+			}
 
 			meshState.Selection.Edges[edgeIndex] |= SelectState.Hovering;
 			return editMode;
@@ -1189,13 +1189,18 @@ namespace RealtimeCSG
 				_currentCursor = CursorUtility.GetCursorForDirection(_movePolygonDirection, 90);
 			}
 
-            {
-                if (sceneView != null)
-                {
-                    var windowRect = new Rect(0, 0, sceneView.position.width, sceneView.position.height - CSG_GUIStyleUtility.BottomToolBarHeight);
-                    EditorGUIUtility.AddCursorRect(windowRect, _currentCursor);
-                }
-            }
+			if (sceneView != null)
+			{
+#if UNITY_2020_2_OR_NEWER
+				if (!Tools.viewToolActive)
+#else
+				if (Tools.current != Tool.View && !Event.current.alt && Event.current.button != 1 && Event.current.button != 2)
+#endif
+				{
+					var windowRect = new Rect(0, 0, sceneView.position.width, sceneView.position.height - CSG_GUIStyleUtility.BottomToolBarHeight);
+					EditorGUIUtility.AddCursorRect(windowRect, _currentCursor);
+				}
+			}
 
 			var origMatrix = Handles.matrix;
 			Handles.matrix = MathConstants.identityMatrix;

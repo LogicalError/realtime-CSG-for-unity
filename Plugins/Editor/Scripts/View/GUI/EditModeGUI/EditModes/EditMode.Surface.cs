@@ -470,22 +470,15 @@ namespace RealtimeCSG
             hoverOnSurfaceIndex = index;
             return editModeType;
         }
-                
-        MouseCursor currentCursor = MouseCursor.Arrow;
-        void UpdateMouseCursor()
-        {
-            if (mouseIsDown)
-                return;
-            
-            switch (SelectionUtility.GetEventSelectionType())
-            {
-                case SelectionType.Additive:	currentCursor = MouseCursor.ArrowPlus; break;
-                case SelectionType.Subtractive: currentCursor = MouseCursor.ArrowMinus; break;
-                case SelectionType.Toggle:		currentCursor = MouseCursor.Arrow; break;
 
-                default:						currentCursor = MouseCursor.Arrow; break;
-            }
-        }
+		MouseCursor currentCursor = MouseCursor.Arrow;
+		void UpdateMouseCursor()
+		{
+			if (mouseIsDown)
+				return;
+
+			currentCursor = CursorUtility.GetSelectionCursor(SelectionUtility.GetEventSelectionType());
+		}
 
         bool UpdateGrid(Camera camera)
         {
@@ -1132,10 +1125,16 @@ namespace RealtimeCSG
                     
                         if (sceneView != null)
                         {
-                            var windowRect = new Rect(0, 0, sceneView.position.width, sceneView.position.height - CSG_GUIStyleUtility.BottomToolBarHeight);
-                            if (currentCursor != MouseCursor.Arrow)
-                                EditorGUIUtility.AddCursorRect(windowRect, currentCursor);
-                        }
+#if UNITY_2020_2_OR_NEWER
+							if (!Tools.viewToolActive)
+#else
+							if (Tools.current != Tool.View && !Event.current.alt && Event.current.button != 1 && Event.current.button != 2)
+#endif
+							{
+								var windowRect = new Rect(0, 0, sceneView.position.width, sceneView.position.height - CSG_GUIStyleUtility.BottomToolBarHeight);
+								if (currentCursor != MouseCursor.Arrow) EditorGUIUtility.AddCursorRect(windowRect, currentCursor);
+							}
+						}
                         
                         if (currentControl == -1 ||
                             currentControl == surfaceSelectPaintControl)
@@ -1339,14 +1338,12 @@ namespace RealtimeCSG
                                     }
                                 }					
                             }
+                            if (!repaint)
                             {
-                                if (!repaint)
+                                for (int p = 0; p < surfaceState.surfaceSelectState.Length; p++)
                                 {
-                                    for (int p = 0; p < surfaceState.surfaceSelectState.Length; p++)
-                                    {
-                                        if (surfaceState.surfaceSelectState[p] != oldSurfaceStates[p] || oldSurfaceStates[p] == SelectState.None)
-                                            repaint = true;
-                                    }
+                                    if (surfaceState.surfaceSelectState[p] != oldSurfaceStates[p] || oldSurfaceStates[p] == SelectState.None)
+                                        repaint = true;
                                 }
                             }
                         }

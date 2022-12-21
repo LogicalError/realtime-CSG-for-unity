@@ -1119,14 +1119,7 @@ namespace RealtimeCSG
 		MouseCursor currentCursor = MouseCursor.Arrow;
 		void UpdateMouseCursor()
 		{
-			switch (SelectionUtility.GetEventSelectionType())
-			{
-				case SelectionType.Additive:	currentCursor = MouseCursor.ArrowPlus; break;
-				case SelectionType.Subtractive: currentCursor = MouseCursor.ArrowMinus; break;
-				case SelectionType.Toggle:		currentCursor = MouseCursor.Arrow; break;
-
-				default:						currentCursor = MouseCursor.Arrow; break;
-			}
+			currentCursor = CursorUtility.GetSelectionCursor(SelectionUtility.GetEventSelectionType());
 		}
 
 		[NonSerialized] bool ignorePivotChange = false;
@@ -1359,10 +1352,9 @@ namespace RealtimeCSG
 			var inCamera			= (camera != null) && camera.pixelRect.Contains(Event.current.mousePosition);
 
 			var originalEventType = Event.current.type;
-            if( Event.current.type == EventType.MouseMove ) { sceneView.Repaint(); }
-            else if      (originalEventType == EventType.MouseMove) { mouseIsDragging = false; draggingOnCamera = null; realMousePosition   = Event.current.mousePosition; }
-            else if (originalEventType == EventType.MouseDown) { mouseIsDragging      = false; draggingOnCamera = camera; realMousePosition = prevMousePos = Event.current.mousePosition; }
-			else if (originalEventType == EventType.MouseUp)   { draggingOnCamera     = null; }
+			if		(originalEventType == EventType.MouseMove) { mouseIsDragging	= false; draggingOnCamera = null; realMousePosition   = Event.current.mousePosition; }
+			else if (originalEventType == EventType.MouseDown) { mouseIsDragging	= false; draggingOnCamera = camera; realMousePosition = prevMousePos = Event.current.mousePosition; }
+			else if (originalEventType == EventType.MouseUp)   { draggingOnCamera	= null; }
 			else if (originalEventType == EventType.MouseDrag)
 			{
 				if (!mouseIsDragging && (prevMousePos - Event.current.mousePosition).magnitude > 4.0f)
@@ -1393,13 +1385,18 @@ namespace RealtimeCSG
 				{
 					if (!SceneDragToolManager.IsDraggingObjectInScene)
 					{
-                        {
-                            if (sceneView)
-                            {
-                                var windowRect = new Rect(0, 0, sceneView.position.width, sceneView.position.height - CSG_GUIStyleUtility.BottomToolBarHeight);
-                                EditorGUIUtility.AddCursorRect(windowRect, currentCursor);
-                            }
-                        }
+						if (sceneView)
+						{
+#if UNITY_2020_2_OR_NEWER
+							if (!Tools.viewToolActive)
+#else
+							if (Tools.current != Tool.View && !Event.current.alt && Event.current.button != 1 && Event.current.button != 2)
+#endif
+							{
+								var windowRect = new Rect(0, 0, sceneView.position.width, sceneView.position.height - CSG_GUIStyleUtility.BottomToolBarHeight);
+								EditorGUIUtility.AddCursorRect(windowRect, currentCursor);
+							}
+						}
 
 						if (!mouseIsDragging &&
 							(toolEditMode == ToolEditMode.MovingObject ||
