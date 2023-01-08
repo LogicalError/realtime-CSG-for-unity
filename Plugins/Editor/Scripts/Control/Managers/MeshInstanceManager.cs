@@ -895,8 +895,7 @@ namespace InternalRealtimeCSG
 			meshRendererComponent.realtimeLightmapIndex = -1;
 			meshRendererComponent.lightmapIndex = -1;
 			
-			var oldVertices		= instance.SharedMesh.vertices;
-			if (oldVertices.Length == 0)
+			if (instance.SharedMesh.vertexCount == 0)
 				return;
 
             var tempMesh = instance.SharedMesh.Clone();
@@ -970,55 +969,75 @@ namespace InternalRealtimeCSG
 				if (!instance)
 					continue;
 				if (!instance.SharedMesh)
-				{
 					instance.FindMissingSharedMesh();
-					if (!instance.SharedMesh)
-						continue;
-				}
+			}
 
-				StitchCracksForInstance(instance, model);
+			foreach (var grouping in from x in container.MeshInstances 
+			         where x.SharedMesh != null && x.SharedMesh.vertexCount > 0 
+			         group x by x.RenderSurfaceType == RenderSurfaceType.Collider)
+			{
+				var meshes = new List<Mesh>();
+				foreach (var instance in grouping)
+				{
+					instance.SharedMesh = instance.SharedMesh.Clone();
+					meshes.Add(instance.SharedMesh);
+					instance.CracksSolverCancellation?.Invoke();
+				}
+				
+				if (meshes.Count == 0)
+					continue;
+
+				var tokenSource = new CancellationTokenSource();
+				string key = $"Stitching {container.name}'s {(grouping.Key ? "Colliders" : "Meshes")}";
+				
+				#if UNITY_2020_OR_NEWER
+				int progressId = Progress.Start(key);
+				var progressLogger = new CracksProgressLogger(progressId);
+				EditorApplication.update += progressLogger.Update;
+				foreach (var instance in grouping)
+				{
+					instance.CracksSolverCancellation += () =>
+					{
+						tokenSource.Cancel();
+						Progress.Finish(progressId);
+						instance.CracksSolverCancellation = null;
+						EditorApplication.update -= progressLogger.Update;
+					};
+				}
+				#else
+				foreach (var instance in grouping)
+				{
+					instance.CracksSolverCancellation += () =>
+					{
+						tokenSource.Cancel();
+						instance.CracksSolverCancellation = null;
+					};
+				}
+				CracksStitching.ISolverDebugProvider progressLogger = null;
+				#endif
+				
+				CracksStitching.SolveAsync(meshes.ToArray(), progressLogger, tokenSource.Token,
+					() =>
+					{
+						foreach (var instance in grouping)
+						{
+							EditorSceneManager.MarkSceneDirty(instance.gameObject.scene);
+							instance.CracksSolverCancellation?.Invoke();
+						}
+						#if !UNITY_2020_OR_NEWER
+						Debug.Log($"Finished {key}");
+						#endif
+					});
+
+				foreach (var instance in grouping)
+				{
+					instance.CracksHashValue = instance.MeshDescription.geometryHashValue;
+					instance.HasNoCracks = true;
+				}
 			}
 		}
 
-		private static void StitchCracksForInstance(GeneratedMeshInstance instance, CSGModel model)
-		{
-			var oldVertices	= instance.SharedMesh.vertices;
-			if (oldVertices.Length == 0)
-				return;
-
-			var tempMesh = instance.SharedMesh.Clone();
-			instance.SharedMesh = tempMesh;
-
-			UnityEngine.Object pingObject = model;
-			if (model.ShowGeneratedMeshes) pingObject = instance;
-			
-			instance.CracksSolverCancellation?.Invoke();
-
-			MeshUtility.Optimize(instance.SharedMesh);
-			
-			int progressId = Progress.Start($"Stitching {model.name}'s {instance.name}");
-			var tokenSource = new CancellationTokenSource();
-			var progressLogger = new CracksProgressLogger(progressId);
-			EditorApplication.update += progressLogger.Update;
-			instance.CracksSolverCancellation += () =>
-			{
-				tokenSource.Cancel();
-				Progress.Finish(progressId);
-				instance.CracksSolverCancellation = null;
-				EditorApplication.update -= progressLogger.Update;
-			};
-			CracksStitching.SolveAsync(instance.SharedMesh, progressLogger, tokenSource.Token,
-				() =>
-				{
-					EditorSceneManager.MarkSceneDirty(instance.gameObject.scene);
-					instance.CracksSolverCancellation?.Invoke();
-				});
-
-			EditorSceneManager.MarkSceneDirty(instance.gameObject.scene);
-			instance.CracksHashValue = instance.MeshDescription.geometryHashValue;
-			instance.HasNoCracks = true;
-		}
-
+		#if UNITY_2020_OR_NEWER
 		private class CracksProgressLogger : CracksStitching.ISolverDebugProvider
 		{
 			CracksStitching.WorkingData data;
@@ -1046,6 +1065,7 @@ namespace InternalRealtimeCSG
 			public void LogWarning(string str){ }
 			public void Log(string str){ }
 		}
+		#endif
 
 		/// <summary> Thin helper to debug issues related to crack stitching </summary>
 		private class CracksDebugger : CracksStitching.ISolverDebugProvider

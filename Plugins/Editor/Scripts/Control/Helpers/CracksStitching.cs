@@ -43,14 +43,6 @@ namespace RealtimeCSG
                 mesh.SetTriangles(subMeshes[i], i);
         }
 
-        public static void SolveAsync(Mesh mesh, ISolverDebugProvider debug, CancellationToken pCancellationToken, Action onFinished, float maxDist = 0.05f)
-        {
-            // Need to spawn a new class; mesh is not thread safe, we have to manipulate it after the async logic ran,
-            //   to that end we're relying on the editor update callback, but inline delegates cannot remove
-            //   themselves from a callback -> using class methods to work around this.
-            new AsyncJob().Solve(mesh, debug, pCancellationToken, onFinished, maxDist);
-        }
-
         /// <summary>
         /// Stitch cracks and small holes in meshes, this can take a significant amount of time depending on the mesh.
         /// </summary>
@@ -471,57 +463,79 @@ namespace RealtimeCSG
             }
         }
 
-        class AsyncJob
+        public static void SolveAsync(Mesh[] pMesh, ISolverDebugProvider debug, CancellationToken cancellationToken, Action onFinished, float maxDist = 0.05f)
         {
-            CancellationToken cancellationToken;
-            List<int>[] subMeshes;
-            Action onFinished;
-            Mesh mesh;
+            Mesh combinedMesh = new Mesh();
 
-            public void Solve(Mesh pMesh, ISolverDebugProvider debug, CancellationToken pCancellationToken, Action pOnFinished, float maxDist = 0.05f)
-            {
-                mesh = pMesh;
-                cancellationToken = pCancellationToken;
-                onFinished = pOnFinished;
-                subMeshes = new List<int>[mesh.subMeshCount];
-                for (int i = 0; i < mesh.subMeshCount; i++)
-                    subMeshes[i] = mesh.GetTriangles(i).ToList();
-
-                var tris = mesh.triangles;
-                var verts = mesh.vertices;
-                System.Threading.Tasks.Task.Run(() =>
-                {
-                    try
-                    {
-                        foreach (var _ in SolveRaw(verts, tris, subMeshes, debug, maxDist, cancellationToken)) { }
-
-                        cancellationToken.ThrowIfCancellationRequested();
-                        EditorApplication.update += OnMainThread;
-                    }
-                    catch (Exception e) when(e is OperationCanceledException == false)
-                    {
-                        Debug.LogException(e);
-                    }
-                }, cancellationToken);
-            }
-
-            void OnMainThread()
-            {
-                EditorApplication.update -= OnMainThread;
-                if(cancellationToken.IsCancellationRequested)
-                    return;
-
-                var totalIndices = 0;
-                foreach (var list in subMeshes)
-                    totalIndices += list.Count;
+            var combineInstances = new List<CombineInstance>();
+            foreach (var mesh1 in pMesh)
+                for (int i = 0; i < mesh1.subMeshCount; i++)
+                    combineInstances.Add(new CombineInstance{ mesh = mesh1, subMeshIndex = i });
             
-                if(totalIndices > ushort.MaxValue)
-                    mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+            combinedMesh.CombineMeshes(combineInstances.ToArray(), false, false);
 
-                for (int i = 0; i < subMeshes.Length; i++)
-                    mesh.SetTriangles(subMeshes[i], i);
-                onFinished?.Invoke();
-            }
+            var verts = combinedMesh.vertices;
+            var indices = combinedMesh.triangles;
+            
+            var subMeshes = new List<int>[combinedMesh.subMeshCount];
+            for (int i = 0; i < combinedMesh.subMeshCount; i++)
+                subMeshes[i] = combinedMesh.GetTriangles(i).ToList();
+            
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                try
+                {
+                    foreach (var o in SolveRaw(verts, indices, subMeshes, debug, maxDist)){ }
+
+                    cancellationToken.ThrowIfCancellationRequested();
+                        
+                    var totalIndices = 0;
+                    foreach (var list in subMeshes)
+                        totalIndices += list.Count;
+                    
+                    // Mesh is not thread safe, we can run the process asynchronously as long as we don't directly interact with mesh.
+                    //   to that end we're relying on the editor update callback to apply those changes back, but inline delegates cannot remove
+                    //   themselves from a callback -> using a class to hold the delegate reference which removes itself after the call to work around this.
+                    var jobWorkAround = new AsyncJobWorkaround();
+                    EditorApplication.update += jobWorkAround.Post = () =>
+                    {
+                        EditorApplication.update -= jobWorkAround.Post;
+                        if(cancellationToken.IsCancellationRequested)
+                            return;
+            
+                        if(totalIndices > ushort.MaxValue)
+                            combinedMesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+
+                        for (int i = 0; i < subMeshes.Length; i++)
+                            combinedMesh.SetTriangles(subMeshes[i], i);
+
+                        // Redistribute data to the right meshes
+                        int submeshIndex = 0;
+                        foreach (var mesh1 in pMesh)
+                        {
+                            var ci = new CombineInstance[mesh1.subMeshCount];
+                            mesh1.Clear(); 
+                            for (int i = 0; i < ci.Length; i++)
+                                ci[i] = new CombineInstance { mesh = combinedMesh, subMeshIndex = submeshIndex++ };
+                            mesh1.CombineMeshes(ci, false, false);
+                            // CombineMeshes dumps all vertex data from all referenced meshes into the resulting mesh
+                            // even if most of the vertex data ends up unused because those vertices' are not referenced in the index/triangle array
+                            mesh1.OptimizeReorderVertexBuffer();
+                        }
+
+                        onFinished?.Invoke();
+                    };
+                }
+                catch (Exception e) when(e is OperationCanceledException == false)
+                {
+                    Debug.LogException(e);
+                }
+            }, cancellationToken);
+        }
+
+        class AsyncJobWorkaround
+        {
+            public EditorApplication.CallbackFunction Post;
         }
     }
 }
