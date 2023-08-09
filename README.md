@@ -59,16 +59,16 @@ If you use this plugin, please let us know, we'd love to see what you've done wi
 
   * A: No. Unless stated otherwise, it will not be available to the public. Sorry for that.
 
-**Q: Is there a build of the native binary for <x> distro?**
+**Q: Is there a build of the native binary for my OS distro?**
 
-A: RealtimeCSG currently supports the following platforms:
-  - Windows x64
-  - MacOS
+ * A: RealtimeCSG currently supports the following platforms:
+   - Windows x64
+   - MacOS
 
-  There are plans and work being done in the background to bring support to Linux. This does not mean it will support *all* linux distros. Just the popular ones like Debian, Ubuntu, Mint, etc.
+   There are plans and work being done in the background to bring support to Linux. This does not mean it will support *all* linux distros. Just the popular ones like Debian, Ubuntu, Mint, etc.
 
-  Unsupported platforms:
-  - Any ARM platforms. We don't have access to an ARM system. This may/may not change if one of us gets one, but it is unlikely.
+   Unsupported platforms:
+   - Any ARM platforms. We don't have access to an ARM system. This may/may not change if one of us gets one, but it is unlikely.
 
 **Q: Can I build RealtimeCSG for another OS?**
 
