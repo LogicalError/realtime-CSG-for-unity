@@ -1,6 +1,7 @@
 //#define SHOW_GENERATED_MESHES
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEditor;
@@ -894,8 +895,7 @@ namespace InternalRealtimeCSG
 			meshRendererComponent.realtimeLightmapIndex = -1;
 			meshRendererComponent.lightmapIndex = -1;
 			
-			var oldVertices		= instance.SharedMesh.vertices;
-			if (oldVertices.Length == 0)
+			if (instance.SharedMesh.vertexCount == 0)
 				return;
 
             var tempMesh = instance.SharedMesh.Clone();
@@ -924,6 +924,167 @@ namespace InternalRealtimeCSG
 		private static bool NeedToGenerateLightmapUVsForInstance(GeneratedMeshInstance instance)
 		{
 			return !instance.HasUV2 && instance.RenderSurfaceType == RenderSurfaceType.Normal;
+		}
+
+		public static bool NeedToStitchCracksForModel(CSGModel model)
+		{
+			if (!ModelTraits.IsModelEditable(model))
+				return false;
+
+			if (!model.generatedMeshes)
+				return false;
+
+			var container = model.generatedMeshes;
+			if (!container || container.owner != model)
+				return false;
+
+			foreach (var instance in container.MeshInstances)
+			{
+				if (!instance)
+					continue;
+
+				if (NeedToStitchCracksForInstance(instance))
+					return true;
+			}
+			return false;
+		}
+
+		public static void StitchCracksForModel(CSGModel model)
+		{
+			if (!ModelTraits.IsModelEditable(model))
+				return;
+
+			if (!model.generatedMeshes)
+				return;
+
+			var container = model.generatedMeshes;
+			if (!container || !container.owner)
+				return;
+
+			if (!container.HasMeshInstances)
+				return;
+
+			foreach (var instance in container.MeshInstances)
+			{
+				if (!instance)
+					continue;
+				if (!instance.SharedMesh)
+					instance.FindMissingSharedMesh();
+			}
+
+			foreach (var grouping in from x in container.MeshInstances 
+			         where x.SharedMesh != null && x.SharedMesh.vertexCount > 0 
+			         group x by x.RenderSurfaceType == RenderSurfaceType.Collider)
+			{
+				var meshes = new List<Mesh>();
+				foreach (var instance in grouping)
+				{
+					instance.SharedMesh = instance.SharedMesh.Clone();
+					meshes.Add(instance.SharedMesh);
+					instance.CracksSolverCancellation?.Invoke();
+				}
+				
+				if (meshes.Count == 0)
+					continue;
+
+				var tokenSource = new CancellationTokenSource();
+				string key = $"Stitching {container.name}'s {(grouping.Key ? "Colliders" : "Meshes")}";
+				
+				#if UNITY_2020_OR_NEWER
+				int progressId = Progress.Start(key);
+				var progressLogger = new CracksProgressLogger(progressId);
+				EditorApplication.update += progressLogger.Update;
+				foreach (var instance in grouping)
+				{
+					instance.CracksSolverCancellation += () =>
+					{
+						tokenSource.Cancel();
+						Progress.Finish(progressId);
+						instance.CracksSolverCancellation = null;
+						EditorApplication.update -= progressLogger.Update;
+					};
+				}
+				#else
+				foreach (var instance in grouping)
+				{
+					instance.CracksSolverCancellation += () =>
+					{
+						tokenSource.Cancel();
+						instance.CracksSolverCancellation = null;
+					};
+				}
+				CracksStitching.ISolverDebugProvider progressLogger = null;
+				#endif
+				
+				CracksStitching.SolveAsync(meshes.ToArray(), progressLogger, tokenSource.Token,
+					() =>
+					{
+						foreach (var instance in grouping)
+						{
+							EditorSceneManager.MarkSceneDirty(instance.gameObject.scene);
+							instance.CracksSolverCancellation?.Invoke();
+						}
+						#if !UNITY_2020_OR_NEWER
+						Debug.Log($"Finished {key}");
+						#endif
+					});
+
+				foreach (var instance in grouping)
+				{
+					instance.CracksHashValue = instance.MeshDescription.geometryHashValue;
+					instance.HasNoCracks = true;
+				}
+			}
+		}
+
+		#if UNITY_2020_OR_NEWER
+		private class CracksProgressLogger : CracksStitching.ISolverDebugProvider
+		{
+			CracksStitching.WorkingData data;
+			int progressId;
+
+			public CracksProgressLogger(int pProgressId)
+			{
+				progressId = pProgressId;
+			}
+
+			public void Update()
+			{
+				if (data.edgesLeft == null)
+				{
+					Progress.Report(progressId, 0f );
+				}
+				else
+				{
+					// DATA IS NOT THREAD SAFE, BE VERY CAREFUL WITH HOW YOU READ STUFF FROM IT
+					Progress.Report(progressId, 1.0f - ((float)data.edgesLeft.Count / data.allEdges.Count) );
+				}
+			}
+
+			public void HookIntoWorkingData(CracksStitching.WorkingData pData) => data = pData;
+			public void LogWarning(string str){ }
+			public void Log(string str){ }
+		}
+		#endif
+
+		/// <summary> Thin helper to debug issues related to crack stitching </summary>
+		private class CracksDebugger : CracksStitching.ISolverDebugProvider
+		{
+			public void HookIntoWorkingData(CracksStitching.WorkingData data){ }
+			public void LogWarning(string str) => Debug.LogWarning(str);
+			public void Log(string str){ }
+		}
+
+		private static bool NeedToStitchCracksForInstance(GeneratedMeshInstance instance)
+		{
+			return !instance.HasNoCracks;
+		}
+
+		public static void ClearCrackStitching(GeneratedMeshInstance instance)
+		{
+			instance.CracksHashValue = 0;
+			instance.HasNoCracks = false;
+			instance.CracksSolverCancellation?.Invoke();
 		}
 
 		private static bool AreBoundsEmpty(GeneratedMeshInstance instance)
@@ -1203,6 +1364,22 @@ namespace InternalRealtimeCSG
 						}
 					}
 				}
+                
+                if (instance.HasNoCracks && instance.CracksHashValue != instance.MeshDescription.geometryHashValue && meshRendererComponent)
+                {
+	                instance.ResetStitchCracksTime = Time.realtimeSinceStartup;
+	                if(instance.HasNoCracks)
+		                ClearCrackStitching(instance);
+                }
+
+                if (owner.AutoStitchCracks || postProcessScene)
+                {
+	                if ((float.IsPositiveInfinity(instance.ResetStitchCracksTime) || Time.realtimeSinceStartup - instance.ResetStitchCracksTime > 2.0f) &&
+	                    NeedToStitchCracksForModel(owner))
+	                {
+		                StitchCracksForModel(owner);
+	                }
+                }
 
                 if (!postProcessScene &&
                     meshFilterComponent.sharedMesh != instance.SharedMesh)
@@ -1345,6 +1522,7 @@ namespace InternalRealtimeCSG
                     meshRendererComponent.hideFlags = HideFlags.None; UnityEngine.Object.DestroyImmediate(meshRendererComponent); instance.Dirty = true;
                 }
 				instance.LightingHashValue = instance.MeshDescription.geometryHashValue;
+				instance.CracksHashValue = instance.MeshDescription.geometryHashValue;
 				meshFilterComponent = null;
 				meshRendererComponent = null;
 				instance.CachedMeshRendererSO = null;
