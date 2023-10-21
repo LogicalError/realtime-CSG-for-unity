@@ -1,3 +1,4 @@
+#if UNITY_2021_3_OR_NEWER
 using UnityEditor;
 using UnityEditor.Overlays;
 using UnityEditor.Toolbars;
@@ -95,7 +96,7 @@ namespace RealtimeCSG
         }
     }
 
-    #region Buttons class for each Mode
+#region Buttons class for each Mode
     [EditorToolbarElement(_id, typeof(SceneView))]
     internal class PlaceEditorModeButton : EditorModeButton
     {
@@ -132,8 +133,8 @@ namespace RealtimeCSG
         public SurfaceEditorModeButton() : base("Surface.png", ToolEditMode.Surfaces) { }
     }
 
-    #endregion
+#endregion
 
-    
 
 }
+#endif

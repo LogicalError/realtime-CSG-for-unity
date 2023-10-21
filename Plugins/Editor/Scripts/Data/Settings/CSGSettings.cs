@@ -314,7 +314,8 @@ namespace RealtimeCSG
             EditModeManager.UpdateTool();
             RealtimeCSG.CSGSettings.UpdateWireframeModes();
             RealtimeCSG.CSGSettings.Save();
-            OnRealtimeCSGEnabledChanged(CSGSettings.EnableRealtimeCSG);
+            if(OnRealtimeCSGEnabledChanged != null)
+                OnRealtimeCSGEnabledChanged(CSGSettings.EnableRealtimeCSG);
         }
 
 
