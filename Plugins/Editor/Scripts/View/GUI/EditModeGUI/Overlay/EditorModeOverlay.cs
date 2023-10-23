@@ -10,6 +10,8 @@ namespace RealtimeCSG
     [Overlay(typeof(SceneView), displayName: "Realtime CSG", id : _id, defaultDisplay: true
 #if !UNITY_2022_3_OR_NEWER
         ,ussName: "RealtimeCSG"
+#else
+        ,defaultLayout = Layout.VerticalToolbar
 #endif
     )]
 
