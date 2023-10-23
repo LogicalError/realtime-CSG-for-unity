@@ -7,7 +7,12 @@ using UnityEngine.UIElements;
 
 namespace RealtimeCSG
 {
-    [Overlay(typeof(SceneView), displayName: "Realtime CSG", id : _id, defaultDisplay = true)]
+    [Overlay(typeof(SceneView), displayName: "Realtime CSG", id : _id, defaultDisplay: true
+#if !UNITY_2022_3_OR_NEWER
+        ,ussName: "RealtimeCSG"
+#endif
+    )]
+
     internal class EditorModeOverlay: ToolbarOverlay
     {
         public const string iconPath = "Packages/com.prenominal.realtimecsg/Plugins/Editor/Resources/GUI/";
