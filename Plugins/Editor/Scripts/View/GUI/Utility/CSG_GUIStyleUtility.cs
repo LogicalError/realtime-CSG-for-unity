@@ -92,7 +92,7 @@ namespace RealtimeCSG
 
 		public static GUIStyle unpaddedWindow;
 
-        public static GUIStyle winBtnClose;
+		public static GUIStyle winBtnClose;
 
 		public static GUILayoutOption[] ContentEmpty = new GUILayoutOption[0];
 
