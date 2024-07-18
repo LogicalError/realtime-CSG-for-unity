@@ -85,12 +85,19 @@ namespace RealtimeCSG
 
             // Pre-compute best pairs for all edges
 
-            foreach (var sourceEdge in uniquePosPair)
             {
-                sourceEdge.FillCache(uniquePosPair);
-
-                if (cancellationToken.IsCancellationRequested)
-                    return;
+	            var copy = uniquePosPair.ToArray();
+	            for (int i = 0; i < copy.Length; i++)
+	            {
+		            var edgeA = copy[i];
+		            for (int j = i+1; j < copy.Length; j++)
+		            {
+			            var edgeB = copy[j];
+			            ComputeScore(edgeA, edgeB, out float score);
+			            edgeA.TryUnsafeInsert(edgeB, score);
+			            edgeB.TryUnsafeInsert(edgeA, score);
+		            }
+	            }
             }
 
             // Go through all edges, find the best pair,
@@ -105,8 +112,13 @@ namespace RealtimeCSG
                 float bestEdgeScore = float.NegativeInfinity;
                 foreach (var sourceEdge in uniquePosPair)
                 {
-                    if (sourceEdge.BestMatch.Score > bestEdgeScore
-                        && sourceEdge.BestMatch.Edge.BestMatch.Edge == sourceEdge)
+                    if (sourceEdge.BestMatch.Score <= bestEdgeScore)
+	                    continue;
+					
+                    while (uniquePosPair.Contains(sourceEdge.BestMatch.Edge) == false && uniquePosPair.Count > 1)
+	                    sourceEdge.Evict(sourceEdge.BestMatch.Edge, uniquePosPair);
+                    
+                    if (sourceEdge.BestMatch.Edge.BestMatch.Edge == sourceEdge)
                     {
                         bestEdge = sourceEdge;
                         bestEdgeScore = sourceEdge.BestMatch.Score;
@@ -180,16 +192,10 @@ namespace RealtimeCSG
 
         static void Merge(EdgeDef sourceEdge, EdgeDef targetEdge, HashSet<EdgeDef> uniquePosPair, HashSet<EdgeDef> sharedPosPair, float maxDist, Debugger? debugger)
         {
-            uniquePosPair.Remove(sourceEdge);
+	        uniquePosPair.Remove(sourceEdge);
             uniquePosPair.Remove(targetEdge);
             sharedPosPair.Add(sourceEdge);
             sharedPosPair.Add(targetEdge);
-
-            foreach (var otherOtherEdges in uniquePosPair)
-            {
-                otherOtherEdges.Evict(sourceEdge, uniquePosPair);
-                otherOtherEdges.Evict(targetEdge, uniquePosPair);
-            }
 
             // Let's draw a quad to join those two edges
 
@@ -311,17 +317,21 @@ namespace RealtimeCSG
             {
                 if (uniquePosPair.Add(aToOppositeA))
                 {
-                    aToOppositeA.FillCache(uniquePosPair);
                     foreach (var otherOtherCache in uniquePosPair)
-                        otherOtherCache.Introduce(aToOppositeA);
+                    {
+	                    if (ReferenceEquals(aToOppositeA, otherOtherCache))
+		                    continue;
+
+	                    ComputeScore(aToOppositeA, otherOtherCache, out var score);
+	                    aToOppositeA.TryUnsafeInsert(otherOtherCache, score);
+	                    otherOtherCache.TryGuardedInsert(aToOppositeA, score);
+                    }
                 }
                 else // It already exists, meaning that we just solved another edge at the same time as this one
                 {
                     uniquePosPair.TryGetValue(aToOppositeA, out aToOppositeA); // may not map exactly and we need the exact ref for eviction
                     uniquePosPair.Remove(aToOppositeA);
                     sharedPosPair.Add(aToOppositeA);
-                    foreach (var otherOtherCache in uniquePosPair)
-                        otherOtherCache.Evict(aToOppositeA, uniquePosPair);
                 }
             }
 
@@ -329,17 +339,21 @@ namespace RealtimeCSG
             {
                 if (uniquePosPair.Add(bToOppositeB))
                 {
-                    bToOppositeB.FillCache(uniquePosPair);
-                    foreach (var otherOtherCache in uniquePosPair)
-                        otherOtherCache.Introduce(bToOppositeB);
+	                foreach (var otherOtherCache in uniquePosPair)
+	                {
+		                if (ReferenceEquals(bToOppositeB, otherOtherCache))
+			                continue;
+
+		                ComputeScore(bToOppositeB, otherOtherCache, out var score);
+		                bToOppositeB.TryUnsafeInsert(otherOtherCache, score);
+		                otherOtherCache.TryGuardedInsert(bToOppositeB, score);
+	                }
                 }
                 else // It already exists, meaning that we just solved another edge at the same time as this one
                 {
                     uniquePosPair.TryGetValue(bToOppositeB, out bToOppositeB); // may not map exactly and we need the exact ref for eviction
                     uniquePosPair.Remove(bToOppositeB);
                     sharedPosPair.Add(bToOppositeB);
-                    foreach (var otherOtherCache in uniquePosPair)
-                        otherOtherCache.Evict(bToOppositeB, uniquePosPair);
                 }
             }
         }
@@ -461,13 +475,19 @@ namespace RealtimeCSG
             public readonly int IndexBInBuffer;
             public readonly MeshDef Mesh;
 
-            private readonly List<(EdgeDef Edge, float Score)> BestMatches;
+            private readonly (EdgeDef Edge, float Score)[] BestMatches;
 
+            private int _bestMatchesCount;
+
+            /// <remarks>
+            /// May not be entirely valid if the amount of edges in the pool
+            /// is less than two or of nothing was happended to it yet
+            /// </remarks>
             public (EdgeDef Edge, float Score) BestMatch => BestMatches[0];
 
             public EdgeDef(int indexAInBuffer, int indexBInBuffer, MeshDef mesh, int indexBuffer)
             {
-                BestMatches = new();
+	            BestMatches = new (EdgeDef Edge, float Score)[CacheSizeMax];
                 var indexA = mesh.IndexBuffers[indexBuffer][indexAInBuffer];
                 var indexB = mesh.IndexBuffers[indexBuffer][indexBInBuffer];
                 Vector3 a = mesh.Pos[indexA];
@@ -498,109 +518,116 @@ namespace RealtimeCSG
                 AToB = B - A;
             }
 
-            public void FillCache(HashSet<EdgeDef> uniquePosPair)
+            /// <summary>
+            /// Insert this edge in the cache, should only be used when rebuilding this edge's cache entirely
+            /// </summary>
+            public void TryUnsafeInsert(EdgeDef otherEdge, float score)
             {
-                Debug.Assert(BestMatches.Count == 0);
+	            if (_bestMatchesCount == 0)
+	            {
+		            BestMatches[_bestMatchesCount++] = (otherEdge, score);
+		            return;
+	            }
+	            else if (score >= BestMatches[0].Score)
+	            {
+		            for (int i = Math.Min(_bestMatchesCount - 1, CacheSizeMax - 2); i >= 0; i--)
+			            BestMatches[i + 1] = BestMatches[i];
+		            _bestMatchesCount = Math.Min(_bestMatchesCount + 1, CacheSizeMax);
+		            BestMatches[0] = (otherEdge, score);
+	            }
+	            else
+	            {
+		            for (int i = _bestMatchesCount - 1; i >= 0; i--)
+		            {
+			            if (score > BestMatches[i].Score)
+				            continue;
 
-                foreach (var otherEdge in uniquePosPair)
-                {
-                    if (ReferenceEquals(otherEdge, this))
-                        continue;
+			            if (i+1 == CacheSizeMax)
+				            return;
 
-                    ComputeScore(this, otherEdge, out var score);
+			            for (int j = Math.Min(_bestMatchesCount - 1, CacheSizeMax - 2); j >= i + 1; j--)
+				            BestMatches[j + 1] = BestMatches[j];
+			            _bestMatchesCount = Math.Min(_bestMatchesCount + 1, CacheSizeMax);
 
-                    if (BestMatches.Count == 0)
-                    {
-                        BestMatches.Add((otherEdge, score));
-                        continue;
-                    }
-                    else if (score >= BestMatches[0].Score)
-                    {
-                        BestMatches.Insert(0, (otherEdge, score));
-                    }
-                    else
-                    {
-                        for (int i = BestMatches.Count - 1; i >= 0; i--)
-                        {
-                            if (score > BestMatches[i].Score)
-                                continue;
-
-                            if (i+1 == CacheSizeMax)
-                                break;
-
-                            BestMatches.Insert(i+1, (otherEdge, score));
-                            break;
-                        }
-                    }
-
-                    if (BestMatches.Count > CacheSizeMax)
-                        BestMatches.RemoveAt(CacheSizeMax);
-                }
+			            BestMatches[i+1] = (otherEdge, score);
+			            break;
+		            }
+	            }
             }
 
             /// <summary>
-            /// Evict an edge from the cache
+            /// Try to append a newly introduced edge into the cache
             /// </summary>
-            public void Evict(EdgeDef edge, HashSet<EdgeDef> uniquePosPair)
-            {
-                for (int i = 0; i < BestMatches.Count; i++)
-                {
-                    if (ReferenceEquals(BestMatches[i].Edge, edge))
-                    {
-                        BestMatches.RemoveAt(i);
-                        break;
-                    }
-                }
-
-                if (BestMatches.Count == 0)
-                {
-                    FillCache(uniquePosPair);
-                    return;
-                }
-            }
-
-            /// <summary>
-            /// Introduce a newly created edge to be cached
-            /// </summary>
-            public void Introduce(EdgeDef edge)
+            public void TryGuardedInsert(EdgeDef otherEdge, float score)
             {
                 // Here we have to be very careful, if the cache is not filled up, any empty slot just means that we have no clue which edge *should* be in that slot
                 // We can't insert this new edges at an empty spot since it may be misleading, they may not actually be the fourth closest edge,
                 // another one in the pool that was the sixth at the time may very well be the fourth now that a couple of the closest one were evicted.
                 // We just haven't re-filled the cache since then as we didn't need to
 
-                if (BestMatches.Count == 0)
+                if (_bestMatchesCount == 0)
                     return;
-
-                if (ReferenceEquals(edge, this))
-                    return;
-
-                ComputeScore(this, edge, out var score);
 
                 // Note the lack of 'if (BestEdges.Count == 0)', this wouldn't ever be hit given the if above
 
                 // We can only insert in slots before the last *existing* value, not the one before the maximum amount of slots, see larger comment above
-                if (score < BestMatches[BestMatches.Count-1].Score)
+                if (score < BestMatches[_bestMatchesCount-1].Score)
                     return; // So exit if we're larger than the last value
 
                 if (score >= BestMatches[0].Score)
                 {
-                    BestMatches.Insert(0, (edge, score));
+	                for (int i = Math.Min(_bestMatchesCount - 1, CacheSizeMax - 2); i >= 0; i--)
+		                BestMatches[i + 1] = BestMatches[i];
+	                _bestMatchesCount = Math.Min(_bestMatchesCount + 1, CacheSizeMax);
+	                BestMatches[0] = (otherEdge, score);
                 }
                 else
                 {
-                    for (int i = BestMatches.Count - 2; i >= 0; i--)
-                    {
-                        if (score <= BestMatches[i].Score)
-                        {
-                            BestMatches.Insert(i+1, (edge, score));
-                            break;
-                        }
-                    }
-                }
+	                for (int i = _bestMatchesCount - 1; i >= 0; i--)
+	                {
+		                if (score > BestMatches[i].Score)
+			                continue;
 
-                if (BestMatches.Count > CacheSizeMax)
-                    BestMatches.RemoveAt(CacheSizeMax);
+		                if (i + 1 == CacheSizeMax)
+			                return;
+
+		                for (int j = Math.Min(_bestMatchesCount - 1, CacheSizeMax - 2); j >= i + 1; j--)
+			                BestMatches[j + 1] = BestMatches[j];
+		                _bestMatchesCount = Math.Min(_bestMatchesCount + 1, CacheSizeMax);
+			            
+		                BestMatches[i + 1] = (otherEdge, score);
+		                break;
+	                }
+                }
+            }
+
+            /// <summary>
+            /// Evict an edge from the cache, potentially triggering the cache to be rebuilt
+            /// </summary>
+            public void Evict(EdgeDef edge, HashSet<EdgeDef> uniquePosPair)
+            {
+	            for (int i = 0; i < _bestMatchesCount; i++)
+	            {
+		            if (ReferenceEquals(BestMatches[i].Edge, edge))
+		            {
+			            for (int j = i; j < _bestMatchesCount-1; j++)
+				            BestMatches[j] = BestMatches[j+1];
+			            _bestMatchesCount--;
+			            break;
+		            }
+	            }
+
+	            if (_bestMatchesCount == 0)
+	            {
+		            foreach (var otherEdge in uniquePosPair)
+		            {
+			            if (ReferenceEquals(otherEdge, this))
+				            continue;
+
+			            ComputeScore(this, otherEdge, out var score);
+			            TryUnsafeInsert(otherEdge, score);
+		            }
+	            }
             }
         }
 
