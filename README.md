@@ -78,7 +78,7 @@ If you use this plugin, please let us know, we'd love to see what you've done wi
 ---
 
 * **Discord server**: https://discord.gg/BK5gt8R
-* **Project website**: https://www.realtimecsg.com/
+* **Project website**: [https://logicalerror.github.io](https://logicalerror.github.io/realtime-csg/index.html)
 * **Asset Store (outdated)**: https://assetstore.unity.com/packages/tools/modeling/realtime-csg-69542
 
 ---
