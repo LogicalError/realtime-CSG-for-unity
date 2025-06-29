@@ -130,10 +130,15 @@ namespace InternalRealtimeCSG
 
 		[HideInInspector] public bool   HasGeneratedNormals = false;
 		[HideInInspector] public bool	HasUV2				= false;
+		[HideInInspector] public bool	HasNoCracks			= false;
         [NonSerialized]
 		[HideInInspector] public float	ResetUVTime			= float.PositiveInfinity;
+		[NonSerialized]
+		[HideInInspector] public float  ResetStitchCracksTime = float.PositiveInfinity;
 		[HideInInspector] public Int64	LightingHashValue;
+		[HideInInspector] public Int64  CracksHashValue;
 
+		[NonSerialized] [HideInInspector] public Action CracksSolverCancellation;
 		[NonSerialized] [HideInInspector] public bool Dirty	= true;
 		[NonSerialized] [HideInInspector] public MeshCollider	CachedMeshCollider;
 		[NonSerialized] [HideInInspector] public MeshFilter		CachedMeshFilter;
@@ -148,8 +153,11 @@ namespace InternalRealtimeCSG
         
 		    HasGeneratedNormals     = false;
 		    HasUV2				    = false;
-            ResetUVTime			    = float.PositiveInfinity;
+		    ResetUVTime             = float.PositiveInfinity;
+		    ResetStitchCracksTime   = float.PositiveInfinity;
 		    LightingHashValue       = 0;
+		    CracksHashValue         = 0;
+		    CracksSolverCancellation?.Invoke();
 
 		    Dirty	                = true;
 
