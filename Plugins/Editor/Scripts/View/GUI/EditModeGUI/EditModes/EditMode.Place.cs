@@ -1843,6 +1843,8 @@ namespace RealtimeCSG
 								hoverOnBoundsEdge != -1)*/
 							{
 								SelectionUtility.DoSelectionClick(sceneView);
+								// We're doing manual selection, make sure to eat the event otherwise unity will run its own MouseUp for selection logic
+								Event.current.Use();
 							}
 						}
 						mouseIsDragging = false;
