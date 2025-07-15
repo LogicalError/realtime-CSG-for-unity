@@ -67,6 +67,8 @@ namespace RealtimeCSG
 
 		private static readonly GUIContent MinimumChartSizeContent				= new GUIContent("Min Chart Size", "Specifies the minimum texel size used for a UV chart. If stitching is required, a value of 4 will create a chart of 4x4 texels to store lighting and directionality. If stitching is not required, a value of 2 will reduce the texel density and provide better lighting build times and run time performance.");
 
+		private static readonly GUIContent StitchCracksContent					= new GUIContent("Stitch Cracks", "Some imprecise CSG operations may leave thin gaps and holes, this feature fills in those holes. Increases the amount of triangles.");
+
 		public static int[] MinimumChartSizeValues = { 2, 4 };
 		public static GUIContent[] MinimumChartSizeStrings =
 		{
