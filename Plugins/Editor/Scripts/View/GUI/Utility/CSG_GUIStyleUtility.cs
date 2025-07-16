@@ -97,7 +97,7 @@ namespace RealtimeCSG
 
 		public static ToolTip PopOutTooltip = new ToolTip("Pop out tool window",
 														  "Click this to turn this into a floating tool window.\n" +
-														  "Close that tool window to get the in scene tool window back", new KeyEvent(KeyCode.F2, EventModifiers.Control));
+														  "Close that tool window to get the in scene tool window back.\n Trying to close? CTRL+F3", new KeyEvent(KeyCode.F2, EventModifiers.Control));
 
 		const string csgAdditionTooltip = "Addition";
 		const string csgSubtractionTooltip = "Subtraction";
