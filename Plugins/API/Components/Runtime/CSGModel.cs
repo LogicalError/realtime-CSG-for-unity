@@ -20,6 +20,7 @@ namespace RealtimeCSG.Components
 		StitchLightmapSeams		= 4096,
 		IgnoreNormals			= 8192,
 		TwoSidedShadows			= 16384,
+		AutoStitchCracks		= 32768
 	}
 
 	[Serializable]
@@ -60,7 +61,8 @@ namespace RealtimeCSG.Components
 		public bool	SetColliderConvex		{ get { return (Settings & ModelSettingsFlags.SetColliderConvex) != (ModelSettingsFlags)0; } }
 		public bool	NeedAutoUpdateRigidBody	{ get { return (Settings & ModelSettingsFlags.AutoUpdateRigidBody) == (ModelSettingsFlags)0; } }
 		public bool	PreserveUVs         	{ get { return (Settings & ModelSettingsFlags.PreserveUVs) != (ModelSettingsFlags)0; } }
-		public bool StitchLightmapSeams		{ get { return (Settings & ModelSettingsFlags.StitchLightmapSeams) != (ModelSettingsFlags)0; } }		
+		public bool StitchLightmapSeams		{ get { return (Settings & ModelSettingsFlags.StitchLightmapSeams) != (ModelSettingsFlags)0; } }
+		public bool	AutoStitchCracks       	{ get { return (Settings & ModelSettingsFlags.AutoStitchCracks) != (ModelSettingsFlags)0; } }
 		public bool	AutoRebuildUVs         	{ get { return (Settings & ModelSettingsFlags.AutoRebuildUVs) != (ModelSettingsFlags)0; } }
 		public bool	IgnoreNormals  			{ get { return (Settings & ModelSettingsFlags.IgnoreNormals) != (ModelSettingsFlags)0; } }
 
