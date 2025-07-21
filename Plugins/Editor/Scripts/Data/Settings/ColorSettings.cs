@@ -454,25 +454,33 @@ namespace RealtimeCSG
 			maxOutlines2D	= CopyValue(pointInnerStateColor[0], invertedColor2);
 
 			outlines2D = new Color[13];
-			UnityEngine.Random.InitState(0);
-			for (int i=0;i<outlines2D.Length;i++)
-			{
-				var color = new Color(
-							Mathf.Lerp(minOutlines2D.r, maxOutlines2D.r, UnityEngine.Random.value),
-							Mathf.Lerp(minOutlines2D.g, maxOutlines2D.g, UnityEngine.Random.value),
-							Mathf.Lerp(minOutlines2D.b, maxOutlines2D.b, UnityEngine.Random.value),
-							1.0f
-						);
-				float h, s, v;
-				Color.RGBToHSV(color, out h, out s, out v);
+            var cache = UnityEngine.Random.state; //cache current state to avoid throwing off global rng.
+            try
+            {
+                UnityEngine.Random.InitState(0);
+                for (int i = 0; i < outlines2D.Length; i++)
+                {
+                    var color = new Color(
+                                Mathf.Lerp(minOutlines2D.r, maxOutlines2D.r, UnityEngine.Random.value),
+                                Mathf.Lerp(minOutlines2D.g, maxOutlines2D.g, UnityEngine.Random.value),
+                                Mathf.Lerp(minOutlines2D.b, maxOutlines2D.b, UnityEngine.Random.value),
+                                1.0f
+                            );
+                    float h, s, v;
+                    Color.RGBToHSV(color, out h, out s, out v);
 
-				s *= 0.5f;
-				v *= 1.1f;
+                    s *= 0.5f;
+                    v *= 1.1f;
 
-				outlines2D[i] = Color.HSVToRGB(h, s, v);
-			}
-			
-			gridColorW	= parsedCenterAxis;
+                    outlines2D[i] = Color.HSVToRGB(h, s, v);
+                }
+            }
+            finally
+            {
+                UnityEngine.Random.state = cache;
+            }
+
+            gridColorW	= parsedCenterAxis;
 
 			parsedGrid.a = Mathf.Max(0.85f, parsedGrid.a); 
 
