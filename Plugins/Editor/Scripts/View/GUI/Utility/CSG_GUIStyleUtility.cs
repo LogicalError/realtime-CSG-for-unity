@@ -435,23 +435,7 @@ namespace RealtimeCSG
 			//BottomToolBarStyle.fixedHeight = BottomToolBarHeight;
 
 
-			brushEditModeContent = new GUIContent[]
-			{
-				new GUIContent("Place"),
-				new GUIContent("Generate"),
-				new GUIContent("Edit"),
-				new GUIContent("Clip"),
-				new GUIContent("Surfaces")
-			};
-
-			brushEditModeTooltips = new ToolTip[]
-			{
-				new ToolTip("Place mode",       "In this mode you can place, rotate and scale brushes", Keys.SwitchToObjectEditMode),
-				new ToolTip("Generate mode",    "In this mode you can create brushes using several generators", Keys.SwitchToGenerateEditMode),
-				new ToolTip("Edit mode",        "In this mode you can edit the shapes of brushes", Keys.SwitchToMeshEditMode),
-				new ToolTip("Clip mode",        "In this mode you can split or clip brushes", Keys.SwitchToClipEditMode),
-				new ToolTip("Surfaces mode",    "In this mode you can modify the texturing and everything else related to brush surfaces", Keys.SwitchToSurfaceEditMode)
-			};
+			InitializeEditModeTexts();
 
 			var enum_type = typeof(ToolEditMode);
 			brushEditModeNames = (from name in System.Enum.GetNames(enum_type) select ObjectNames.NicifyVariableName(name)).ToArray();
@@ -594,6 +578,29 @@ namespace RealtimeCSG
 			GUI.skin = oldSkin;
 		}
 
+		public static void InitializeEditModeTexts()
+		{
+			if (brushEditModeContent != null)
+				return;
+
+			brushEditModeContent = new GUIContent[]
+			{
+				new GUIContent("Place"),
+				new GUIContent("Generate"),
+				new GUIContent("Edit"),
+				new GUIContent("Clip"),
+				new GUIContent("Surfaces")
+			};
+
+			brushEditModeTooltips = new ToolTip[]
+			{
+				new ToolTip("Place mode",       "In this mode you can place, rotate and scale brushes", Keys.SwitchToObjectEditMode),
+				new ToolTip("Generate mode",    "In this mode you can create brushes using several generators", Keys.SwitchToGenerateEditMode),
+				new ToolTip("Edit mode",        "In this mode you can edit the shapes of brushes", Keys.SwitchToMeshEditMode),
+				new ToolTip("Clip mode",        "In this mode you can split or clip brushes", Keys.SwitchToClipEditMode),
+				new ToolTip("Surfaces mode",    "In this mode you can modify the texturing and everything else related to brush surfaces", Keys.SwitchToSurfaceEditMode)
+			};
+		}
 		public static void ResetGUIState()
 		{
 			GUI.skin = null;
