@@ -130,7 +130,7 @@ namespace RealtimeCSG
 
 
 				var bounds = new Rect(10, 10 + topBarSize, 500, 40);
-
+#if !UNITY_2021_3_OR_NEWER
 				GUILayout.BeginArea(bounds, ContentTitleLabel, windowStyle);
 				{
 					//GUILayout.Space(bounds.height);
@@ -164,7 +164,8 @@ namespace RealtimeCSG
 					GUI.Label(versionArea, VersionLabel, CSG_GUIStyleUtility.versionLabelStyle);
 				}
 				GUILayout.EndArea();
-					 
+#endif
+
 				int controlID = GUIUtility.GetControlID(SceneViewBrushEditorOverlayHash, FocusType.Keyboard, bounds);
 				switch (Event.current.GetTypeForControl(controlID))
 				{
