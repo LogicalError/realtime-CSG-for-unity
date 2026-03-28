@@ -20,7 +20,9 @@ If you use this plugin, please let us know, we'd love to see what you've done wi
 
 **Unity Package Manager (UPM)**
 
-* Use the package manager to import the project using `https://github.com/LogicalError/realtime-CSG-for-unity.git`
+* Open up the package manager in Window/Package Manager
+* Press the + button in the top left corner and select Install package from Git URL
+* Import the project by entering `https://github.com/LogicalError/realtime-CSG-for-unity.git` into the text field  
 
 ---
 
@@ -78,7 +80,7 @@ If you use this plugin, please let us know, we'd love to see what you've done wi
 ---
 
 * **Discord server**: https://discord.gg/BK5gt8R
-* **Project website**: https://www.realtimecsg.com/
+* **Project website**: [https://logicalerror.github.io](https://logicalerror.github.io/realtime-csg/index.html)
 * **Asset Store (outdated)**: https://assetstore.unity.com/packages/tools/modeling/realtime-csg-69542
 
 ---
