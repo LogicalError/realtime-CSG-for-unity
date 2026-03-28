@@ -92,6 +92,8 @@ namespace RealtimeCSG
 
 		public static GUIStyle unpaddedWindow;
 
+		public static GUIStyle winBtnClose;
+
 		public static GUILayoutOption[] ContentEmpty = new GUILayoutOption[0];
 
 
@@ -364,6 +366,21 @@ namespace RealtimeCSG
 
 			selectionRectStyle = GetStyle("selectionRect");
 
+			winBtnClose = new GUIStyle(GUI.skin.verticalScrollbarUpButton);
+			winBtnClose.normal.background = Resources.Load<Texture2D>("GUI/WinBtnClose");
+			winBtnClose.onActive.background =
+			winBtnClose.onFocused.background =
+			winBtnClose.onNormal.background =
+			winBtnClose.onHover.background =
+			winBtnClose.hover.background =
+			winBtnClose.focused.background =
+			winBtnClose.active.background = null;
+			winBtnClose.fixedHeight = 16f;
+			winBtnClose.fixedWidth = 16f;
+			winBtnClose.overflow.bottom = 0;
+			winBtnClose.overflow.top = 0;
+			winBtnClose.overflow.right = 0;
+			winBtnClose.overflow.left = 0;
 
 			var redToolbarDropDown = GetStyle("toolbarDropDown");
 
